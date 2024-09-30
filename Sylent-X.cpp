@@ -21,10 +21,10 @@ const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 
 // Constants
+const std::string currentVersion = "0.1.14"; // Current version of the application
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
-const std::string currentVersion = "0.1.14"; // Current version of the application
 
 // Checkboxes states
 bool optionNoclip = false;
@@ -74,8 +74,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         return 0;
     }
 
-    // Create the window
-    HWND hwnd = CreateWindowEx(0, appName, "Sylent-X", WS_OVERLAPPEDWINDOW,
+    // Create the window with the current version in the title
+    std::string windowTitle = "Sylent-X " + currentVersion;
+    HWND hwnd = CreateWindowEx(0, appName, windowTitle.c_str(), WS_OVERLAPPEDWINDOW,
                                CW_USEDEFAULT, CW_USEDEFAULT, 756, 504, NULL, NULL, hInstance, NULL);
 
     if (hwnd == NULL) {
