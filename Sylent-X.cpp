@@ -8,6 +8,8 @@
 #include <ctime>
 #include <cstdio>
 #include <objbase.h> // Include for COM
+#include <vector>    // Include for std::vector
+#include <tlhelp32.h> // Include for CreateToolhelp32Snapshot and related functions
 #include "Updater.cpp"
 #include "Utils.h"
 
@@ -21,11 +23,12 @@ const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
-const std::string currentVersion = "0.1.3"; // Current version of the application
+const std::string currentVersion = "0.1.12"; // Current version of the application
 
 // Checkboxes states
 bool optionNoclip = false;
 bool optionSpeedhack = false;
+bool optionZoom = false;
 
 // Handle to the target process (ROClientGame.exe)
 HANDLE hProcess = nullptr;
@@ -39,11 +42,14 @@ std::deque<std::string> logMessages;
 // Handle to the background image
 HBITMAP hBackgroundImage = nullptr;
 
+// Declare global variables
+DWORD pid;
+
 // Function Prototypes
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
-void MemoryManipulation();
+void MemoryManipulation(HWND hwnd, bool isZoomEnabled); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
 
@@ -96,7 +102,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 }
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionNoclip, chkoptionSpeedhack;
+    static HWND chkoptionNoclip, chkoptionSpeedhack, chkoptionZoom;
 
     switch (msg) {
         case WM_CREATE:
@@ -113,6 +119,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                                       20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
             chkoptionSpeedhack = CreateWindow("BUTTON", "Enable Speedhack", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
+            chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+                                      20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
             // Create log display
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
                                        20, 200, 760, 100, hwnd, NULL, NULL, NULL);
@@ -152,13 +160,19 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 optionNoclip = !optionNoclip;
                 SendMessage(chkoptionNoclip, BM_SETCHECK, optionNoclip ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Noclip toggled");
-                MemoryManipulation();  // Trigger memory change when option changes
+                MemoryManipulation(hwnd, SendMessage(chkoptionZoom, BM_GETCHECK, 0, 0) == BST_CHECKED);  // Pass hwnd and zoom state
             }
             if (LOWORD(wParam) == 2) {
                 optionSpeedhack = !optionSpeedhack;
                 SendMessage(chkoptionSpeedhack, BM_SETCHECK, optionSpeedhack ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Speedhack toggled");
-                MemoryManipulation();  // Trigger memory change when option changes
+                MemoryManipulation(hwnd, SendMessage(chkoptionZoom, BM_GETCHECK, 0, 0) == BST_CHECKED);  // Pass hwnd and zoom state
+            }
+            if (LOWORD(wParam) == 3) {
+                optionZoom = !optionZoom;
+                SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
+                Log("Zoom toggled");
+                MemoryManipulation(hwnd, optionZoom);  // Pass hwnd and zoom state
             }
             break;
 
@@ -211,27 +225,112 @@ void LoadSettings() {
     file.close();
 }
 
-void MemoryManipulation() {
+// Define MemoryAddress struct
+struct MemoryAddress {
+    std::string name;
+    uintptr_t baseOffset;
+    std::vector<uintptr_t> offsets;
+};
+
+// Function to get the base address of a module
+uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
+    uintptr_t modBaseAddr = 0;
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
+    if (hSnap != INVALID_HANDLE_VALUE) {
+        Log("Process snapshot created for process ID: " + std::to_string(procId));
+        MODULEENTRY32 modEntry;
+        modEntry.dwSize = sizeof(modEntry);
+        if (Module32First(hSnap, &modEntry)) {
+            do {
+                wchar_t wModuleName[MAX_PATH];
+                MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
+                Log("Checking module: " + std::string(modEntry.szModule));
+                if (!_wcsicmp(wModuleName, modName)) {
+                    modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
+                    Log("Module found: " + std::string(modEntry.szModule) + 
+                        " at address: " + std::to_string(modBaseAddr) + 
+                        " in process ID: " + std::to_string(procId));
+                    break;
+                }
+            } while (Module32Next(hSnap, &modEntry));
+        }
+    } else {
+        Log("Failed to create process snapshot for process ID: " + std::to_string(procId));
+    }
+    CloseHandle(hSnap);
+    return modBaseAddr;
+}
+
+// Function to get the process ID by name
+DWORD GetProcessIdByName(const std::wstring& processName) {
+    DWORD processId = 0;
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnap != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32 pe32;
+        pe32.dwSize = sizeof(PROCESSENTRY32);
+        if (Process32First(hSnap, &pe32)) {
+            do {
+                // Convert pe32.szExeFile to a wide string
+                std::wstring exeFile(pe32.szExeFile, pe32.szExeFile + strlen(pe32.szExeFile));
+                if (!_wcsicmp(exeFile.c_str(), processName.c_str())) {
+                    processId = pe32.th32ProcessID;
+                    break;
+                }
+            } while (Process32Next(hSnap, &pe32));
+        }
+    }
+    CloseHandle(hSnap);
+    return processId;
+}
+
+class Memory {
+public:
+    uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
+    bool WriteFloat(uintptr_t address, float value);
+};
+
+uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
+    return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.baseOffset;
+}
+
+bool Memory::WriteFloat(uintptr_t address, float value) {
+    return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
+}
+
+void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     Log("Performing memory manipulation");
-    DWORD processID;
-    HWND hwnd = FindWindow(NULL, "ROClientGame");
-    if (!hwnd) {
-        Log("ROClientGame.exe not found");
-        MessageBox(NULL, "ROClientGame.exe not found.", "Error", MB_ICONERROR);
+
+    pid = GetProcessIdByName(L"ROClientGame.exe");
+    if (pid == 0) {
+        Log("Failed to find ROClientGame.exe process");
+        MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
 
-    GetWindowThreadProcessId(hwnd, &processID);
-    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
+    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (!hProcess) {
         Log("Failed to open ROClientGame.exe process");
         MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
 
-    // Example memory manipulation (addresses would be different in actual game)
-    int newValue = optionNoclip ? 1 : 0;
-    WriteProcessMemory(hProcess, (LPVOID)0x00AABBCC, &newValue, sizeof(newValue), NULL);
+    Memory memory;
+    MemoryAddress zoomAddr = {"Zoom", 0x007AE4CC, {0x88}};
+    uintptr_t baseAddress = memory.GetBaseAddress(zoomAddr);
+
+    if (isZoomEnabled) {
+        if (memory.WriteFloat(baseAddress, 25.0f)) {
+            Log("Zoom enabled.");
+        } else {
+            Log("Failed to write Zoom value to memory.");
+        }
+    } else {
+        if (memory.WriteFloat(baseAddress, 15.0f)) {
+            Log("Zoom disabled.");
+        } else {
+            Log("Failed to write Zoom value to memory.");
+        }
+    }
 
     CloseHandle(hProcess);
     Log("Memory manipulation completed");
@@ -253,7 +352,7 @@ void Log(const std::string& message) {
 
     // Add message to deque
     logMessages.push_back(logMessage);
-    if (logMessages.size() > 50) {
+    if (logMessages.size() > 500) {
         logMessages.pop_front();
     }
 
