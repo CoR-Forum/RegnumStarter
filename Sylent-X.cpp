@@ -55,7 +55,7 @@ void Log(const std::string& message);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + " started");
-    Log("🇩🇪 Made with hate in Germany 🇩🇪");
+    Log("Made with hate in Germany");
 
     LoadSettings();  // Load saved settings on startup
 
