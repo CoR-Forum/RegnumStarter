@@ -1,8 +1,10 @@
 ## Build on macOS
 
 ```
-x86_64-w64-mingw32-g++ -o Sylent-X-0.1.0.exe Sylent-X.cpp -mwindows -lurlmon -static
+x86_64-w64-mingw32-windres resource.rc resource.o && x86_64-w64-mingw32-g++ -o Sylent-X-0.1.12.exe Sylent-X.cpp resource.o -mwindows -lurlmon -static
 ```
+
+The first part of the command will compile the resource file which will then be included in the program file.
 
 You can also add ``&& wine Sylent-X-0.1.0.exe`` at the end while debugging.
 

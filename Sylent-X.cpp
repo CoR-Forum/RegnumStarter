@@ -12,6 +12,7 @@
 #include <tlhelp32.h> // Include for CreateToolhelp32Snapshot and related functions
 #include "Updater.cpp"
 #include "Utils.h"
+#include "resource.h"
 
 #pragma comment(lib, "urlmon.lib")
 
@@ -23,7 +24,7 @@ const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
-const std::string currentVersion = "0.1.12"; // Current version of the application
+const std::string currentVersion = "0.1.14"; // Current version of the application
 
 // Checkboxes states
 bool optionNoclip = false;
@@ -103,15 +104,21 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionNoclip, chkoptionSpeedhack, chkoptionZoom;
+    static HINSTANCE hInstance = GetModuleHandle(NULL);
+    static HBITMAP hBackgroundImage = NULL;
 
     switch (msg) {
         case WM_CREATE:
             Log("Creating checkboxes");
 
-            // Load the background image
-            hBackgroundImage = (HBITMAP)LoadImage(NULL, "background.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+            // Load the background image from resources
+            // Load the background image from resources
+            hBackgroundImage = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BACKGROUND_BITMAP));
             if (!hBackgroundImage) {
-                Log("Failed to load background image");
+                DWORD error = GetLastError();
+                Log("Failed to load background image. Error code: " + std::to_string(error));
+            } else {
+                Log("Background image loaded successfully");
             }
 
             // Create checkboxes
