@@ -7,6 +7,8 @@
 #include <ctime>
 #include <cstdio>
 #include <objbase.h> // Include for COM
+#include "Updater.cpp"
+#include "Utils.h"
 
 #pragma comment(lib, "urlmon.lib")
 
@@ -18,7 +20,7 @@ const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
-const std::string currentVersion = "0.1.0"; // Current version of the application
+const std::string currentVersion = "0.1.1"; // Current version of the application
 
 // Checkboxes states
 bool optionNoclip = false;
@@ -37,43 +39,8 @@ std::deque<std::string> logMessages;
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
-void SelfUpdate();
 void MemoryManipulation();
-void Log(const std::string& message);
 void UpdateLogDisplay();
-std::pair<std::string, std::string> FetchLatestVersion();
-
-std::string WStringToString(const std::wstring& wstr) {
-    std::string str(wstr.begin(), wstr.end());
-    return str;
-}
-
-class DownloadProgressCallback : public IBindStatusCallback {
-public:
-    STDMETHOD(OnStartBinding)(DWORD dwReserved, IBinding* pib) { return E_NOTIMPL; }
-    STDMETHOD(GetPriority)(LONG* pnPriority) { return E_NOTIMPL; }
-    STDMETHOD(OnLowResource)(DWORD reserved) { return E_NOTIMPL; }
-    STDMETHOD(OnProgress)(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR szStatusText) {
-        std::string statusText = szStatusText ? WStringToString(szStatusText) : "";
-        Log("Download progress: " + std::to_string(ulProgress) + "/" + std::to_string(ulProgressMax) + " - " + statusText);
-        return S_OK;
-    }
-    STDMETHOD(OnStopBinding)(HRESULT hresult, LPCWSTR szError) { return E_NOTIMPL; }
-    STDMETHOD(GetBindInfo)(DWORD* grfBINDF, BINDINFO* pbindinfo) { return E_NOTIMPL; }
-    STDMETHOD(OnDataAvailable)(DWORD grfBSCF, DWORD dwSize, FORMATETC* pformatetc, STGMEDIUM* pstgmed) { return E_NOTIMPL; }
-    STDMETHOD(OnObjectAvailable)(REFIID riid, IUnknown* punk) { return E_NOTIMPL; }
-
-    STDMETHOD_(ULONG, AddRef)() { return 1; }
-    STDMETHOD_(ULONG, Release)() { return 1; }
-    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObject) {
-        if (riid == IID_IUnknown || riid == IID_IBindStatusCallback) {
-            *ppvObject = static_cast<IBindStatusCallback*>(this);
-            return S_OK;
-        }
-        *ppvObject = nullptr;
-        return E_NOINTERFACE;
-    }
-};
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + " started");
@@ -230,83 +197,6 @@ void MemoryManipulation() {
 
     CloseHandle(hProcess);
     Log("Memory manipulation completed");
-}
-
-void SelfUpdate() {
-    Log("Checking for updates...");
-
-    auto [latestVersion, downloadURL] = FetchLatestVersion();
-    if (latestVersion.empty() || downloadURL.empty()) {
-        Log("Failed to fetch the latest version or download URL");
-        MessageBox(NULL, "Failed to fetch the latest version or download URL.", "Error", MB_ICONERROR);
-        return;
-    }
-
-    if (latestVersion <= currentVersion) {
-        Log("No new update available");
-        return;
-    }
-
-    Log("New Sylent-X version available: " + latestVersion);
-
-    // Download the latest version
-    DownloadProgressCallback progressCallback;
-    HRESULT hr = URLDownloadToFile(NULL, downloadURL.c_str(), "Sylent-X_New.exe", 0, &progressCallback);
-    if (SUCCEEDED(hr)) {
-        Log("Update downloaded successfully");
-        MessageBox(NULL, "Update downloaded! The application will now restart to complete the update.", "Update", MB_OK);
-
-        // Get the name of the currently running executable
-        char currentExePath[MAX_PATH];
-        GetModuleFileName(NULL, currentExePath, MAX_PATH);
-        std::string currentExeName = std::string(currentExePath).substr(std::string(currentExePath).find_last_of("\\/") + 1);
-
-        // Create a batch file to replace the old executable with the new one
-        std::ofstream batchFile("update.bat");
-        if (batchFile.is_open()) {
-            Log("Creating update batch file");
-            batchFile << "@echo off\n";
-            batchFile << "timeout /t 2 /nobreak\n"; // Wait for 2 seconds to ensure the application has exited
-            batchFile << "move /Y Sylent-X_New.exe " << currentExeName << "\n"; // Replace the old executable
-            batchFile << "start " << currentExeName << "\n"; // Restart the application
-            batchFile << "del %0\n"; // Delete the batch file itself
-            batchFile.close();
-            Log("Update Batch file created successfully");
-
-            // Execute the batch file
-            Log("Executing update batch file");
-            ShellExecute(NULL, "open", "update.bat", NULL, NULL, SW_HIDE);
-
-            // Exit the current application
-            Log("Exiting Sylent-X for update");
-            PostQuitMessage(0);
-        } else {
-            Log("Failed to create update batch file");
-            MessageBox(NULL, "Failed to create batch file.", "Error", MB_ICONERROR);
-        }
-    } else {
-        // Get the error message from HRESULT
-        _com_error err(hr);
-        LPCTSTR errMsg = err.ErrorMessage();
-        Log("Failed to download update: " + std::string(errMsg));
-        MessageBox(NULL, ("Failed to download update: " + std::string(errMsg)).c_str(), "Error", MB_ICONERROR);
-    }
-}
-
-std::pair<std::string, std::string> FetchLatestVersion() {
-    std::string latestVersion;
-    std::string downloadURL;
-    HRESULT hr = URLDownloadToFile(NULL, "https://cor-forum.de/regnum/sylent/latest_version.txt", "latest_version.txt", 0, NULL);
-    if (SUCCEEDED(hr)) {
-        std::ifstream versionFile("latest_version.txt");
-        if (versionFile.is_open()) {
-            std::getline(versionFile, latestVersion);
-            std::getline(versionFile, downloadURL);
-            versionFile.close();
-        }
-        std::remove("latest_version.txt");
-    }
-    return {latestVersion, downloadURL};
 }
 
 void Log(const std::string& message) {
