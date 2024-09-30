@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <urlmon.h>
 #include <comdef.h>
 #include <fstream>
@@ -20,7 +21,7 @@ const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
-const std::string currentVersion = "0.1.1"; // Current version of the application
+const std::string currentVersion = "0.1.3"; // Current version of the application
 
 // Checkboxes states
 bool optionNoclip = false;
@@ -35,12 +36,16 @@ HWND hLogDisplay = nullptr;
 // Deque to store the last 50 log messages
 std::deque<std::string> logMessages;
 
+// Handle to the background image
+HBITMAP hBackgroundImage = nullptr;
+
 // Function Prototypes
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
 void MemoryManipulation();
 void UpdateLogDisplay();
+void Log(const std::string& message);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + " started");
@@ -64,7 +69,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     // Create the window
     HWND hwnd = CreateWindowEx(0, appName, "Sylent-X", WS_OVERLAPPEDWINDOW,
-                               CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, NULL, NULL, hInstance, NULL);
+                               CW_USEDEFAULT, CW_USEDEFAULT, 756, 504, NULL, NULL, hInstance, NULL);
 
     if (hwnd == NULL) {
         Log("Failed to create window");
@@ -96,6 +101,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     switch (msg) {
         case WM_CREATE:
             Log("Creating checkboxes");
+
+            // Load the background image
+            hBackgroundImage = (HBITMAP)LoadImage(NULL, "background.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+            if (!hBackgroundImage) {
+                Log("Failed to load background image");
+            }
+
             // Create checkboxes
             chkoptionNoclip = CreateWindow("BUTTON", "Enable Noclip", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
@@ -103,14 +115,34 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                                       20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
             // Create log display
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
-                                       20, 200, 760, 150, hwnd, NULL, NULL, NULL);
+                                       20, 200, 760, 100, hwnd, NULL, NULL, NULL);
             break;
+
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+
+            if (hBackgroundImage) {
+                HDC hdcMem = CreateCompatibleDC(hdc);
+                HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hBackgroundImage);
+
+                BITMAP bm;
+                GetObject(hBackgroundImage, sizeof(bm), &bm);
+                BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
+
+                SelectObject(hdcMem, hbmOld);
+                DeleteDC(hdcMem);
+            }
+
+            EndPaint(hwnd, &ps);
+            break;
+        }
 
         case WM_SIZE:
             if (hLogDisplay) {
                 RECT rect;
                 GetClientRect(hwnd, &rect);
-                int logHeight = 150;
+                int logHeight = 100;
                 SetWindowPos(hLogDisplay, NULL, 20, rect.bottom - logHeight - 20, rect.right - 40, logHeight, SWP_NOZORDER);
             }
             break;
@@ -133,6 +165,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_DESTROY:
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
+
+            // Clean up the background image
+            if (hBackgroundImage) {
+                DeleteObject(hBackgroundImage);
+            }
+
             PostQuitMessage(0);
             break;
 

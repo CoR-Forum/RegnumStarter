@@ -4,6 +4,9 @@
 # VS Code
 .vscode/
 
+# Other
+background.bmp
+
 # Prerequisites
 *.d
 
