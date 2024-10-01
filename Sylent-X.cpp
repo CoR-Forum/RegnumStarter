@@ -55,7 +55,6 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
-void InitializePointers();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -122,9 +121,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                                       20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
                                        20, 200, 760, 100, hwnd, NULL, NULL, NULL);
-        
-            // Fetch and initialize pointers from API
-            InitializePointers();
 
             break;
 

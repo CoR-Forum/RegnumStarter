@@ -13,6 +13,8 @@
 
 #pragma comment(lib, "urlmon.lib")
 
+void InitializePointers();
+
 class DownloadProgressCallback : public IBindStatusCallback {
 public:
     STDMETHOD(OnStartBinding)(DWORD dwReserved, IBinding* pib) { return E_NOTIMPL; }
@@ -63,6 +65,9 @@ void SelfUpdate() {
 
     if (latestVersion <= currentVersion) {
         Log("No new update available");
+
+        // Fetch and initialize pointers from API
+        InitializePointers();
         return;
     }
 
