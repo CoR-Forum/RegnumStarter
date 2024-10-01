@@ -357,18 +357,24 @@ void MemoryManipulation(const std::string& option) {
                 if (bytesRead == sizeof(optionAddress)) {
                     LogDebug("Successfully read " + option + " address: " + std::to_string(optionAddress));
 
-                    float newValue = 0.0f;
-                    uintptr_t optionOffset = 0;
-
-                    if (option == "zoom") {
-                        newValue = optionZoom ? 25.0f : 15.0f;
-                        optionOffset = 0x88;
-                    } else if (option == "speedhack") {
-                        newValue = optionSpeedhack ? 25.0f : 15.0f;
-                        optionOffset = 0x88;
+                    // Apply offsets
+                    for (const auto& offset : pointer.offsets) {
+                        optionAddress += offset;
+                        if (!ReadProcessMemory(hProcess, (LPCVOID)optionAddress, &optionAddress, sizeof(optionAddress), &bytesRead) || bytesRead != sizeof(optionAddress)) {
+                            LogDebug("Failed to read offset address. Error code: " + std::to_string(GetLastError()));
+                            CloseHandle(hProcess);
+                            return;
+                        }
                     }
 
-                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + optionOffset), &newValue, sizeof(newValue), NULL)) {
+                    float newValue = 0.0f;
+                    if (option == "zoom") {
+                        newValue = optionZoom ? 25.0f : 15.0f;
+                    } else if (option == "speedhack") {
+                        newValue = optionSpeedhack ? 25.0f : 15.0f;
+                    }
+
+                    if (WriteProcessMemory(hProcess, (LPVOID)optionAddress, &newValue, sizeof(newValue), NULL)) {
                         LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
                     } else {
                         LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
