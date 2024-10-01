@@ -104,6 +104,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     return (int)msg.wParam;
 }
 
+// Add a new boolean variable to track the state of the key
+bool isGravityKeyPressed = false;
+
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -169,19 +172,27 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_KEYDOWN:
             if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is pressed
-                if (optionGravity) {
-                    MemoryManipulation("gravity");
+                if (!isGravityKeyPressed) {
+                    isGravityKeyPressed = true;
+                    SetTimer(hwnd, 1, 100, NULL); // Set a timer to repeatedly perform memory manipulation
+                }
+            }
+            break;
 
-                    // Set a timer to write for 100ms
-                    SetTimer(hwnd, 1, 100, NULL);
+        case WM_KEYUP:
+            if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is released
+                if (isGravityKeyPressed) {
+                    isGravityKeyPressed = false;
+                    KillTimer(hwnd, 1); // Stop the timer
                 }
             }
             break;
 
         case WM_TIMER:
             if (wParam == 1) { // Timer ID 1
-                // Stop the timer after 100ms
-                KillTimer(hwnd, 1);
+                if (isGravityKeyPressed && optionGravity) {
+                    MemoryManipulation("gravity");
+                }
             }
             break;
 
