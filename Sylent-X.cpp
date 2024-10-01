@@ -350,49 +350,37 @@ void MemoryManipulation(const std::string& option) {
             uintptr_t optionPointer = baseAddress + pointer.address;
             LogDebug(option + " pointer address: " + std::to_string(optionPointer));
 
-            uintptr_t optionAddress;
-            SIZE_T bytesRead;
+            float newValue = 0.0f;
 
-            if (ReadProcessMemory(hProcess, (LPCVOID)optionPointer, &optionAddress, sizeof(optionAddress), &bytesRead)) {
-                if (bytesRead == sizeof(optionAddress)) {
-                    LogDebug("Successfully read " + option + " address: " + std::to_string(optionAddress));
+            if (option == "zoom") {
+                newValue = optionZoom ? 25.0f : 15.0f;
+            } else if (option == "speedhack") {
+                newValue = optionSpeedhack ? 25.0f : 15.0f;
+            }
 
-                    float newValue = 0.0f;
-                    std::string optionOffsets;
+            // Concatenate offsets into a single string
+            std::string optionOffsets;
+            for (const auto& offset : pointer.offsets) {
+                optionOffsets += std::to_string(offset) + ",";
+            }
+            // Remove the trailing comma
+            if (!optionOffsets.empty()) {
+                optionOffsets.pop_back();
+            }
 
-                    if (option == "zoom") {
-                        newValue = optionZoom ? 25.0f : 15.0f;
-                    } else if (option == "speedhack") {
-                        newValue = optionSpeedhack ? 25.0f : 15.0f;
-                    }
-
-                    // Concatenate offsets into a single string
-                    for (const auto& offset : pointer.offsets) {
-                        optionOffsets += std::to_string(offset) + ",";
-                    }
-                    // Remove the trailing comma
-                    if (!optionOffsets.empty()) {
-                        optionOffsets.pop_back();
-                    }
-
-                    // Use the string directly
-                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + std::stoul(optionOffsets, nullptr, 16)), &newValue, sizeof(newValue), NULL)) {
-                        LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
-                    } else {
-                        LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
-                    }
-                } else {
-                    LogDebug("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead));
-                }
+            // Use the string directly
+            uintptr_t finalAddress = optionPointer + std::stoul(optionOffsets, nullptr, 16);
+            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+                LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
-                LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()));
+                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
             }
         }
     }
 
     // Close the process handle
     CloseHandle(hProcess);
-    LogDebug("Memory read completed");
+    LogDebug("Memory manipulation completed");
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
