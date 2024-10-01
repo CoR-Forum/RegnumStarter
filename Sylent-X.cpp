@@ -31,6 +31,9 @@ bool optionNoclip = false;
 bool optionSpeedhack = false;
 bool optionZoom = false;
 
+// Debug Log enabled
+const bool debugLog = true;
+
 // Handle to the target process (ROClientGame.exe)
 HANDLE hProcess = nullptr;
 
@@ -53,6 +56,7 @@ void LoadSettings();
 void MemoryManipulation(HWND hwnd, bool isZoomEnabled); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
+void LogDebug(const std::string& message); // Renamed function
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + " started");
@@ -84,7 +88,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         MessageBox(NULL, "Failed to create window.", "Error", MB_ICONERROR);
         return 0;
     }
-    Log("Window created");
+    LogDebug("Window created");
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
@@ -110,16 +114,15 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
     switch (msg) {
         case WM_CREATE:
-            Log("Creating checkboxes");
+            LogDebug("Creating checkboxes");
 
-            // Load the background image from resources
             // Load the background image from resources
             hBackgroundImage = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BACKGROUND_BITMAP));
             if (!hBackgroundImage) {
                 DWORD error = GetLastError();
-                Log("Failed to load background image. Error code: " + std::to_string(error));
+                LogDebug("Failed to load background image. Error code: " + std::to_string(error));
             } else {
-                Log("Background image loaded successfully");
+                LogDebug("Background image loaded successfully");
             }
 
             // Create checkboxes
@@ -216,10 +219,10 @@ void SaveSettings() {
 }
 
 void LoadSettings() {
-    Log("Loading settings from file");
+    LogDebug("Loading settings from file");
     std::ifstream file(std::string(appDataPath) + "\\Sylent-X\\settings.txt");
     if (!file) {
-        Log("Settings file not found");
+        LogDebug("Settings file not found");
         return;
     }
 
@@ -245,17 +248,17 @@ uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
     uintptr_t modBaseAddr = 0;
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
     if (hSnap != INVALID_HANDLE_VALUE) {
-        Log("Process snapshot created for process ID: " + std::to_string(procId));
+        LogDebug("Process snapshot created for process ID: " + std::to_string(procId));
         MODULEENTRY32 modEntry;
         modEntry.dwSize = sizeof(modEntry);
         if (Module32First(hSnap, &modEntry)) {
             do {
                 wchar_t wModuleName[MAX_PATH];
                 MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
-                Log("Checking module: " + std::string(modEntry.szModule));
+                LogDebug("Checking module: " + std::string(modEntry.szModule));
                 if (!_wcsicmp(wModuleName, modName)) {
                     modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
-                    Log("Module found: " + std::string(modEntry.szModule) + 
+                    LogDebug("Module found: " + std::string(modEntry.szModule) + 
                         " at address: " + std::to_string(modBaseAddr) + 
                         " in process ID: " + std::to_string(procId));
                     break;
@@ -263,7 +266,7 @@ uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
             } while (Module32Next(hSnap, &modEntry));
         }
     } else {
-        Log("Failed to create process snapshot for process ID: " + std::to_string(procId));
+        LogDebug("Failed to create process snapshot for process ID: " + std::to_string(procId));
     }
     CloseHandle(hSnap);
     return modBaseAddr;
@@ -306,7 +309,7 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
 }
 
 void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
-    Log("Performing memory manipulation");
+    LogDebug("Performing memory manipulation");
 
     pid = GetProcessIdByName(L"ROClientGame.exe");
     if (pid == 0) {
@@ -341,7 +344,7 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     }
 
     CloseHandle(hProcess);
-    Log("Memory manipulation completed");
+    LogDebug("Memory manipulation completed");
 }
 
 void Log(const std::string& message) {
@@ -366,6 +369,12 @@ void Log(const std::string& message) {
 
     // Update the log display in the GUI
     UpdateLogDisplay();
+}
+
+void LogDebug(const std::string& message) { // Renamed function
+    if (debugLog) {
+        Log("DEBUG: " + message);
+    }
 }
 
 void UpdateLogDisplay() {
