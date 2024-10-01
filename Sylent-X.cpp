@@ -187,28 +187,50 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 void SaveSettings() {
     Log("Saving settings to file");
-    std::ofstream file(std::string(appDataPath) + "\\Sylent-X\\settings.txt");
-    file << "optionNoclip=" << optionNoclip << std::endl;
-    file << "optionSpeedhack=" << optionSpeedhack << std::endl;
-    file.close();
+
+    // Construct the settings file path
+    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
+    std::string settingsFilePath = settingsDir + "\\settings.txt";
+
+    // Create the directory if it doesn't exist
+    CreateDirectory(settingsDir.c_str(), NULL);
+
+    // Open the file and write the settings
+    std::ofstream file(settingsFilePath);
+    if (file.is_open()) {
+        file << "optionNoclip=" << optionNoclip << std::endl;
+        file << "optionSpeedhack=" << optionSpeedhack << std::endl;
+        file << "optionZoom=" << optionZoom << std::endl;
+        file.close();
+        Log("Settings saved successfully");
+    } else {
+        Log("Failed to open settings file for writing");
+    }
 }
 
 void LoadSettings() {
     LogDebug("Loading settings from file");
-    std::ifstream file(std::string(appDataPath) + "\\Sylent-X\\settings.txt");
-    if (!file) {
-        LogDebug("Settings file not found");
-        return;
-    }
 
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.find("optionNoclip=") != std::string::npos)
-            optionNoclip = (line.substr(line.find("=") + 1) == "1");
-        if (line.find("optionSpeedhack=") != std::string::npos)
-            optionSpeedhack = (line.substr(line.find("=") + 1) == "1");
+    // Construct the settings file path
+    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
+
+    // Open the file and read the settings
+    std::ifstream file(settingsFilePath);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("optionNoclip=") != std::string::npos)
+                optionNoclip = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionSpeedhack=") != std::string::npos)
+                optionSpeedhack = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionZoom=") != std::string::npos)
+                optionZoom = (line.substr(line.find("=") + 1) == "1");
+        }
+        file.close();
+        Log("Settings loaded successfully");
+    } else {
+        LogDebug("Settings file not found");
     }
-    file.close();
 }
 
 // Define MemoryAddress struct
