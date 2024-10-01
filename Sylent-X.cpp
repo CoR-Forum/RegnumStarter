@@ -14,8 +14,6 @@
 #include "Utils.h"
 #include "Logger.cpp" // Include the combined Logger file
 #include <wininet.h>
-#include <atomic>
-#include <thread>
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
@@ -319,7 +317,8 @@ std::vector<Pointer> pointers;
 #include <sstream>
 #include <iomanip>
 
-std::atomic<bool> stopGravityThread(false);
+#include <thread> // Include for std::this_thread::sleep_for
+#include <chrono> // Include for std::chrono::milliseconds
 
 void MemoryManipulation(const std::string& option) {
     LogDebug("Performing memory manipulation for " + option);
@@ -390,20 +389,21 @@ void MemoryManipulation(const std::string& option) {
                 newValue = optionMoonjump ? 1.0f : 4.0f;
             } else if (option == "gravity") {
                 newValue = optionGravity ? -8.0f : 8.0f;
-                stopGravityThread = false;
-                std::thread([hProcess, finalAddress, newValue]() {
-                    while (!stopGravityThread) {
-                        if (!WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                            LogDebug("Failed to write new gravity value. Error code: " + std::to_string(GetLastError()));
-                        }
-                        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the sleep duration as needed
-                    }
-                }).detach();
             }
 
             LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
 
-            if (option != "gravity") {
+            if (option == "gravity") {
+                // Continuously write the gravity value
+                while (true) {
+                    if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+                        LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
+                    } else {
+                        LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
+                }
+            } else {
                 if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                     LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
                 } else {
@@ -416,10 +416,6 @@ void MemoryManipulation(const std::string& option) {
     // Close the process handle
     CloseHandle(hProcess);
     LogDebug("Memory manipulation completed");
-}
-
-void StopGravityManipulation() {
-    stopGravityThread = true;
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
