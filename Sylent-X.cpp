@@ -359,15 +359,15 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
 
             // Write the new zoom value to the memory location
             if (WriteProcessMemory(hProcess, (LPVOID)(zoomAddress + 0x88), &newZoomValue, sizeof(newZoomValue), NULL)) {
-                Log("Successfully wrote new zoom value: " + std::to_string(newZoomValue));
+                LogDebug("Successfully wrote new zoom value: " + std::to_string(newZoomValue));
             } else {
-                Log("Failed to write new zoom value. Error code: " + std::to_string(GetLastError()));
+                LogDebug("Failed to write new zoom value. Error code: " + std::to_string(GetLastError()));
             }
         } else {
-            Log("Failed to read the zoom pointer address. Bytes read: " + std::to_string(bytesRead));
+            LogDebug("Failed to read the zoom pointer address. Bytes read: " + std::to_string(bytesRead));
         }
     } else {
-        Log("Failed to read zoom pointer from memory. Error code: " + std::to_string(GetLastError()));
+        LogDebug("Failed to read zoom pointer from memory. Error code: " + std::to_string(GetLastError()));
     }
 
     // Close the process handle
