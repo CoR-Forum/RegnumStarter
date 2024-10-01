@@ -171,7 +171,17 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is pressed
                 if (optionGravity) {
                     MemoryManipulation("gravity");
+
+                    // Set a timer to write for 100ms
+                    SetTimer(hwnd, 1, 100, NULL);
                 }
+            }
+            break;
+
+        case WM_TIMER:
+            if (wParam == 1) { // Timer ID 1
+                // Stop the timer after 100ms
+                KillTimer(hwnd, 1);
             }
             break;
 
