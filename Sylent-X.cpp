@@ -353,6 +353,31 @@ void MemoryManipulation(const std::string& option) {
             uintptr_t optionPointer = baseAddress + pointer.address;
             LogDebug(option + " pointer address: " + std::to_string(optionPointer));
 
+            uintptr_t finalAddress = optionPointer;
+            SIZE_T bytesRead;
+
+            // Apply each offset sequentially
+            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    if (bytesRead != sizeof(finalAddress)) {
+                        LogDebug("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead));
+                        return;
+                    }
+                    finalAddress += pointer.offsets[i];
+                } else {
+                    LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()));
+                    return;
+                }
+            }
+
+            // Convert finalAddress to hexadecimal string
+            std::stringstream ss;
+            ss << std::hex << std::uppercase << finalAddress;
+            std::string finalAddressHex = ss.str();
+
+            // Log the final address and value being written
+            LogDebug("Final address: " + finalAddressHex);
+
             float newValue = 0.0f;
 
             if (option == "zoom") {
@@ -361,28 +386,6 @@ void MemoryManipulation(const std::string& option) {
                 newValue = optionSpeedhack ? 25.0f : 15.0f;
             }
 
-            // Concatenate offsets into a single string
-            std::string optionOffsets;
-            for (const auto& offset : pointer.offsets) {
-                optionOffsets += std::to_string(offset) + ",";
-            }
-            // Remove the trailing comma
-            if (!optionOffsets.empty()) {
-                optionOffsets.pop_back();
-            }
-
-            // Log the offsets string
-            LogDebug("Offsets string: " + optionOffsets);
-
-            // Use the string directly
-            uintptr_t finalAddress = optionPointer + std::stoul(optionOffsets, nullptr, 16);
-
-            // Convert finalAddress to hexadecimal string
-            std::stringstream ss;
-            ss << std::hex << std::uppercase << finalAddress;
-            std::string finalAddressHex = ss.str();
-
-            // Log the final address and value being written
             LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
 
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
