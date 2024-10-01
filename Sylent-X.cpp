@@ -368,6 +368,9 @@ void MemoryManipulation(const std::string& option) {
                 optionOffsets.pop_back();
             }
 
+            // Log the offsets string
+            LogDebug("Offsets string: " + optionOffsets);
+
             // Use the string directly
             uintptr_t finalAddress = optionPointer + std::stoul(optionOffsets, nullptr, 16);
 
