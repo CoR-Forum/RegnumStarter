@@ -167,6 +167,14 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
             break;
 
+        case WM_KEYDOWN:
+            if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is pressed
+                if (optionGravity) {
+                    MemoryManipulation("gravity");
+                }
+            }
+            break;
+
         case WM_DESTROY:
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
@@ -317,9 +325,6 @@ std::vector<Pointer> pointers;
 #include <sstream>
 #include <iomanip>
 
-#include <thread> // Include for std::this_thread::sleep_for
-#include <chrono> // Include for std::chrono::milliseconds
-
 void MemoryManipulation(const std::string& option) {
     LogDebug("Performing memory manipulation for " + option);
 
@@ -393,22 +398,10 @@ void MemoryManipulation(const std::string& option) {
 
             LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
 
-            if (option == "gravity") {
-                // Continuously write the gravity value
-                while (true) {
-                    if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                        LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
-                    } else {
-                        LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
-                    }
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
-                }
+            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+                LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
-                if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                    LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
-                } else {
-                    LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
-                }
+                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
             }
         }
     }
