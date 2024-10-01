@@ -357,9 +357,10 @@ void MemoryManipulation(const std::string& option) {
                 if (bytesRead == sizeof(optionAddress)) {
                     LogDebug("Successfully read " + option + " address: " + std::to_string(optionAddress));
 
-                    float newValue = (option == "zoom") ? (optionZoom ? 25.0f : 15.0f) : 1.0f;
+                    float newValue = (option == "zoom") ? (optionZoom ? 25.0f : 15.0f) : 15.0f (option == "speedhack") ? (optionSpeedhack ? 2.0f : 1.0f) : 1.0f;
+                    float optionOffset = (option == "zoom") ? 0x88 (option == "speedhack") ? 0x90 : "";
 
-                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + 0x88), &newValue, sizeof(newValue), NULL)) {
+                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + optionOffset), &newValue, sizeof(newValue), NULL)) {
                         LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
                     } else {
                         LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
