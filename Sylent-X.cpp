@@ -385,7 +385,7 @@ void MemoryManipulation(const std::string& option) {
             } else if (option == "moonjump") {
                 newValue = optionMoonjump ? 1.0f : 4.0f;
             } else if (option == "gravity") {
-                newValue = optionGravity ? -5.0f : 2.0f;
+                newValue = optionGravity ? -8.0f : 8.0f;
             }
 
             LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
