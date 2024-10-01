@@ -350,39 +350,50 @@ void MemoryManipulation(const std::string& option) {
             uintptr_t optionPointer = baseAddress + pointer.address;
             LogDebug(option + " pointer address: " + std::to_string(optionPointer));
 
-            float newValue = 0.0f;
-            std::vector<uintptr_t> optionOffsets;
+            uintptr_t optionAddress;
+            SIZE_T bytesRead;
 
-            if (option == "zoom") {
-                newValue = optionZoom ? 25.0f : 15.0f;
-                optionOffsets = {0x88};
-            } else if (option == "moonjump") {
-                newValue = optionMoonjump ? 1.0f : 4.0f;
-                optionOffsets = {0x10, 0x8, 0x4, 0x8, 0x11C, 0x2C};
-            }
+            if (ReadProcessMemory(hProcess, (LPCVOID)optionPointer, &optionAddress, sizeof(optionAddress), &bytesRead)) {
+                if (bytesRead == sizeof(optionAddress)) {
+                    LogDebug("Successfully read " + option + " address: " + std::to_string(optionAddress));
 
-            // Calculate the final address using the offsets
-            uintptr_t finalAddress = optionPointer;
-            for (uintptr_t offset : optionOffsets) {
-                if (!ReadProcessMemory(hProcess, (LPCVOID)(finalAddress + offset), &finalAddress, sizeof(finalAddress), NULL)) {
-                    LogDebug("Failed to read memory at offset: " + std::to_string(offset));
-                    CloseHandle(hProcess);
-                    return;
+                    float newValue = 0.0f;
+                    std::vector<uintptr_t> optionOffsets;
+
+                    if (option == "zoom") {
+                        newValue = optionZoom ? 25.0f : 15.0f;
+                        optionOffsets = {0x88};
+                    } else if (option == "moonjump") {
+                        newValue = optionMoonjump ? 1.0f : 4.0f;
+                        optionOffsets = {0x10, 0x8, 0x4, 0x8, 0x11C, 0x2C};
+                    }
+
+                    // Calculate the final address using the offsets
+                    for (uintptr_t offset : optionOffsets) {
+                        if (!ReadProcessMemory(hProcess, (LPCVOID)(optionAddress + offset), &optionAddress, sizeof(optionAddress), &bytesRead) || bytesRead != sizeof(optionAddress)) {
+                            LogDebug("Failed to read memory at offset: " + std::to_string(offset));
+                            CloseHandle(hProcess);
+                            return;
+                        }
+                    }
+
+                    if (WriteProcessMemory(hProcess, (LPVOID)optionAddress, &newValue, sizeof(newValue), NULL)) {
+                        LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
+                    } else {
+                        LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
+                    }
+                } else {
+                    LogDebug("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead));
                 }
-            }
-
-            // Write the new value to the final address
-            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
-                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
+                LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()));
             }
         }
     }
 
     // Close the process handle
     CloseHandle(hProcess);
-    LogDebug("Memory manipulation completed");
+    LogDebug("Memory read completed");
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
