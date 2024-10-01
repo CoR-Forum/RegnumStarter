@@ -1,7 +1,8 @@
 ## Build on macOS
 
 ```
-x86_64-w64-mingw32-windres resource.rc resource.o && x86_64-w64-mingw32-g++ -o Sylent-X-0.1.12.exe Sylent-X.cpp resource.o -mwindows -lurlmon -static
+i686-w64-mingw32-windres resource.rc resource.o && \
+i686-w64-mingw32-g++ -o Sylent-X-0.1.16.exe Sylent-X.cpp resource.o -mwindows -lurlmon -lwininet -static
 ```
 
 The first part of the command will compile the resource file which will then be included in the program file.
