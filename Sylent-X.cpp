@@ -311,41 +311,70 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
 void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     LogDebug("Performing memory manipulation");
 
+    // Get process ID for ROClientGame.exe
     pid = GetProcessIdByName(L"ROClientGame.exe");
     if (pid == 0) {
         Log("Failed to find ROClientGame.exe process");
         MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
+    LogDebug("Process ID for ROClientGame.exe: " + std::to_string(pid));
 
+    // Open the process with write and operation access
+    // Open the process with full access
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (!hProcess) {
-        Log("Failed to open ROClientGame.exe process");
+        Log("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
         MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
+    LogDebug("Successfully opened process with ID: " + std::to_string(pid));
 
-    Memory memory;
-    MemoryAddress zoomAddr = {"Zoom", 0x007AE4CC, {0x88}};
-    uintptr_t baseAddress = memory.GetBaseAddress(zoomAddr);
 
-    if (isZoomEnabled) {
-        if (memory.WriteFloat(baseAddress, 25.0f)) {
-            Log("Zoom enabled.");
+    // Get the base address of ROClientGame.exe
+    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
+    if (baseAddress == 0) {
+        Log("Failed to get the base address of ROClientGame.exe");
+        CloseHandle(hProcess);
+        return;
+    }
+    LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
+
+    // Directly read from the specified pointer with the offset
+    uintptr_t zoomPointer = baseAddress + 0x007AE4CC; // Base + Offset for zoom pointer
+    LogDebug("Zoom pointer address: " + std::to_string(zoomPointer));
+
+    // To read the address stored at that location
+    uintptr_t zoomAddress; // This will hold the address where the zoom value is stored
+    SIZE_T bytesRead;
+
+    // Read the memory at the zoomPointer to get the address of the zoom value
+    if (ReadProcessMemory(hProcess, (LPCVOID)zoomPointer, &zoomAddress, sizeof(zoomAddress), &bytesRead)) {
+        if (bytesRead == sizeof(zoomAddress)) {
+            LogDebug("Successfully read zoom address: " + std::to_string(zoomAddress));
+
+            // Determine the new zoom value based on the checkbox state
+            float newZoomValue = isZoomEnabled ? 25.0f : 15.0f;
+
+            // Write the new zoom value to the memory location
+            if (WriteProcessMemory(hProcess, (LPVOID)(zoomAddress + 0x88), &newZoomValue, sizeof(newZoomValue), NULL)) {
+                Log("Successfully wrote new zoom value: " + std::to_string(newZoomValue));
+            } else {
+                Log("Failed to write new zoom value. Error code: " + std::to_string(GetLastError()));
+            }
         } else {
-            Log("Failed to write Zoom value to memory.");
+            Log("Failed to read the zoom pointer address. Bytes read: " + std::to_string(bytesRead));
         }
     } else {
-        if (memory.WriteFloat(baseAddress, 15.0f)) {
-            Log("Zoom disabled.");
-        } else {
-            Log("Failed to write Zoom value to memory.");
-        }
+        Log("Failed to read zoom pointer from memory. Error code: " + std::to_string(GetLastError()));
     }
 
+    // Close the process handle
     CloseHandle(hProcess);
-    LogDebug("Memory manipulation completed");
+    LogDebug("Memory read completed");
 }
+
+
 
 void Log(const std::string& message) {
     // Get current time
