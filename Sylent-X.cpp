@@ -364,8 +364,8 @@ void MemoryManipulation(const std::string& option) {
                         newValue = optionZoom ? 25.0f : 15.0f;
                         optionOffset = 0x88;
                     } else if (option == "speedhack") {
-                        newValue = optionSpeedhack ? 2.0f : 1.0f;
-                        optionOffset = 0x90;
+                        newValue = optionSpeedhack ? 25.0f : 15.0f;
+                        optionOffset = 0x88;
                     }
 
                     if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + optionOffset), &newValue, sizeof(newValue), NULL)) {
