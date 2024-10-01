@@ -7,12 +7,13 @@
 #include <deque>
 #include <ctime>
 #include <cstdio>
-#include <objbase.h> // Include for COM
-#include <vector>    // Include for std::vector
-#include <tlhelp32.h> // Include for CreateToolhelp32Snapshot and related functions
+#include <objbase.h>
+#include <vector>
+#include <tlhelp32.h>
 #include "Updater.cpp"
 #include "Utils.h"
 #include "resource.h"
+#include "Logger.cpp" // Include the combined Logger file
 
 #pragma comment(lib, "urlmon.lib")
 
@@ -32,7 +33,7 @@ bool optionSpeedhack = false;
 bool optionZoom = false;
 
 // Debug Log enabled
-const bool debugLog = true;
+bool debugLog = true;
 
 // Handle to the target process (ROClientGame.exe)
 HANDLE hProcess = nullptr;
@@ -372,46 +373,4 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     // Close the process handle
     CloseHandle(hProcess);
     LogDebug("Memory read completed");
-}
-
-
-
-void Log(const std::string& message) {
-    // Get current time
-    std::time_t now = std::time(nullptr);
-    char timestamp[20];
-    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
-
-    // Create log message with timestamp
-    std::string logMessage = "[" + std::string(timestamp) + "] " + message;
-
-    std::ofstream logFile(std::string(appDataPath) + "\\Sylent-X\\log.txt", std::ios_base::app);
-    logFile << logMessage << std::endl;
-    logFile.close();
-    std::cout << logMessage << std::endl;
-
-    // Add message to deque
-    logMessages.push_back(logMessage);
-    if (logMessages.size() > 500) {
-        logMessages.pop_front();
-    }
-
-    // Update the log display in the GUI
-    UpdateLogDisplay();
-}
-
-void LogDebug(const std::string& message) { // Renamed function
-    if (debugLog) {
-        Log("DEBUG: " + message);
-    }
-}
-
-void UpdateLogDisplay() {
-    if (hLogDisplay) {
-        SendMessage(hLogDisplay, LB_RESETCONTENT, 0, 0);
-        for (const auto& msg : logMessages) {
-            SendMessage(hLogDisplay, LB_ADDSTRING, 0, (LPARAM)msg.c_str());
-        }
-        SendMessage(hLogDisplay, LB_SETTOPINDEX, logMessages.size() - 1, 0);
-    }
 }
