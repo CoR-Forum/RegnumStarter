@@ -58,8 +58,7 @@ void LogDebug(const std::string& message); // Renamed function
 void InitializePointers();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    Log("Sylent-X " + currentVersion + " started");
-    Log("Made with hate in Germany");
+    Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
     LoadSettings();  // Load saved settings on startup
 
@@ -114,18 +113,18 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_CREATE:
             LogDebug("Creating checkboxes");
 
-            // Create checkboxes
+            // Create checkboxes UI elements
             chkoptionNoclip = CreateWindow("BUTTON", "Enable Noclip", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
             chkoptionSpeedhack = CreateWindow("BUTTON", "Enable Speedhack", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
             chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
-            // Create log display
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
                                        20, 200, 760, 100, hwnd, NULL, NULL, NULL);
         
-            InitializePointers();  // Fetch and initialize pointers
+            // Fetch and initialize pointers from API
+            InitializePointers();
 
             break;
 
