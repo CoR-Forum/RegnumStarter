@@ -14,7 +14,8 @@
 #include "Utils.h"
 #include "resource.h"
 #include "Logger.cpp" // Include the combined Logger file
-
+#include <wininet.h>
+#pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
 // Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
@@ -58,6 +59,7 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
+void InitializePointers();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + " started");
@@ -93,6 +95,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
+
+    InitializePointers();  // Fetch and initialize pointers
 
     // Post custom message to start self-update
     PostMessage(hwnd, WM_START_SELF_UPDATE, 0, 0);
@@ -309,6 +313,15 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
     return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
 }
 
+struct Pointer {
+    std::string name;
+    uintptr_t address;
+    std::vector<uintptr_t> offsets;
+};
+
+// Vector to store pointers to memory addresses
+std::vector<Pointer> pointers;
+
 void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     LogDebug("Performing memory manipulation");
 
@@ -321,7 +334,6 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     }
     LogDebug("Process ID for ROClientGame.exe: " + std::to_string(pid));
 
-    // Open the process with write and operation access
     // Open the process with full access
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (!hProcess) {
@@ -330,7 +342,6 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
         return;
     }
     LogDebug("Successfully opened process with ID: " + std::to_string(pid));
-
 
     // Get the base address of ROClientGame.exe
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
@@ -341,36 +352,135 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     }
     LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
 
-    // Directly read from the specified pointer with the offset
-    uintptr_t zoomPointer = baseAddress + 0x007AE4CC;
-    LogDebug("Zoom pointer address: " + std::to_string(zoomPointer));
+    // Use the fetched pointers
+    for (const auto& pointer : pointers) {
+        if (pointer.name == "zoom") {
+            uintptr_t zoomPointer = baseAddress + pointer.address;
+            LogDebug("Zoom pointer address: " + std::to_string(zoomPointer));
 
-    // To read the address stored at that location
-    uintptr_t zoomAddress; // This will hold the address where the zoom value is stored
-    SIZE_T bytesRead;
+            uintptr_t zoomAddress;
+            SIZE_T bytesRead;
 
-    // Read the memory at the zoomPointer to get the address of the zoom value
-    if (ReadProcessMemory(hProcess, (LPCVOID)zoomPointer, &zoomAddress, sizeof(zoomAddress), &bytesRead)) {
-        if (bytesRead == sizeof(zoomAddress)) {
-            LogDebug("Successfully read zoom address: " + std::to_string(zoomAddress));
+            if (ReadProcessMemory(hProcess, (LPCVOID)zoomPointer, &zoomAddress, sizeof(zoomAddress), &bytesRead)) {
+                if (bytesRead == sizeof(zoomAddress)) {
+                    LogDebug("Successfully read zoom address: " + std::to_string(zoomAddress));
 
-            // Determine the new zoom value based on the checkbox state
-            float newZoomValue = isZoomEnabled ? 25.0f : 15.0f;
+                    float newZoomValue = isZoomEnabled ? 25.0f : 15.0f;
 
-            // Write the new zoom value to the memory location
-            if (WriteProcessMemory(hProcess, (LPVOID)(zoomAddress + 0x88), &newZoomValue, sizeof(newZoomValue), NULL)) {
-                LogDebug("Successfully wrote new zoom value: " + std::to_string(newZoomValue));
+                    if (WriteProcessMemory(hProcess, (LPVOID)(zoomAddress + 0x88), &newZoomValue, sizeof(newZoomValue), NULL)) {
+                        LogDebug("Successfully wrote new zoom value: " + std::to_string(newZoomValue));
+                    } else {
+                        LogDebug("Failed to write new zoom value. Error code: " + std::to_string(GetLastError()));
+                    }
+                } else {
+                    LogDebug("Failed to read the zoom pointer address. Bytes read: " + std::to_string(bytesRead));
+                }
             } else {
-                LogDebug("Failed to write new zoom value. Error code: " + std::to_string(GetLastError()));
+                LogDebug("Failed to read zoom pointer from memory. Error code: " + std::to_string(GetLastError()));
             }
-        } else {
-            LogDebug("Failed to read the zoom pointer address. Bytes read: " + std::to_string(bytesRead));
         }
-    } else {
-        LogDebug("Failed to read zoom pointer from memory. Error code: " + std::to_string(GetLastError()));
     }
 
     // Close the process handle
     CloseHandle(hProcess);
     LogDebug("Memory read completed");
+}
+
+std::string FetchDataFromAPI(const std::string& url) {
+    HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    if (!hInternet) {
+        Log("Failed to open internet connection");
+        return "";
+    }
+
+    HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
+    if (!hConnect) {
+        Log("Failed to open URL");
+        InternetCloseHandle(hInternet);
+        return "";
+    }
+
+    char buffer[4096];
+    DWORD bytesRead;
+    std::string response;
+
+    while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
+        response.append(buffer, bytesRead);
+    }
+
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hInternet);
+
+    return response;
+}
+
+std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
+    std::vector<Pointer> pointers;
+    size_t pos = 0, endPos;
+
+    while ((pos = jsonResponse.find("{", pos)) != std::string::npos) {
+        Pointer pointer;
+        endPos = jsonResponse.find("}", pos);
+        std::string object = jsonResponse.substr(pos, endPos - pos + 1);
+
+        size_t namePos = object.find("\"name\":") + 8;
+        size_t nameEnd = object.find("\"", namePos);
+        pointer.name = object.substr(namePos, nameEnd - namePos);
+
+        size_t addressPos = object.find("\"address\":") + 11;
+        size_t addressEnd = object.find("\"", addressPos);
+        std::string addressStr = object.substr(addressPos, addressEnd - addressPos);
+        try {
+            pointer.address = std::stoul(addressStr, nullptr, 16);
+        } catch (const std::invalid_argument& e) {
+            LogDebug("Invalid address: " + addressStr);
+            continue;
+        }
+
+        size_t offsetsPos = object.find("\"offsets\":") + 11;
+        size_t offsetsEnd = object.find("\"", offsetsPos);
+        std::string offsetsStr = object.substr(offsetsPos, offsetsEnd - offsetsPos);
+        LogDebug("Offsets string: " + offsetsStr); // Add this line to log the offsets string
+
+        if (offsetsStr.empty()) {
+            LogDebug("No offsets for pointer: " + pointer.name);
+        } else {
+            size_t offsetPos = 0, offsetEnd;
+            while ((offsetEnd = offsetsStr.find(",", offsetPos)) != std::string::npos) {
+                std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
+                try {
+                    pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
+                } catch (const std::invalid_argument& e) {
+                    LogDebug("Invalid offset: " + offsetStr);
+                    continue;
+                }
+                offsetPos = offsetEnd + 1;
+            }
+            try {
+                pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
+            } catch (const std::invalid_argument& e) {
+                LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
+                continue;
+            }
+        }
+
+        // Log the fetched data
+        LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address));
+
+        pointers.push_back(pointer);
+        pos = endPos + 1;
+    }
+
+    return pointers;
+}
+
+void InitializePointers() {
+    std::string url = "https://cort.cor-forum.de/api/v1/sylentx/memory/pointers?key=aingu8gaiv0daitoj6eeweezeug7Ei";
+    std::string jsonResponse = FetchDataFromAPI(url);
+    if (!jsonResponse.empty()) {
+        pointers = ParseJSONResponse(jsonResponse);
+        Log("Pointers fetched and parsed successfully");
+    } else {
+        Log("Failed to fetch or parse pointers");
+    }
 }
