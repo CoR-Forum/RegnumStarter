@@ -29,7 +29,7 @@ const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
 // Checkboxes states
 bool optionNoclip = false;
-bool optionMoonjump = false;
+bool optionSpeedhack = false;
 bool optionZoom = false;
 
 // Debug Log enabled
@@ -105,7 +105,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 }
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionNoclip, chkoptionMoonjump, chkoptionZoom;
+    static HWND chkoptionNoclip, chkoptionSpeedhack, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
 
     switch (msg) {
@@ -115,7 +115,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             // Create checkboxes UI elements
             chkoptionNoclip = CreateWindow("BUTTON", "Enable Noclip", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
-            chkoptionMoonjump = CreateWindow("BUTTON", "Enable Speedhack", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+            chkoptionSpeedhack = CreateWindow("BUTTON", "Enable Speedhack", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
             chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
@@ -154,8 +154,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 MemoryManipulation("noclip");
             }
             if (LOWORD(wParam) == 2) {
-                optionMoonjump = !optionMoonjump;
-                SendMessage(chkoptionMoonjump, BM_SETCHECK, optionMoonjump ? BST_CHECKED : BST_UNCHECKED, 0);
+                optionSpeedhack = !optionSpeedhack;
+                SendMessage(chkoptionSpeedhack, BM_SETCHECK, optionSpeedhack ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Speedhack toggled");
                 MemoryManipulation("speedhack");
             }
@@ -199,7 +199,7 @@ void SaveSettings() {
     std::ofstream file(settingsFilePath);
     if (file.is_open()) {
         file << "optionNoclip=" << optionNoclip << std::endl;
-        file << "optionMoonjump=" << optionMoonjump << std::endl;
+        file << "optionSpeedhack=" << optionSpeedhack << std::endl;
         file << "optionZoom=" << optionZoom << std::endl;
         file.close();
         Log("Settings saved successfully");
@@ -221,8 +221,8 @@ void LoadSettings() {
         while (std::getline(file, line)) {
             if (line.find("optionNoclip=") != std::string::npos)
                 optionNoclip = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionMoonjump=") != std::string::npos)
-                optionMoonjump = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionSpeedhack=") != std::string::npos)
+                optionSpeedhack = (line.substr(line.find("=") + 1) == "1");
             if (line.find("optionZoom=") != std::string::npos)
                 optionZoom = (line.substr(line.find("=") + 1) == "1");
         }
@@ -363,9 +363,9 @@ void MemoryManipulation(const std::string& option) {
                     if (option == "zoom") {
                         newValue = optionZoom ? 25.0f : 15.0f;
                         optionOffset = 0x88;
-                    } else if (option == "moonjump") {
-                        newValue = optionMoonjump ? 1.0f : 4.0f;
-                        optionOffset = "0x10,0x8,0x4,0x8,0x11C,0x2C";
+                    } else if (option == "speedhack") {
+                        newValue = optionSpeedhack ? 2.0f : 1.0f;
+                        optionOffset = 0x90;
                     }
 
                     if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + optionOffset), &newValue, sizeof(newValue), NULL)) {
