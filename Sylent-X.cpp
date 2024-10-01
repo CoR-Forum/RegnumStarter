@@ -51,7 +51,7 @@ DWORD pid;
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
-void MemoryManipulation(HWND hwnd, bool isZoomEnabled); // Updated prototype
+void MemoryManipulation(const std::string& option); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
@@ -151,19 +151,19 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 optionNoclip = !optionNoclip;
                 SendMessage(chkoptionNoclip, BM_SETCHECK, optionNoclip ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Noclip toggled");
-                MemoryManipulation(hwnd, SendMessage(chkoptionZoom, BM_GETCHECK, 0, 0) == BST_CHECKED);  // Pass hwnd and zoom state
+                MemoryManipulation("noclip");
             }
             if (LOWORD(wParam) == 2) {
                 optionSpeedhack = !optionSpeedhack;
                 SendMessage(chkoptionSpeedhack, BM_SETCHECK, optionSpeedhack ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Speedhack toggled");
-                MemoryManipulation(hwnd, SendMessage(chkoptionZoom, BM_GETCHECK, 0, 0) == BST_CHECKED);  // Pass hwnd and zoom state
+                MemoryManipulation("speedhack");
             }
             if (LOWORD(wParam) == 3) {
                 optionZoom = !optionZoom;
                 SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Zoom toggled");
-                MemoryManipulation(hwnd, optionZoom);  // Pass hwnd and zoom state
+                MemoryManipulation("zoom");
             }
             break;
 
@@ -314,8 +314,8 @@ struct Pointer {
 // Vector to store pointers to memory addresses
 std::vector<Pointer> pointers;
 
-void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
-    LogDebug("Performing memory manipulation");
+void MemoryManipulation(const std::string& option) {
+    LogDebug("Performing memory manipulation for " + option);
 
     // Get process ID for ROClientGame.exe
     pid = GetProcessIdByName(L"ROClientGame.exe");
@@ -346,29 +346,29 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
 
     // Use the fetched pointers
     for (const auto& pointer : pointers) {
-        if (pointer.name == "zoom") {
-            uintptr_t zoomPointer = baseAddress + pointer.address;
-            LogDebug("Zoom pointer address: " + std::to_string(zoomPointer));
+        if (pointer.name == option) {
+            uintptr_t optionPointer = baseAddress + pointer.address;
+            LogDebug(option + " pointer address: " + std::to_string(optionPointer));
 
-            uintptr_t zoomAddress;
+            uintptr_t optionAddress;
             SIZE_T bytesRead;
 
-            if (ReadProcessMemory(hProcess, (LPCVOID)zoomPointer, &zoomAddress, sizeof(zoomAddress), &bytesRead)) {
-                if (bytesRead == sizeof(zoomAddress)) {
-                    LogDebug("Successfully read zoom address: " + std::to_string(zoomAddress));
+            if (ReadProcessMemory(hProcess, (LPCVOID)optionPointer, &optionAddress, sizeof(optionAddress), &bytesRead)) {
+                if (bytesRead == sizeof(optionAddress)) {
+                    LogDebug("Successfully read " + option + " address: " + std::to_string(optionAddress));
 
-                    float newZoomValue = isZoomEnabled ? 25.0f : 15.0f;
+                    float newValue = (option == "zoom") ? (optionZoom ? 25.0f : 15.0f) : 1.0f;
 
-                    if (WriteProcessMemory(hProcess, (LPVOID)(zoomAddress + 0x88), &newZoomValue, sizeof(newZoomValue), NULL)) {
-                        LogDebug("Successfully wrote new zoom value: " + std::to_string(newZoomValue));
+                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + 0x88), &newValue, sizeof(newValue), NULL)) {
+                        LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
                     } else {
-                        LogDebug("Failed to write new zoom value. Error code: " + std::to_string(GetLastError()));
+                        LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
                     }
                 } else {
-                    LogDebug("Failed to read the zoom pointer address. Bytes read: " + std::to_string(bytesRead));
+                    LogDebug("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead));
                 }
             } else {
-                LogDebug("Failed to read zoom pointer from memory. Error code: " + std::to_string(GetLastError()));
+                LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()));
             }
         }
     }
