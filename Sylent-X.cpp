@@ -12,7 +12,6 @@
 #include <tlhelp32.h>
 #include "Updater.cpp"
 #include "Utils.h"
-#include "resource.h"
 #include "Logger.cpp" // Include the combined Logger file
 #include <wininet.h>
 #pragma comment(lib, "wininet.lib")
@@ -45,9 +44,6 @@ HWND hLogDisplay = nullptr;
 // Deque to store the last 50 log messages
 std::deque<std::string> logMessages;
 
-// Handle to the background image
-HBITMAP hBackgroundImage = nullptr;
-
 // Declare global variables
 DWORD pid;
 
@@ -74,7 +70,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     wc.hInstance = hInstance;
     wc.lpszClassName = appName;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
     if (!RegisterClassEx(&wc)) {
         Log("Failed to register window class");
         MessageBox(NULL, "Failed to register window class.", "Error", MB_ICONERROR);
@@ -113,20 +109,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionNoclip, chkoptionSpeedhack, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
-    static HBITMAP hBackgroundImage = NULL;
 
     switch (msg) {
         case WM_CREATE:
             LogDebug("Creating checkboxes");
-
-            // Load the background image from resources
-            hBackgroundImage = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BACKGROUND_BITMAP));
-            if (!hBackgroundImage) {
-                DWORD error = GetLastError();
-                LogDebug("Failed to load background image. Error code: " + std::to_string(error));
-            } else {
-                LogDebug("Background image loaded successfully");
-            }
 
             // Create checkboxes
             chkoptionNoclip = CreateWindow("BUTTON", "Enable Noclip", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
@@ -147,17 +133,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
 
-            if (hBackgroundImage) {
-                HDC hdcMem = CreateCompatibleDC(hdc);
-                HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hBackgroundImage);
-
-                BITMAP bm;
-                GetObject(hBackgroundImage, sizeof(bm), &bm);
-                BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
-
-                SelectObject(hdcMem, hbmOld);
-                DeleteDC(hdcMem);
-            }
+            // Fill the background with the custom color
+            HBRUSH hBrush = CreateSolidBrush(RGB(1, 1, 1)); // Custom background color (white)
+            FillRect(hdc, &ps.rcPaint, hBrush);
+            DeleteObject(hBrush);
 
             EndPaint(hwnd, &ps);
             break;
@@ -196,11 +175,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_DESTROY:
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
-
-            // Clean up the background image
-            if (hBackgroundImage) {
-                DeleteObject(hBackgroundImage);
-            }
 
             PostQuitMessage(0);
             break;
