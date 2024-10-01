@@ -14,6 +14,8 @@
 #include "Utils.h"
 #include "Logger.cpp" // Include the combined Logger file
 #include <wininet.h>
+#include <atomic>
+#include <thread>
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
@@ -316,9 +318,6 @@ std::vector<Pointer> pointers;
 
 #include <sstream>
 #include <iomanip>
-
-#include <thread>
-#include <atomic>
 
 std::atomic<bool> stopGravityThread(false);
 
