@@ -358,17 +358,25 @@ void MemoryManipulation(const std::string& option) {
                     LogDebug("Successfully read " + option + " address: " + std::to_string(optionAddress));
 
                     float newValue = 0.0f;
-                    uintptr_t optionOffset = 0;
+                    std::string optionOffsets;
 
                     if (option == "zoom") {
                         newValue = optionZoom ? 25.0f : 15.0f;
-                        optionOffset = 0x88;
                     } else if (option == "speedhack") {
                         newValue = optionSpeedhack ? 25.0f : 15.0f;
-                        optionOffset = 0x88;
                     }
 
-                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + optionOffset), &newValue, sizeof(newValue), NULL)) {
+                    // Concatenate offsets into a single string
+                    for (const auto& offset : pointer.offsets) {
+                        optionOffsets += std::to_string(offset) + ",";
+                    }
+                    // Remove the trailing comma
+                    if (!optionOffsets.empty()) {
+                        optionOffsets.pop_back();
+                    }
+
+                    // Use the string directly
+                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + std::stoul(optionOffsets, nullptr, 16)), &newValue, sizeof(newValue), NULL)) {
                         LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
                     } else {
                         LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
@@ -451,6 +459,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
                 std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
                 try {
                     pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
+                    LogDebug("Offset: " + offsetStr); // Add this line to log the offset
                 } catch (const std::invalid_argument& e) {
                     LogDebug("Invalid offset: " + offsetStr);
                     continue;
@@ -459,6 +468,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
             }
             try {
                 pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
+                LogDebug("Last offset: " + offsetsStr.substr(offsetPos)); // Add this line to log the last offset
             } catch (const std::invalid_argument& e) {
                 LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
                 continue;
