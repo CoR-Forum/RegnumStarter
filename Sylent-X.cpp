@@ -342,7 +342,7 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
     LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
 
     // Directly read from the specified pointer with the offset
-    uintptr_t zoomPointer = baseAddress + 0x007AE4CC; // Base + Offset for zoom pointer
+    uintptr_t zoomPointer = baseAddress + 0x007AE4CC;
     LogDebug("Zoom pointer address: " + std::to_string(zoomPointer));
 
     // To read the address stored at that location
