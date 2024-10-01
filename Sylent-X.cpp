@@ -370,6 +370,10 @@ void MemoryManipulation(const std::string& option) {
 
             // Use the string directly
             uintptr_t finalAddress = optionPointer + std::stoul(optionOffsets, nullptr, 16);
+
+            // Log the final address and value being written
+            LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + std::to_string(finalAddress));
+
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                 LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
