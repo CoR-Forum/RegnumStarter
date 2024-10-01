@@ -314,6 +314,9 @@ struct Pointer {
 // Vector to store pointers to memory addresses
 std::vector<Pointer> pointers;
 
+#include <sstream>
+#include <iomanip>
+
 void MemoryManipulation(const std::string& option) {
     LogDebug("Performing memory manipulation for " + option);
 
@@ -374,8 +377,13 @@ void MemoryManipulation(const std::string& option) {
             // Use the string directly
             uintptr_t finalAddress = optionPointer + std::stoul(optionOffsets, nullptr, 16);
 
+            // Convert finalAddress to hexadecimal string
+            std::stringstream ss;
+            ss << std::hex << std::uppercase << finalAddress;
+            std::string finalAddressHex = ss.str();
+
             // Log the final address and value being written
-            LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + std::to_string(finalAddress));
+            LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
 
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                 LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
