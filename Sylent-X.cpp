@@ -28,7 +28,7 @@ const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
 // Checkboxes states
-bool optionNoclip = false;
+bool optionGravity = false;
 bool optionMoonjump = false;
 bool optionZoom = false;
 
@@ -105,7 +105,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 }
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionNoclip, chkoptionMoonjump, chkoptionZoom;
+    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
 
     switch (msg) {
@@ -113,7 +113,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             LogDebug("Creating checkboxes");
 
             // Create checkboxes UI elements
-            chkoptionNoclip = CreateWindow("BUTTON", "Enable Noclip", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+            chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
             chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
@@ -148,10 +148,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_COMMAND:
             if (LOWORD(wParam) == 1) {
-                optionNoclip = !optionNoclip;
-                SendMessage(chkoptionNoclip, BM_SETCHECK, optionNoclip ? BST_CHECKED : BST_UNCHECKED, 0);
-                Log("Noclip toggled");
-                MemoryManipulation("noclip");
+                optionGravity = !optionGravity;
+                SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
+                Log("Gravity toggled");
+                MemoryManipulation("gravity");
             }
             if (LOWORD(wParam) == 2) {
                 optionMoonjump = !optionMoonjump;
@@ -198,7 +198,7 @@ void SaveSettings() {
     // Open the file and write the settings
     std::ofstream file(settingsFilePath);
     if (file.is_open()) {
-        file << "optionNoclip=" << optionNoclip << std::endl;
+        file << "optionGravity=" << optionGravity << std::endl;
         file << "optionMoonjump=" << optionMoonjump << std::endl;
         file << "optionZoom=" << optionZoom << std::endl;
         file.close();
@@ -219,8 +219,8 @@ void LoadSettings() {
     if (file.is_open()) {
         std::string line;
         while (std::getline(file, line)) {
-            if (line.find("optionNoclip=") != std::string::npos)
-                optionNoclip = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionGravity=") != std::string::npos)
+                optionGravity = (line.substr(line.find("=") + 1) == "1");
             if (line.find("optionMoonjump=") != std::string::npos)
                 optionMoonjump = (line.substr(line.find("=") + 1) == "1");
             if (line.find("optionZoom=") != std::string::npos)
@@ -384,6 +384,8 @@ void MemoryManipulation(const std::string& option) {
                 newValue = optionZoom ? 25.0f : 15.0f;
             } else if (option == "moonjump") {
                 newValue = optionMoonjump ? 1.0f : 4.0f;
+            } else if (option == "gravity") {
+                newValue = optionGravity ? -5.0f : 2.0f;
             }
 
             LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
