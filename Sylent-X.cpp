@@ -358,26 +358,17 @@ void MemoryManipulation(const std::string& option) {
                     LogDebug("Successfully read " + option + " address: " + std::to_string(optionAddress));
 
                     float newValue = 0.0f;
-                    std::vector<uintptr_t> optionOffsets;
+                    uintptr_t optionOffset = 0;
 
                     if (option == "zoom") {
                         newValue = optionZoom ? 25.0f : 15.0f;
-                        optionOffsets = {0x88};
+                        optionOffset = 0x88;
                     } else if (option == "moonjump") {
                         newValue = optionMoonjump ? 1.0f : 4.0f;
-                        optionOffsets = {0x10, 0x8, 0x4, 0x8, 0x11C, 0x2C};
+                        optionOffset = "0x10,0x8,0x4,0x8,0x11C,0x2C";
                     }
 
-                    // Calculate the final address using the offsets
-                    for (uintptr_t offset : optionOffsets) {
-                        if (!ReadProcessMemory(hProcess, (LPCVOID)(optionAddress + offset), &optionAddress, sizeof(optionAddress), &bytesRead) || bytesRead != sizeof(optionAddress)) {
-                            LogDebug("Failed to read memory at offset: " + std::to_string(offset));
-                            CloseHandle(hProcess);
-                            return;
-                        }
-                    }
-
-                    if (WriteProcessMemory(hProcess, (LPVOID)optionAddress, &newValue, sizeof(newValue), NULL)) {
+                    if (WriteProcessMemory(hProcess, (LPVOID)(optionAddress + optionOffset), &newValue, sizeof(newValue), NULL)) {
                         LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
                     } else {
                         LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
