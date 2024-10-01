@@ -383,7 +383,7 @@ void MemoryManipulation(const std::string& option) {
             if (option == "zoom") {
                 newValue = optionZoom ? 25.0f : 15.0f;
             } else if (option == "speedhack") {
-                newValue = optionSpeedhack ? 25.0f : 15.0f;
+                newValue = optionSpeedhack ? 1.0f : 4.0f;
             }
 
             LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
