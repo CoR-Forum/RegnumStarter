@@ -16,6 +16,8 @@
 #include <wininet.h>
 #include <thread>
 #include <atomic>
+#include <sstream>
+#include <iomanip>
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
@@ -46,6 +48,10 @@ bool optionGravity = false;
 bool optionMoonjump = false;
 bool optionZoom = false;
 
+// Add a new boolean variable to track the state of the key
+bool isGravityKeyPressed = false;
+bool isControlKeyPressed = false;
+
 bool debugLog = true; // Debug Log enabled
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
@@ -67,8 +73,6 @@ void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam); // Added prototype
 
-// Add a new boolean variable to track the state of the key
-bool isGravityKeyPressed = false;
 
 // Global hook handle
 HHOOK hKeyboardHook;
@@ -150,7 +154,24 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                     memoryThread.join();
                 }
             }
+        } else if (wParam == WM_KEYUP && p->vkCode == VK_CONTROL) {
+            if (isControlKeyPressed) {
+                isControlKeyPressed = false;
+                isWriting = false;
+                if (memoryThread.joinable()) {
+                    memoryThread.join();
+                }
+            }
+        } else if (wParam == WM_KEYDOWN && p->vkCode == VK_SPACE) {
+            if (!isGravityKeyPressed) {
+                isGravityKeyPressed = true;
+                if (optionGravity) {
+                    isWriting = true;
+                    memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
+                }
+            }
         }
+
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
@@ -217,22 +238,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
             break;
 
-        case WM_KEYDOWN:
-            LogDebug("WM_KEYDOWN received");
-            if (wParam == VK_SPACE) { // Check if the '.' key is pressed
-                LogDebug("WM_KEYDOWN: . key pressed");
-                if (optionGravity) {
-                    MemoryManipulation("gravity");
-                }
-            }
-            break;
-
-        case WM_KEYUP:
-            LogDebug("WM_KEYUP received");
-            if (wParam == VK_SPACE) { // Check if the '.' key is released
-                LogDebug("WM_KEYUP: . key released");
-            }
-            break;
+        
 
         case WM_DESTROY:
             Log("Saving settings");
@@ -381,8 +387,6 @@ struct Pointer {
 // Vector to store pointers to memory addresses
 std::vector<Pointer> pointers;
 
-#include <sstream>
-#include <iomanip>
 
 void MemoryManipulation(const std::string& option) {
     // LogDebug("Performing memory manipulation for " + option);
