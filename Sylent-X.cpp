@@ -134,7 +134,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0) {
         KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
 
-        if (wParam == WM_KEYDOWN && p->vkCode == VK_OEM_PERIOD) {
+        if (wParam == WM_KEYDOWN && p->vkCode == VK_SPACE) {
             if (!isGravityKeyPressed) {
                 isGravityKeyPressed = true;
                 if (optionGravity) {
@@ -142,7 +142,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                     memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
                 }
             }
-        } else if (wParam == WM_KEYUP && p->vkCode == VK_OEM_PERIOD) {
+        } else if (wParam == WM_KEYUP && p->vkCode == VK_SPACE) {
             if (isGravityKeyPressed) {
                 isGravityKeyPressed = false;
                 isWriting = false;
@@ -219,7 +219,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_KEYDOWN:
             LogDebug("WM_KEYDOWN received");
-            if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is pressed
+            if (wParam == VK_SPACE) { // Check if the '.' key is pressed
                 LogDebug("WM_KEYDOWN: . key pressed");
                 if (optionGravity) {
                     MemoryManipulation("gravity");
@@ -229,7 +229,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_KEYUP:
             LogDebug("WM_KEYUP received");
-            if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is released
+            if (wParam == VK_SPACE) { // Check if the '.' key is released
                 LogDebug("WM_KEYUP: . key released");
             }
             break;
