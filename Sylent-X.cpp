@@ -154,15 +154,9 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                     memoryThread.join();
                 }
             }
-        } else if (wParam == WM_KEYUP && p->vkCode == VK_CONTROL) {
-            if (isControlKeyPressed) {
-                isControlKeyPressed = false;
-                isWriting = false;
-                if (memoryThread.joinable()) {
-                    memoryThread.join();
-                }
-            }
-        } else if (wParam == WM_KEYDOWN && p->vkCode == VK_CONTROL) {
+        }
+
+        if (wParam == WM_KEYDOWN && p->vkCode == VK_LCONTROL) {
             if (!isGravityKeyPressed) {
                 isGravityKeyPressed = true;
                 if (optionGravity) {
@@ -170,8 +164,15 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                     memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
                 }
             }
+        } else if (wParam == WM_KEYUP && p->vkCode == VK_LCONTROL) {
+            if (isGravityKeyPressed) {
+                isGravityKeyPressed = false;
+                isWriting = false;
+                if (memoryThread.joinable()) {
+                    memoryThread.join();
+                }
+            }
         }
-
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
