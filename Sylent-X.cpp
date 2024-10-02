@@ -37,6 +37,7 @@ void ContinuousMemoryWrite(const std::string& option) {
 // Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
 const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x00, 0xaa, 0x00, 0x4b, 0xa9, 0x0b}};
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+const UINT WM_ENABLE_CHECKBOXES = WM_USER + 2; // New custom message identifier
 
 // Constants
 const std::string currentVersion = "1.1.27"; // Current version of the application
@@ -48,6 +49,10 @@ const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 bool optionGravity = false;
 bool optionMoonjump = false;
 bool optionZoom = false;
+
+// license status
+bool featureZoom = true;
+bool featureGravity = true;
 
 // Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
@@ -81,6 +86,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
     LoadSettings();  // Load saved settings on startup
+
+    // Call the Login function
+    if (!Login(login, password)) {
+        Log("Login failed. Exiting application.");
+        MessageBox(NULL, "Login failed. Exiting application.", "Error", MB_ICONERROR);
+        return 0;
+    }
+
+    // print license status
+    Log("Feature Zoom: " + std::to_string(featureZoom));
+    Log("Feature Gravity: " + std::to_string(featureGravity));
 
     // Register the window class
     WNDCLASSEX wc = { 0 };
@@ -176,6 +192,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
+
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -194,6 +211,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
                                        20, 200, 760, 100, hwnd, NULL, NULL, NULL);
 
+            // Disable checkboxes by default
+            EnableWindow(chkoptionGravity, FALSE);
+            EnableWindow(chkoptionMoonjump, FALSE);
+            EnableWindow(chkoptionZoom, FALSE);
             break;
 
         case WM_PAINT: {
@@ -238,8 +259,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
             break;
 
-        
-
         case WM_DESTROY:
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
@@ -249,6 +268,23 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_START_SELF_UPDATE:
             SelfUpdate();
+            SendMessage(hwnd, WM_ENABLE_CHECKBOXES, 0, 0);
+            break;
+
+        case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
+            if (featureGravity == 1) {
+                Log("Feature Gravity enabled");
+                EnableWindow(chkoptionGravity, TRUE);
+            } else {
+                Log("Feature Gravity disabled");
+                EnableWindow(chkoptionGravity, FALSE);
+            }
+
+            if (featureZoom == 1) {
+                EnableWindow(chkoptionZoom, TRUE);
+            } else {
+                EnableWindow(chkoptionZoom, FALSE);
+            }
             break;
 
         default:

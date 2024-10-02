@@ -15,6 +15,86 @@ struct Pointer {
 extern void Log(const std::string& message);
 extern void LogDebug(const std::string& message);
 
+// login and password for the API
+std::string login = "joshua";
+std::string password = "thoh0Eughi1e3tha1itaeP";
+
+extern bool featureZoom;
+extern bool featureGravity;
+
+bool Login(const std::string& login, const std::string& password) {
+    std::string path = "/api/v1/login?login=" + login + "&password=" + password;
+    Log("Logging in with login: " + login + " and password: " + password);
+
+    HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    if (!hInternet) {
+        Log("Failed to open internet connection");
+        return false;
+    }
+
+    HINTERNET hConnect = InternetConnect(hInternet, "localhost", 8080, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) {
+        Log("Failed to connect to localhost");
+        InternetCloseHandle(hInternet);
+        return false;
+    }
+
+    const char* acceptTypes[] = { "application/json", NULL };
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+    if (!hRequest) {
+        Log("Failed to open HTTP request");
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hInternet);
+        return false;
+    }
+
+    if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) {
+        Log("Failed to send HTTP request");
+        InternetCloseHandle(hRequest);
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hInternet);
+        return false;
+    }
+
+    char buffer[4096];
+    DWORD bytesRead;
+    std::string response;
+
+    while (InternetReadFile(hRequest, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
+        response.append(buffer, bytesRead);
+    }
+
+    InternetCloseHandle(hRequest);
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hInternet);
+
+    // Parse the response manually
+    if (response.find("\"status\":\"success\"") != std::string::npos) {
+        Log("User " + login + " logged in successfully: " + response);
+
+        // Check for feature_zoom in the response
+        if (response.find("\"feature_zoom\":1") != std::string::npos) {
+            featureZoom = true;
+        } else {
+            featureZoom = false;
+        }
+
+        // if feature_gravity is found in the response
+        if (response.find("\"feature_gravity\":1") != std::string::npos) {
+            featureGravity = true;
+        } else {
+            featureGravity = false;
+        }
+
+        Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : ""));
+
+        return true;
+    } else {
+        Log("Failed to log in: " + response);
+        return false;
+    }
+}
+
 std::string FetchDataFromAPI(const std::string& url) {
     HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) {
