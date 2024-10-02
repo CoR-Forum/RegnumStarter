@@ -22,7 +22,7 @@ const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 
 // Constants
-const std::string currentVersion = "0.1.21"; // Current version of the application
+const std::string currentVersion = "0.1.27"; // Current version of the application
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
@@ -32,20 +32,17 @@ bool optionGravity = false;
 bool optionMoonjump = false;
 bool optionZoom = false;
 
-// Debug Log enabled
-bool debugLog = true;
+bool debugLog = true; // Debug Log enabled
 
-// Handle to the target process (ROClientGame.exe)
-HANDLE hProcess = nullptr;
+HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 
-// Handle to the log display control
-HWND hLogDisplay = nullptr;
+HWND hLogDisplay = nullptr; // Handle to the log display control
 
-// Deque to store the last 50 log messages
-std::deque<std::string> logMessages;
+HWND hwnd = nullptr; // Declare hwnd globally to be accessible
 
-// Declare global variables
-DWORD pid;
+std::deque<std::string> logMessages; // Deque to store log
+
+DWORD pid; // Process ID of the target process
 
 // Function Prototypes
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -55,51 +52,13 @@ void MemoryManipulation(const std::string& option); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam); // Added prototype
 
 // Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
 
 // Global hook handle
 HHOOK hKeyboardHook;
-
-// Function to get the process ID of the foreground window
-DWORD GetForegroundWindowProcessId() {
-    HWND hwndForeground = GetForegroundWindow();
-    DWORD processId;
-    GetWindowThreadProcessId(hwndForeground, &processId);
-    return processId;
-}
-
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode == HC_ACTION) {
-        // Check if the foreground window belongs to ROClientGame.exe
-        DWORD foregroundPid = GetForegroundWindowProcessId();
-        LogDebug("Foreground PID: " + std::to_string(foregroundPid) + ", Target PID: " + std::to_string(pid));
-        if (foregroundPid == pid) {
-            KBDLLHOOKSTRUCT* pKeyboard = (KBDLLHOOKSTRUCT*)lParam;
-            if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-                LogDebug("Keydown event detected: " + std::to_string(pKeyboard->vkCode));
-                if (pKeyboard->vkCode == VK_OEM_PERIOD) { // Check if the '.' key is pressed
-                    if (!isGravityKeyPressed) {
-                        LogDebug("Gravity key pressed");
-                        isGravityKeyPressed = true;
-                        SetTimer(NULL, 1, 100, NULL); // Set a timer to repeatedly perform memory manipulation
-                    }
-                }
-            } else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) {
-                LogDebug("Keyup event detected: " + std::to_string(pKeyboard->vkCode));
-                if (pKeyboard->vkCode == VK_OEM_PERIOD) { // Check if the '.' key is released
-                    if (isGravityKeyPressed) {
-                        LogDebug("Gravity key released");
-                        isGravityKeyPressed = false;
-                        KillTimer(NULL, 1); // Stop the timer
-                    }
-                }
-            }
-        }
-    }
-    return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
-}
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -156,6 +115,26 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     Log("Sylent-X exiting");
     return (int)msg.wParam;
+}
+
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode >= 0) {
+        KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
+
+        if (wParam == WM_KEYDOWN && p->vkCode == VK_OEM_PERIOD) {
+            if (!isGravityKeyPressed) {
+                isGravityKeyPressed = true;
+                if (optionGravity) {
+                    MemoryManipulation("gravity");
+                }
+            }
+        } else if (wParam == WM_KEYUP && p->vkCode == VK_OEM_PERIOD) {
+            if (isGravityKeyPressed) {
+                isGravityKeyPressed = false;
+            }
+        }
+    }
+    return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -222,41 +201,25 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             break;
 
         case WM_KEYDOWN:
+            LogDebug("WM_KEYDOWN received");
             if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is pressed
-                if (!isGravityKeyPressed) {
-                    LogDebug("Gravity key pressed");
-                    isGravityKeyPressed = true;
-                    SetTimer(hwnd, 1, 100, NULL); // Set a timer to repeatedly perform memory manipulation
+                LogDebug("WM_KEYDOWN: . key pressed");
+                if (optionGravity) {
+                    MemoryManipulation("gravity");
                 }
             }
             break;
 
         case WM_KEYUP:
+            LogDebug("WM_KEYUP received");
             if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is released
-                if (isGravityKeyPressed) {
-                    LogDebug("Gravity key released");
-                    isGravityKeyPressed = false;
-                    KillTimer(hwnd, 1); // Stop the timer
-                }
-            }
-            break;
-
-        case WM_TIMER:
-            if (wParam == 1) { // Timer ID 1
-                if (isGravityKeyPressed && optionGravity) {
-                    LogDebug("Performing continuous gravity manipulation for gravity key");
-                    MemoryManipulation("gravity");
-                }
+                LogDebug("WM_KEYUP: . key released");
             }
             break;
 
         case WM_DESTROY:
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
-
-            if (hKeyboardHook) {
-                UnhookWindowsHookEx(hKeyboardHook);
-            }
 
             PostQuitMessage(0);
             break;
@@ -332,19 +295,19 @@ uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
     uintptr_t modBaseAddr = 0;
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
     if (hSnap != INVALID_HANDLE_VALUE) {
-        LogDebug("Process snapshot created for process ID: " + std::to_string(procId));
+        // LogDebug("Process snapshot created for process ID: " + std::to_string(procId));
         MODULEENTRY32 modEntry;
         modEntry.dwSize = sizeof(modEntry);
         if (Module32First(hSnap, &modEntry)) {
             do {
                 wchar_t wModuleName[MAX_PATH];
                 MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
-                LogDebug("Checking module: " + std::string(modEntry.szModule));
+                // LogDebug("Checking module: " + std::string(modEntry.szModule));
                 if (!_wcsicmp(wModuleName, modName)) {
                     modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
-                    LogDebug("Module found: " + std::string(modEntry.szModule) + 
-                        " at address: " + std::to_string(modBaseAddr) + 
-                        " in process ID: " + std::to_string(procId));
+                    // LogDebug("Module found: " + std::string(modEntry.szModule) + 
+                    //     " at address: " + std::to_string(modBaseAddr) + 
+                    //     " in process ID: " + std::to_string(procId));
                     break;
                 }
             } while (Module32Next(hSnap, &modEntry));
@@ -405,7 +368,7 @@ std::vector<Pointer> pointers;
 #include <iomanip>
 
 void MemoryManipulation(const std::string& option) {
-    LogDebug("Performing memory manipulation for " + option);
+    // LogDebug("Performing memory manipulation for " + option);
 
     // Get process ID for ROClientGame.exe
     pid = GetProcessIdByName(L"ROClientGame.exe");
@@ -414,7 +377,7 @@ void MemoryManipulation(const std::string& option) {
         MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
-    LogDebug("Process ID for ROClientGame.exe: " + std::to_string(pid));
+    // LogDebug("Process ID for ROClientGame.exe: " + std::to_string(pid));
 
     // Open the process with full access
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
@@ -423,7 +386,7 @@ void MemoryManipulation(const std::string& option) {
         MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
-    LogDebug("Successfully opened process with ID: " + std::to_string(pid));
+    // LogDebug("Successfully opened process with ID: " + std::to_string(pid));
 
     // Get the base address of ROClientGame.exe
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
@@ -432,13 +395,13 @@ void MemoryManipulation(const std::string& option) {
         CloseHandle(hProcess);
         return;
     }
-    LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
+    // LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
 
     // Use the fetched pointers
     for (const auto& pointer : pointers) {
         if (pointer.name == option) {
             uintptr_t optionPointer = baseAddress + pointer.address;
-            LogDebug(option + " pointer address: " + std::to_string(optionPointer));
+            // LogDebug(option + " pointer address: " + std::to_string(optionPointer));
 
             uintptr_t finalAddress = optionPointer;
             SIZE_T bytesRead;
@@ -463,7 +426,7 @@ void MemoryManipulation(const std::string& option) {
             std::string finalAddressHex = ss.str();
 
             // Log the final address and value being written
-            LogDebug("Final address: " + finalAddressHex);
+            // LogDebug("Final address: " + finalAddressHex);
 
             float newValue = 0.0f;
 
@@ -475,10 +438,10 @@ void MemoryManipulation(const std::string& option) {
                 newValue = optionGravity ? -8.0f : 8.0f;
             }
 
-            LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
+            // LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
 
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
+                // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
                 LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
             }
@@ -487,7 +450,7 @@ void MemoryManipulation(const std::string& option) {
 
     // Close the process handle
     CloseHandle(hProcess);
-    LogDebug("Memory manipulation completed");
+    // LogDebug("Memory manipulation completed");
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
@@ -544,7 +507,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
         size_t offsetsPos = object.find("\"offsets\":") + 11;
         size_t offsetsEnd = object.find("\"", offsetsPos);
         std::string offsetsStr = object.substr(offsetsPos, offsetsEnd - offsetsPos);
-        LogDebug("Offsets string: " + offsetsStr); // Add this line to log the offsets string
+        // LogDebug("Offsets string: " + offsetsStr); // Add this line to log the offsets string
 
         if (offsetsStr.empty()) {
             LogDebug("No offsets for pointer: " + pointer.name);
@@ -554,7 +517,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
                 std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
                 try {
                     pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
-                    LogDebug("Offset: " + offsetStr); // Add this line to log the offset
+                    // LogDebug("Offset: " + offsetStr); // Add this line to log the offset
                 } catch (const std::invalid_argument& e) {
                     LogDebug("Invalid offset: " + offsetStr);
                     continue;
@@ -563,7 +526,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
             }
             try {
                 pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
-                LogDebug("Last offset: " + offsetsStr.substr(offsetPos)); // Add this line to log the last offset
+                // LogDebug("Last offset: " + offsetsStr.substr(offsetPos)); // Add this line to log the last offset
             } catch (const std::invalid_argument& e) {
                 LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
                 continue;
