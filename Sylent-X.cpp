@@ -51,8 +51,8 @@ bool optionMoonjump = false;
 bool optionZoom = false;
 
 // license status
-bool featureZoom = true;
-bool featureGravity = true;
+bool featureZoom = false;
+bool featureGravity = false;
 
 // Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
@@ -80,11 +80,11 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam); // Added
 
 // Function prototypes
 LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void SaveLoginCredentials(const std::string& username, const std::string& encryptedPassword);
+void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 std::string EncryptPasswordMD5(const std::string& password);
 
 // Global variables for login window
-HWND hUsername, hPassword, hLoginButton;
+HWND hLogin, hPassword, hLoginButton;
 
 void CreateLoginWindow(HINSTANCE hInstance) {
     WNDCLASS wc = {0};
@@ -109,8 +109,8 @@ void CreateLoginWindow(HINSTANCE hInstance) {
 LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_CREATE:
-            CreateWindow("STATIC", "Username:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
-            hUsername = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
+            CreateWindow("STATIC", "Username or E-Mail:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
+            hLogin = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
 
             CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
             hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
@@ -120,12 +120,11 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
         case WM_COMMAND:
             if (LOWORD(wParam) == 1) {
-                char username[100], password[100];
-                GetWindowText(hUsername, username, 100);
+                char login[100], password[100];
+                GetWindowText(hLogin, login, 100);
                 GetWindowText(hPassword, password, 100);
 
-                std::string encryptedPassword = EncryptPasswordMD5(password);
-                SaveLoginCredentials(username, encryptedPassword);
+                SaveLoginCredentials(login, password);
 
                 Log("Login credentials saved");
                 DestroyWindow(hwnd);
@@ -142,48 +141,25 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
     return 0;
 }
 
-std::string EncryptPasswordMD5(const std::string& password) {
-    HCRYPTPROV hProv = 0;
-    HCRYPTHASH hHash = 0;
-    BYTE hash[16];
-    DWORD hashLen = 16;
-    char hexStr[33];
-
-    if (CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) &&
-        CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash) &&
-        CryptHashData(hHash, (BYTE*)password.c_str(), password.length(), 0) &&
-        CryptGetHashParam(hHash, HP_HASHVAL, hash, &hashLen, 0)) {
-        
-        for (DWORD i = 0; i < hashLen; ++i) {
-            sprintf(hexStr + (i * 2), "%02x", hash[i]);
-        }
-        hexStr[32] = 0;
-
-        CryptDestroyHash(hHash);
-        CryptReleaseContext(hProv, 0);
-        return std::string(hexStr);
-    }
-
-    if (hHash) CryptDestroyHash(hHash);
-    if (hProv) CryptReleaseContext(hProv, 0);
-    return "";
-}
-
 // Global hook handle
 HHOOK hKeyboardHook;
 
+HINSTANCE hInstanceGlobal;
+
+void LoadLoginCredentials(HINSTANCE hInstance);
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    hInstanceGlobal = hInstance; // Assign to global variable
+
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
-    CreateLoginWindow(hInstance);
+    LoadSettings();
 
-    LoadSettings();  // Load saved settings on startup
+    LoadLoginCredentials(hInstance);
 
-    // Call the Login function
     if (!Login(login, password)) {
-        Log("Login failed. Exiting application.");
-        MessageBox(NULL, "Login failed. Exiting application.", "Error", MB_ICONERROR);
-        return 0;
+        Log("Login failed. Opening login window.");
+        CreateLoginWindow(hInstance); // Open login window if login fails
     }
 
     // print license status
@@ -386,15 +362,25 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     return 0;
 }
 
-void SaveLoginCredentials(const std::string& username, const std::string& encryptedPassword) {
+void SaveLoginCredentials(const std::string& login, const std::string& password) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
 
     std::ofstream file(configFilePath);
     if (file.is_open()) {
-        file << "username=" << username << std::endl;
-        file << "password=" << encryptedPassword << std::endl;
+        file << "login=" << login << std::endl;
+        file << "password=" << password << std::endl;
         file.close();
         Log("Login credentials saved successfully");
+
+        // Attempt to login again
+        if (Login(login, password)) {
+            Log("Login successful after saving credentials");
+            // Proceed with enabling features or other necessary steps
+            SendMessage(hwnd, WM_ENABLE_CHECKBOXES, 0, 0);
+        } else {
+            Log("Login failed after saving credentials");
+            // open
+        }
     } else {
         Log("Failed to open config file for writing");
     }
@@ -423,6 +409,41 @@ void SaveSettings() {
     }
 }
 
+// Add global variables for login credentials
+std::string login;
+std::string password;
+
+void LoadLoginCredentials(HINSTANCE hInstance) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ifstream file(configFilePath);
+    bool loginFound = false;
+    bool passwordFound = false;
+
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("login=") != std::string::npos) {
+                login = line.substr(line.find("=") + 1);
+                loginFound = true;
+            }
+            if (line.find("password=") != std::string::npos) {
+                password = line.substr(line.find("=") + 1);
+                passwordFound = true;
+            }
+        }
+        file.close();
+        Log("Login credentials loaded successfully");
+    } else {
+        Log("Failed to open config file for reading");
+    }
+
+    if (!loginFound || !passwordFound) {
+        Log("Login or password not found in config file. Opening login window.");
+        CreateLoginWindow(hInstance);
+    }
+}
+
 void LoadSettings() {
     LogDebug("Loading settings from file");
 
@@ -446,6 +467,9 @@ void LoadSettings() {
     } else {
         LogDebug("Settings file not found");
     }
+
+    // Load login credentials
+    LoadLoginCredentials(hInstanceGlobal);
 }
 
 // Define MemoryAddress struct

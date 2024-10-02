@@ -15,9 +15,9 @@ struct Pointer {
 extern void Log(const std::string& message);
 extern void LogDebug(const std::string& message);
 
-// login and password for the API
-std::string login = "joshua";
-std::string password = "thoh0Eughi1e3tha1itaeP";
+// load login and password from settings.txt
+extern std::string login;
+extern std::string password;
 
 extern bool featureZoom;
 extern bool featureGravity;
