@@ -340,6 +340,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             break;
 
         case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
+            LogDebug("WM_ENABLE_CHECKBOXES message received");
             if (featureGravity == 1) {
                 EnableWindow(chkoptionGravity, TRUE);
             } else {
@@ -373,8 +374,8 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
         // Attempt to login again
         if (Login(login, password)) {
             Log("Login successful after saving credentials");
-            // Proceed with enabling features or other necessary steps
-            SendMessage(hwnd, WM_ENABLE_CHECKBOXES, 0, 0);
+            // restart the application
+            PostQuitMessage(0);
         } else {
             Log("Login failed after saving credentials");
             // open login window again
