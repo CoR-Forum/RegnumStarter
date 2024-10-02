@@ -65,7 +65,7 @@ void SelfUpdate() {
     }
 
     if (latestVersion <= currentVersion) {
-        Log("No new update available");
+        Log("No new update available. Server returned version: " + latestVersion);
         InitializePointers();
         return;
     }
