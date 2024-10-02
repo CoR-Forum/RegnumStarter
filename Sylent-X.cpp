@@ -162,12 +162,12 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                     memoryThread.join();
                 }
             }
-        } else if (wParam == WM_KEYDOWN && p->vkCode == VK_SPACE) {
+        } else if (wParam == WM_KEYDOWN && p->vkCode == VK_CONTROL) {
             if (!isGravityKeyPressed) {
                 isGravityKeyPressed = true;
                 if (optionGravity) {
                     isWriting = true;
-                    memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
+                    memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
                 }
             }
         }
@@ -222,7 +222,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 optionGravity = !optionGravity;
                 SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Gravity toggled");
-                MemoryManipulation("gravity");
             }
             if (LOWORD(wParam) == 2) {
                 optionMoonjump = !optionMoonjump;
@@ -457,6 +456,8 @@ void MemoryManipulation(const std::string& option) {
                 newValue = optionMoonjump ? 1.0f : 4.0f;
             } else if (option == "gravity") {
                 newValue = optionGravity ? -8.0f : 8.0f;
+            } else if (option == "gravitydown") {
+                newValue = 8.0f;
             }
 
             // LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
