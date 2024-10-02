@@ -22,7 +22,7 @@ const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 
 // Constants
-const std::string currentVersion = "0.1.18"; // Current version of the application
+const std::string currentVersion = "0.1.21"; // Current version of the application
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
@@ -55,6 +55,51 @@ void MemoryManipulation(const std::string& option); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
+
+// Add a new boolean variable to track the state of the key
+bool isGravityKeyPressed = false;
+
+// Global hook handle
+HHOOK hKeyboardHook;
+
+// Function to get the process ID of the foreground window
+DWORD GetForegroundWindowProcessId() {
+    HWND hwndForeground = GetForegroundWindow();
+    DWORD processId;
+    GetWindowThreadProcessId(hwndForeground, &processId);
+    return processId;
+}
+
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode == HC_ACTION) {
+        // Check if the foreground window belongs to ROClientGame.exe
+        DWORD foregroundPid = GetForegroundWindowProcessId();
+        LogDebug("Foreground PID: " + std::to_string(foregroundPid) + ", Target PID: " + std::to_string(pid));
+        if (foregroundPid == pid) {
+            KBDLLHOOKSTRUCT* pKeyboard = (KBDLLHOOKSTRUCT*)lParam;
+            if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+                LogDebug("Keydown event detected: " + std::to_string(pKeyboard->vkCode));
+                if (pKeyboard->vkCode == VK_OEM_PERIOD) { // Check if the '.' key is pressed
+                    if (!isGravityKeyPressed) {
+                        LogDebug("Gravity key pressed");
+                        isGravityKeyPressed = true;
+                        SetTimer(NULL, 1, 100, NULL); // Set a timer to repeatedly perform memory manipulation
+                    }
+                }
+            } else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) {
+                LogDebug("Keyup event detected: " + std::to_string(pKeyboard->vkCode));
+                if (pKeyboard->vkCode == VK_OEM_PERIOD) { // Check if the '.' key is released
+                    if (isGravityKeyPressed) {
+                        LogDebug("Gravity key released");
+                        isGravityKeyPressed = false;
+                        KillTimer(NULL, 1); // Stop the timer
+                    }
+                }
+            }
+        }
+    }
+    return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
+}
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -90,6 +135,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
 
+    // Set the global keyboard hook
+    hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
+    if (!hKeyboardHook) {
+        Log("Failed to set keyboard hook");
+        MessageBox(NULL, "Failed to set keyboard hook.", "Error", MB_ICONERROR);
+        return 0;
+    }
+    LogDebug("Keyboard hook set successfully");
+
     // Post custom message to start self-update
     PostMessage(hwnd, WM_START_SELF_UPDATE, 0, 0);
 
@@ -103,9 +157,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     Log("Sylent-X exiting");
     return (int)msg.wParam;
 }
-
-// Add a new boolean variable to track the state of the key
-bool isGravityKeyPressed = false;
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
@@ -202,6 +253,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_DESTROY:
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
+
+            if (hKeyboardHook) {
+                UnhookWindowsHookEx(hKeyboardHook);
+            }
 
             PostQuitMessage(0);
             break;
