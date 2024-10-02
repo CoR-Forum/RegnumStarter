@@ -32,15 +32,15 @@ bool Login(const std::string& login, const std::string& password) {
         return false;
     }
 
-    HINTERNET hConnect = InternetConnect(hInternet, "localhost", 8080, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect = InternetConnect(hInternet, "cort.cor-forum.de", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) {
-        Log("Failed to connect to localhost");
+        Log("Failed to connect to cort.cor-forum.de");
         InternetCloseHandle(hInternet);
         return false;
     }
 
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
     if (!hRequest) {
         Log("Failed to open HTTP request");
         InternetCloseHandle(hConnect);
