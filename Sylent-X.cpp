@@ -132,7 +132,7 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             break;
 
         case WM_DESTROY:
-            PostQuitMessage(0);
+            // PostQuitMessage(0);
             break;
 
         default:
@@ -341,10 +341,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
             if (featureGravity == 1) {
-                Log("Feature Gravity enabled");
                 EnableWindow(chkoptionGravity, TRUE);
             } else {
-                Log("Feature Gravity disabled");
                 EnableWindow(chkoptionGravity, FALSE);
             }
 
@@ -379,7 +377,8 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
             SendMessage(hwnd, WM_ENABLE_CHECKBOXES, 0, 0);
         } else {
             Log("Login failed after saving credentials");
-            // open
+            // open login window again
+            CreateLoginWindow(hInstanceGlobal);
         }
     } else {
         Log("Failed to open config file for writing");
