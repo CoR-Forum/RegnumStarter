@@ -173,6 +173,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_KEYDOWN:
             if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is pressed
                 if (!isGravityKeyPressed) {
+                    LogDebug("Gravity key pressed");
                     isGravityKeyPressed = true;
                     SetTimer(hwnd, 1, 100, NULL); // Set a timer to repeatedly perform memory manipulation
                 }
@@ -182,6 +183,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_KEYUP:
             if (wParam == VK_OEM_PERIOD) { // Check if the '.' key is released
                 if (isGravityKeyPressed) {
+                    LogDebug("Gravity key released");
                     isGravityKeyPressed = false;
                     KillTimer(hwnd, 1); // Stop the timer
                 }
@@ -191,6 +193,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_TIMER:
             if (wParam == 1) { // Timer ID 1
                 if (isGravityKeyPressed && optionGravity) {
+                    LogDebug("Performing continuous gravity manipulation for gravity key");
                     MemoryManipulation("gravity");
                 }
             }
