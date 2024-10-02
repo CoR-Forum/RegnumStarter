@@ -157,16 +157,16 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         }
 
         if (wParam == WM_KEYDOWN && p->vkCode == VK_LCONTROL) {
-            if (!isGravityKeyPressed) {
-                isGravityKeyPressed = true;
+            if (!isControlKeyPressed) {
+                isControlKeyPressed = true;
                 if (optionGravity) {
                     isWriting = true;
                     memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
                 }
             }
         } else if (wParam == WM_KEYUP && p->vkCode == VK_LCONTROL) {
-            if (isGravityKeyPressed) {
-                isGravityKeyPressed = false;
+            if (isControlKeyPressed) {
+                isControlKeyPressed = false;
                 isWriting = false;
                 if (memoryThread.joinable()) {
                     memoryThread.join();
