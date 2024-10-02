@@ -29,7 +29,7 @@ void MemoryManipulation(const std::string& option); // Updated prototype
 void ContinuousMemoryWrite(const std::string& option) {
     while (isWriting) {
         MemoryManipulation(option);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
+        std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Adjust the interval as needed
     }
 }
 
@@ -48,12 +48,14 @@ bool optionGravity = false;
 bool optionMoonjump = false;
 bool optionZoom = false;
 
+
 // Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
 
 bool debugLog = true; // Debug Log enabled
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
+uintptr_t baseAddress = 0;
 
 HWND hLogDisplay = nullptr; // Handle to the log display control
 
@@ -175,6 +177,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
+
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -387,9 +390,7 @@ struct Pointer {
 std::vector<Pointer> pointers;
 
 
-void MemoryManipulation(const std::string& option) {
-    // LogDebug("Performing memory manipulation for " + option);
-
+void InitializeMemory() {
     // Get process ID for ROClientGame.exe
     pid = GetProcessIdByName(L"ROClientGame.exe");
     if (pid == 0) {
@@ -397,7 +398,6 @@ void MemoryManipulation(const std::string& option) {
         MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
-    // LogDebug("Process ID for ROClientGame.exe: " + std::to_string(pid));
 
     // Open the process with full access
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
@@ -406,23 +406,28 @@ void MemoryManipulation(const std::string& option) {
         MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
-    // LogDebug("Successfully opened process with ID: " + std::to_string(pid));
 
     // Get the base address of ROClientGame.exe
-    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
+    baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
     if (baseAddress == 0) {
         Log("Failed to get the base address of ROClientGame.exe");
         CloseHandle(hProcess);
         return;
     }
-    // LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
+}
+
+void MemoryManipulation(const std::string& option) {
+    if (!hProcess || baseAddress == 0) {
+        InitializeMemory();
+        if (!hProcess || baseAddress == 0) {
+            return;
+        }
+    }
 
     // Use the fetched pointers
     for (const auto& pointer : pointers) {
         if (pointer.name == option) {
             uintptr_t optionPointer = baseAddress + pointer.address;
-            // LogDebug(option + " pointer address: " + std::to_string(optionPointer));
-
             uintptr_t finalAddress = optionPointer;
             SIZE_T bytesRead;
 
@@ -440,16 +445,7 @@ void MemoryManipulation(const std::string& option) {
                 }
             }
 
-            // Convert finalAddress to hexadecimal string
-            std::stringstream ss;
-            ss << std::hex << std::uppercase << finalAddress;
-            std::string finalAddressHex = ss.str();
-
-            // Log the final address and value being written
-            // LogDebug("Final address: " + finalAddressHex);
-
             float newValue = 0.0f;
-
             if (option == "zoom") {
                 newValue = optionZoom ? 25.0f : 15.0f;
             } else if (option == "moonjump") {
@@ -460,8 +456,6 @@ void MemoryManipulation(const std::string& option) {
                 newValue = 8.0f;
             }
 
-            // LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
-
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                 // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
@@ -469,10 +463,6 @@ void MemoryManipulation(const std::string& option) {
             }
         }
     }
-
-    // Close the process handle
-    CloseHandle(hProcess);
-    // LogDebug("Memory manipulation completed");
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
