@@ -99,7 +99,7 @@ void CreateLoginWindow(HINSTANCE hInstance) {
         "LoginWindowClass",
         "Login",
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 300, 200,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 300,
         NULL, NULL, hInstance, NULL
     );
 
@@ -116,6 +116,16 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
 
             hLoginButton = CreateWindow("BUTTON", "Login", WS_VISIBLE | WS_CHILD, 100, 100, 80, 25, hwnd, (HMENU)1, NULL, NULL);
+
+            // button to register (open link in webbrowser)
+            CreateWindow("BUTTON", "Register", WS_VISIBLE | WS_CHILD, 100, 140, 80, 25, hwnd, (HMENU)2, NULL, NULL);
+
+            // button to open the website
+            CreateWindow("BUTTON", "PwReset", WS_VISIBLE | WS_CHILD, 100, 180, 80, 25, hwnd, (HMENU)3, NULL, NULL);
+
+            // Set the focus to the login edit control
+            SetFocus(hLogin);
+
             break;
 
         case WM_COMMAND:
@@ -128,6 +138,16 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
                 Log("Login credentials saved");
                 DestroyWindow(hwnd);
+            }
+
+            if (LOWORD(wParam) == 2) {
+                // open the registration link in the default web browser
+                ShellExecute(NULL, "open", "https://cort.cor-forum.de/#register", NULL, NULL, SW_SHOWNORMAL);
+            }
+
+            if (LOWORD(wParam) == 3) {
+                // open the password reset link in the default web browser
+                ShellExecute(NULL, "open", "https://cort.cor-forum.de/#pwreset", NULL, NULL, SW_SHOWNORMAL);
             }
             break;
 
