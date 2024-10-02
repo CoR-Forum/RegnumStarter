@@ -78,12 +78,104 @@ void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam); // Added prototype
 
+// Function prototypes
+LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void SaveLoginCredentials(const std::string& username, const std::string& encryptedPassword);
+std::string EncryptPasswordMD5(const std::string& password);
+
+// Global variables for login window
+HWND hUsername, hPassword, hLoginButton;
+
+void CreateLoginWindow(HINSTANCE hInstance) {
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = LoginWindowProcedure;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = "LoginWindowClass";
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0,
+        "LoginWindowClass",
+        "Login",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 200,
+        NULL, NULL, hInstance, NULL
+    );
+
+    ShowWindow(hwnd, SW_SHOW);
+}
+
+LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_CREATE:
+            CreateWindow("STATIC", "Username:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
+            hUsername = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
+
+            CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
+            hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
+
+            hLoginButton = CreateWindow("BUTTON", "Login", WS_VISIBLE | WS_CHILD, 100, 100, 80, 25, hwnd, (HMENU)1, NULL, NULL);
+            break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == 1) {
+                char username[100], password[100];
+                GetWindowText(hUsername, username, 100);
+                GetWindowText(hPassword, password, 100);
+
+                std::string encryptedPassword = EncryptPasswordMD5(password);
+                SaveLoginCredentials(username, encryptedPassword);
+
+                Log("Login credentials saved");
+                DestroyWindow(hwnd);
+            }
+            break;
+
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
+}
+
+std::string EncryptPasswordMD5(const std::string& password) {
+    HCRYPTPROV hProv = 0;
+    HCRYPTHASH hHash = 0;
+    BYTE hash[16];
+    DWORD hashLen = 16;
+    char hexStr[33];
+
+    if (CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) &&
+        CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash) &&
+        CryptHashData(hHash, (BYTE*)password.c_str(), password.length(), 0) &&
+        CryptGetHashParam(hHash, HP_HASHVAL, hash, &hashLen, 0)) {
+        
+        for (DWORD i = 0; i < hashLen; ++i) {
+            sprintf(hexStr + (i * 2), "%02x", hash[i]);
+        }
+        hexStr[32] = 0;
+
+        CryptDestroyHash(hHash);
+        CryptReleaseContext(hProv, 0);
+        return std::string(hexStr);
+    }
+
+    if (hHash) CryptDestroyHash(hHash);
+    if (hProv) CryptReleaseContext(hProv, 0);
+    return "";
+}
 
 // Global hook handle
 HHOOK hKeyboardHook;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
+
+    CreateLoginWindow(hInstance);
 
     LoadSettings();  // Load saved settings on startup
 
@@ -292,6 +384,20 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 
     return 0;
+}
+
+void SaveLoginCredentials(const std::string& username, const std::string& encryptedPassword) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ofstream file(configFilePath);
+    if (file.is_open()) {
+        file << "username=" << username << std::endl;
+        file << "password=" << encryptedPassword << std::endl;
+        file.close();
+        Log("Login credentials saved successfully");
+    } else {
+        Log("Failed to open config file for writing");
+    }
 }
 
 void SaveSettings() {
