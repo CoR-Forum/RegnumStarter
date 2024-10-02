@@ -50,7 +50,6 @@ bool optionZoom = false;
 
 // Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
-bool isControlKeyPressed = false;
 
 bool debugLog = true; // Debug Log enabled
 
@@ -157,16 +156,16 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         }
 
         if (wParam == WM_KEYDOWN && p->vkCode == VK_LCONTROL) {
-            if (!isControlKeyPressed) {
-                isControlKeyPressed = true;
+            if (!isGravityKeyPressed) {
+                isGravityKeyPressed = true;
                 if (optionGravity) {
                     isWriting = true;
                     memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
                 }
             }
         } else if (wParam == WM_KEYUP && p->vkCode == VK_LCONTROL) {
-            if (isControlKeyPressed) {
-                isControlKeyPressed = false;
+            if (isGravityKeyPressed) {
+                isGravityKeyPressed = false;
                 isWriting = false;
                 if (memoryThread.joinable()) {
                     memoryThread.join();
