@@ -14,15 +14,29 @@
 #include "Utils.h"
 #include "Logger.cpp" // Include the combined Logger file
 #include <wininet.h>
+#include <thread>
+#include <atomic>
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
+
+std::atomic<bool> isWriting(false);
+std::thread memoryThread;
+
+void MemoryManipulation(const std::string& option); // Updated prototype
+
+void ContinuousMemoryWrite(const std::string& option) {
+    while (isWriting) {
+        MemoryManipulation(option);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
+    }
+}
 
 // Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
 const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x00, 0xaa, 0x00, 0x4b, 0xa9, 0x0b}};
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 
 // Constants
-const std::string currentVersion = "0.1.27"; // Current version of the application
+const std::string currentVersion = "1.1.27"; // Current version of the application
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
@@ -48,7 +62,6 @@ DWORD pid; // Process ID of the target process
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
-void MemoryManipulation(const std::string& option); // Updated prototype
 void UpdateLogDisplay();
 void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
@@ -125,18 +138,22 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
             if (!isGravityKeyPressed) {
                 isGravityKeyPressed = true;
                 if (optionGravity) {
-                    MemoryManipulation("gravity");
+                    isWriting = true;
+                    memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
                 }
             }
         } else if (wParam == WM_KEYUP && p->vkCode == VK_OEM_PERIOD) {
             if (isGravityKeyPressed) {
                 isGravityKeyPressed = false;
+                isWriting = false;
+                if (memoryThread.joinable()) {
+                    memoryThread.join();
+                }
             }
         }
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
-
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
