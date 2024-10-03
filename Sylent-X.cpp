@@ -37,6 +37,7 @@ void ContinuousMemoryWrite(const std::string& option) {
 // Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
 const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x00, 0xaa, 0x00, 0x4b, 0xa9, 0x0b}};
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+const UINT WM_ENABLE_CHECKBOXES = WM_USER + 2; // New custom message identifier
 
 // Constants
 const std::string currentVersion = "1.1.27"; // Current version of the application
@@ -47,7 +48,11 @@ const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 // Checkboxes states
 bool optionGravity = false;
 bool optionMoonjump = false;
-bool optionZoom = false;
+bool optionZoom = true;
+
+// license status
+bool featureZoom = false;
+bool featureGravity = false;
 
 // Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
@@ -73,14 +78,113 @@ void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam); // Added prototype
 
+// Function prototypes
+LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
+std::string EncryptPasswordMD5(const std::string& password);
+
+// Global variables for login window
+HWND hLogin, hPassword, hLoginButton;
+
+void CreateLoginWindow(HINSTANCE hInstance) {
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = LoginWindowProcedure;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = "LoginWindowClass";
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0,
+        "LoginWindowClass",
+        "Login",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 300,
+        NULL, NULL, hInstance, NULL
+    );
+
+    ShowWindow(hwnd, SW_SHOW);
+}
+
+LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_CREATE:
+            CreateWindow("STATIC", "Username or E-Mail:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
+            hLogin = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
+
+            CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
+            hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
+
+            hLoginButton = CreateWindow("BUTTON", "Login", WS_VISIBLE | WS_CHILD, 100, 100, 80, 25, hwnd, (HMENU)1, NULL, NULL);
+
+            // button to register (open link in webbrowser)
+            CreateWindow("BUTTON", "Register", WS_VISIBLE | WS_CHILD, 100, 140, 80, 25, hwnd, (HMENU)2, NULL, NULL);
+
+            // button to open the website
+            CreateWindow("BUTTON", "PwReset", WS_VISIBLE | WS_CHILD, 100, 180, 80, 25, hwnd, (HMENU)3, NULL, NULL);
+
+            // Set the focus to the login edit control
+            SetFocus(hLogin);
+
+            break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == 1) {
+                char login[100], password[100];
+                GetWindowText(hLogin, login, 100);
+                GetWindowText(hPassword, password, 100);
+
+                SaveLoginCredentials(login, password);
+
+                Log("Login credentials saved");
+                DestroyWindow(hwnd);
+            }
+
+            if (LOWORD(wParam) == 2) {
+                // open the registration link in the default web browser
+                ShellExecute(NULL, "open", "https://cort.cor-forum.de/#register", NULL, NULL, SW_SHOWNORMAL);
+            }
+
+            if (LOWORD(wParam) == 3) {
+                // open the password reset link in the default web browser
+                ShellExecute(NULL, "open", "https://cort.cor-forum.de/#pwreset", NULL, NULL, SW_SHOWNORMAL);
+            }
+            break;
+
+        case WM_DESTROY:
+            // PostQuitMessage(0);
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
+}
 
 // Global hook handle
 HHOOK hKeyboardHook;
 
+HINSTANCE hInstanceGlobal;
+
+void LoadLoginCredentials(HINSTANCE hInstance);
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    hInstanceGlobal = hInstance; // Assign to global variable
+
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
-    LoadSettings();  // Load saved settings on startup
+    LoadSettings();
+
+    LoadLoginCredentials(hInstance);
+
+    if (!Login(login, password)) {
+        Log("Login failed. Opening login window.");
+        CreateLoginWindow(hInstance); // Open login window if login fails
+    }
+
+    // print license status
+    Log("Feature Zoom: " + std::to_string(featureZoom));
+    Log("Feature Gravity: " + std::to_string(featureGravity));
 
     // Register the window class
     WNDCLASSEX wc = { 0 };
@@ -176,6 +280,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
+
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -194,6 +299,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
                                        20, 200, 760, 100, hwnd, NULL, NULL, NULL);
 
+            // Disable checkboxes by default
+            EnableWindow(chkoptionGravity, FALSE);
+            EnableWindow(chkoptionMoonjump, FALSE);
+            EnableWindow(chkoptionZoom, FALSE);
             break;
 
         case WM_PAINT: {
@@ -238,8 +347,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
             break;
 
-        
-
         case WM_DESTROY:
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
@@ -249,6 +356,22 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_START_SELF_UPDATE:
             SelfUpdate();
+            SendMessage(hwnd, WM_ENABLE_CHECKBOXES, 0, 0);
+            break;
+
+        case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
+            LogDebug("WM_ENABLE_CHECKBOXES message received");
+            if (featureGravity == 1) {
+                EnableWindow(chkoptionGravity, TRUE);
+            } else {
+                EnableWindow(chkoptionGravity, FALSE);
+            }
+
+            if (featureZoom == 1) {
+                EnableWindow(chkoptionZoom, TRUE);
+            } else {
+                EnableWindow(chkoptionZoom, FALSE);
+            }
             break;
 
         default:
@@ -256,6 +379,32 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 
     return 0;
+}
+
+void SaveLoginCredentials(const std::string& login, const std::string& password) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ofstream file(configFilePath);
+    if (file.is_open()) {
+        file << "login=" << login << std::endl;
+        file << "password=" << password << std::endl;
+        file.close();
+        Log("Login credentials saved successfully");
+
+        // Attempt to login again
+        if (Login(login, password)) {
+            Log("Login successful after saving credentials - Please restart the application to apply your license");
+            MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
+            // quit the application
+            PostQuitMessage(0);
+        } else {
+            Log("Login failed after saving credentials");
+            // open login window again
+            CreateLoginWindow(hInstanceGlobal);
+        }
+    } else {
+        Log("Failed to open config file for writing");
+    }
 }
 
 void SaveSettings() {
@@ -278,6 +427,41 @@ void SaveSettings() {
         Log("Settings saved successfully");
     } else {
         Log("Failed to open settings file for writing");
+    }
+}
+
+// Add global variables for login credentials
+std::string login;
+std::string password;
+
+void LoadLoginCredentials(HINSTANCE hInstance) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ifstream file(configFilePath);
+    bool loginFound = false;
+    bool passwordFound = false;
+
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("login=") != std::string::npos) {
+                login = line.substr(line.find("=") + 1);
+                loginFound = true;
+            }
+            if (line.find("password=") != std::string::npos) {
+                password = line.substr(line.find("=") + 1);
+                passwordFound = true;
+            }
+        }
+        file.close();
+        Log("Login credentials loaded successfully");
+    } else {
+        Log("Failed to open config file for reading");
+    }
+
+    if (!loginFound || !passwordFound) {
+        Log("Login or password not found in config file. Opening login window.");
+        CreateLoginWindow(hInstance);
     }
 }
 
@@ -304,6 +488,9 @@ void LoadSettings() {
     } else {
         LogDebug("Settings file not found");
     }
+
+    // Load login credentials
+    LoadLoginCredentials(hInstanceGlobal);
 }
 
 // Define MemoryAddress struct
