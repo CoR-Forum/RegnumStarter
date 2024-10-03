@@ -40,7 +40,7 @@ const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0
 const UINT WM_ENABLE_CHECKBOXES = WM_USER + 2; // New custom message identifier
 
 // Constants
-const std::string currentVersion = "1.1.27"; // Current version of the application
+const std::string currentVersion = "0.1.40"; // Current version of the application
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
