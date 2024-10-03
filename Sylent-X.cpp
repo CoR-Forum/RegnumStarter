@@ -57,7 +57,7 @@ bool featureGravity = false;
 // Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
 
-bool debugLog = true; // Debug Log enabled
+bool debugLog = false; // Debug Log enabled
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 

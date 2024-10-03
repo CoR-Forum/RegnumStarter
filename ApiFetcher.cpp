@@ -24,7 +24,6 @@ extern bool featureGravity;
 
 bool Login(const std::string& login, const std::string& password) {
     std::string path = "/api/v1/login?login=" + login + "&password=" + password;
-    Log("Logging in with login: " + login + " and password: " + password);
 
     HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) {
@@ -34,7 +33,7 @@ bool Login(const std::string& login, const std::string& password) {
 
     HINTERNET hConnect = InternetConnect(hInternet, "cort.cor-forum.de", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) {
-        Log("Failed to connect to cort.cor-forum.de");
+        Log("Failed to connect to API");
         InternetCloseHandle(hInternet);
         return false;
     }
