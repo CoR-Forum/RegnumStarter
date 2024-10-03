@@ -48,7 +48,7 @@ const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 // Checkboxes states
 bool optionGravity = false;
 bool optionMoonjump = false;
-bool optionZoom = false;
+bool optionZoom = true;
 
 // license status
 bool featureZoom = false;
@@ -393,8 +393,9 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
 
         // Attempt to login again
         if (Login(login, password)) {
-            Log("Login successful after saving credentials");
-            // restart the application
+            Log("Login successful after saving credentials - Please restart the application to apply your license");
+            MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
+            // quit the application
             PostQuitMessage(0);
         } else {
             Log("Login failed after saving credentials");
