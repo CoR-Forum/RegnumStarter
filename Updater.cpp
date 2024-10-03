@@ -13,6 +13,8 @@
 
 #pragma comment(lib, "urlmon.lib")
 
+void InitializePointers();
+
 class DownloadProgressCallback : public IBindStatusCallback {
 public:
     STDMETHOD(OnStartBinding)(DWORD dwReserved, IBinding* pib) { return E_NOTIMPL; }
@@ -57,12 +59,14 @@ void SelfUpdate() {
     auto [latestVersion, downloadURL] = FetchLatestVersion();
     if (latestVersion.empty() || downloadURL.empty()) {
         Log("Failed to fetch the latest version or download URL");
-        MessageBox(NULL, "Failed to fetch the latest version or download URL.", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to fetch the latest version or download URL. This may be due to a network or server error. You can continue.", "Error", MB_ICONERROR);
+        InitializePointers();
         return;
     }
 
     if (latestVersion <= currentVersion) {
-        Log("No new update available");
+        Log("No new update available. Server returned version: " + latestVersion);
+        InitializePointers();
         return;
     }
 
