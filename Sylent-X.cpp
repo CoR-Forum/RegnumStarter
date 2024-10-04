@@ -48,27 +48,10 @@ const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
-// Checkboxes states
-bool optionGravity = false;
-bool optionMoonjump = false;
-bool optionZoom = true;
-
-// license status
-bool featureZoom = false;
-bool featureGravity = false;
-
 bool isGravityKeyPressed = false;
-
-bool debugLog = false; // Debug Log enabled
-
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 HWND hLogDisplay = nullptr; // Handle to the log display control
 HWND hwnd = nullptr; // Declare hwnd globally to be accessible
-HWND hRegistrationWindow; // Declare the handle to the registration window
-HWND hLoginWindow; // Declare the handle to the login window
-
-HINSTANCE hInstanceGlobal;
-HINSTANCE hInstance;
 
 DWORD pid; // Process ID of the target process
 
@@ -473,57 +456,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 
     return 0;
-}
-
-void SaveSettings() {
-    Log("Saving settings to file");
-
-    // Construct the settings file path
-    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
-    std::string settingsFilePath = settingsDir + "\\settings.txt";
-
-    // Create the directory if it doesn't exist
-    CreateDirectory(settingsDir.c_str(), NULL);
-
-    // Open the file and write the settings
-    std::ofstream file(settingsFilePath);
-    if (file.is_open()) {
-        file << "optionGravity=" << optionGravity << std::endl;
-        file << "optionMoonjump=" << optionMoonjump << std::endl;
-        file << "optionZoom=" << optionZoom << std::endl;
-        file.close();
-        Log("Settings saved successfully");
-    } else {
-        Log("Failed to open settings file for writing");
-    }
-}
-
-void LoadSettings() {
-    LogDebug("Loading settings from file");
-
-    // Construct the settings file path
-    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
-
-    // Open the file and read the settings
-    std::ifstream file(settingsFilePath);
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.find("optionGravity=") != std::string::npos)
-                optionGravity = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionMoonjump=") != std::string::npos)
-                optionMoonjump = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionZoom=") != std::string::npos)
-                optionZoom = (line.substr(line.find("=") + 1) == "1");
-        }
-        file.close();
-        Log("Settings loaded successfully");
-    } else {
-        LogDebug("Settings file not found");
-    }
-
-    // Load login credentials
-    LoadLoginCredentials(hInstanceGlobal);
 }
 
 // Define MemoryAddress struct

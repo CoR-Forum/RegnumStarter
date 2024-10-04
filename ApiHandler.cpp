@@ -17,9 +17,7 @@ struct Pointer {
     std::vector<unsigned long> offsets;
 };
 
-extern void Log(const std::string& message);
-extern void LogDebug(const std::string& message);
-extern void OpenLoginWindow();
+void OpenLoginWindow();
 void SaveLoginCredentials(const std::string& login, const std::string& password);
 void LoadLoginCredentials(HINSTANCE hInstance);
 
@@ -101,8 +99,6 @@ bool Login(const std::string& login, const std::string& password) {
         return false;
     }
 }
-
-extern HWND hLoginWindow; // Declare the handle to the login window
 
 void Logout() {
     // Clear login credentials
@@ -189,6 +185,57 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
     } else {
         Log("Failed to open config file for writing");
     }
+}
+
+void SaveSettings() {
+    Log("Saving settings to file");
+
+    // Construct the settings file path
+    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
+    std::string settingsFilePath = settingsDir + "\\settings.txt";
+
+    // Create the directory if it doesn't exist
+    CreateDirectory(settingsDir.c_str(), NULL);
+
+    // Open the file and write the settings
+    std::ofstream file(settingsFilePath);
+    if (file.is_open()) {
+        file << "optionGravity=" << optionGravity << std::endl;
+        file << "optionMoonjump=" << optionMoonjump << std::endl;
+        file << "optionZoom=" << optionZoom << std::endl;
+        file.close();
+        Log("Settings saved successfully");
+    } else {
+        Log("Failed to open settings file for writing");
+    }
+}
+
+void LoadSettings() {
+    LogDebug("Loading settings from file");
+
+    // Construct the settings file path
+    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
+
+    // Open the file and read the settings
+    std::ifstream file(settingsFilePath);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("optionGravity=") != std::string::npos)
+                optionGravity = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionMoonjump=") != std::string::npos)
+                optionMoonjump = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionZoom=") != std::string::npos)
+                optionZoom = (line.substr(line.find("=") + 1) == "1");
+        }
+        file.close();
+        Log("Settings loaded successfully");
+    } else {
+        LogDebug("Settings file not found");
+    }
+
+    // Load login credentials
+    LoadLoginCredentials(hInstanceGlobal);
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
@@ -294,7 +341,6 @@ void InitializePointers() {
     }
 }
 
-extern HWND hRegistrationWindow; // Declare the handle to the registration window
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     HINTERNET hSession = InternetOpen("RegistrationAgent", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hSession) {
