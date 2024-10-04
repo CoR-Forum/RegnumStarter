@@ -7,62 +7,254 @@
 #include <deque>
 #include <ctime>
 #include <cstdio>
-#include <objbase.h> // Include for COM
-#include <vector>    // Include for std::vector
-#include <tlhelp32.h> // Include for CreateToolhelp32Snapshot and related functions
-#include "Updater.cpp"
+#include <objbase.h>
+#include <vector>
+#include <tlhelp32.h>
+#include <wininet.h>
+#include <thread>
+#include <atomic>
+#include <sstream>
+#include <iomanip>
 #include "Utils.h"
-#include "resource.h"
-
+#include "Updater.cpp"
+#include "Logger.cpp"
+#include "ApiFetcher.cpp"
+#pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
+
+#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
+
+std::atomic<bool> isWriting(false);
+std::thread memoryThread;
+
+void MemoryManipulation(const std::string& option); // Updated prototype
+
+void ContinuousMemoryWrite(const std::string& option) {
+    while (isWriting) {
+        MemoryManipulation(option);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
+    }
+}
 
 // Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
 const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x00, 0xaa, 0x00, 0x4b, 0xa9, 0x0b}};
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+const UINT WM_ENABLE_CHECKBOXES = WM_USER + 2; // New custom message identifier
 
 // Constants
-const std::string currentVersion = "0.1.14"; // Current version of the application
+const std::string currentVersion = "0.1.41"; // Current version of the application
 const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
 // Checkboxes states
-bool optionNoclip = false;
-bool optionSpeedhack = false;
-bool optionZoom = false;
+bool optionGravity = false;
+bool optionMoonjump = false;
+bool optionZoom = true;
 
-// Debug Log enabled
-const bool debugLog = true;
+// license status
+bool featureZoom = false;
+bool featureGravity = false;
 
-// Handle to the target process (ROClientGame.exe)
-HANDLE hProcess = nullptr;
+bool isGravityKeyPressed = false;
 
-// Handle to the log display control
-HWND hLogDisplay = nullptr;
+bool debugLog = false; // Debug Log enabled
 
-// Deque to store the last 50 log messages
-std::deque<std::string> logMessages;
+HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
+HWND hLogDisplay = nullptr; // Handle to the log display control
+HWND hwnd = nullptr; // Declare hwnd globally to be accessible
+HWND hRegistrationWindow; // Declare the handle to the registration window
 
-// Handle to the background image
-HBITMAP hBackgroundImage = nullptr;
+HINSTANCE hInstanceGlobal;
+HINSTANCE hInstance;
 
-// Declare global variables
-DWORD pid;
+DWORD pid; // Process ID of the target process
+
+std::deque<std::string> logMessages; // Deque to store log
+std::string EncryptPasswordMD5(const std::string& password);
 
 // Function Prototypes
-LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
-void MemoryManipulation(HWND hwnd, bool isZoomEnabled); // Updated prototype
 void UpdateLogDisplay();
+void Logout();
 void Log(const std::string& message);
-void LogDebug(const std::string& message); // Renamed function
+void LogDebug(const std::string& message);
+void CreateLoginWindow(HINSTANCE hInstance);
+void CreateRegistrationWindow(HINSTANCE hInstance);
+void LoadLoginCredentials(HINSTANCE hInstance);
+void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
+
+// Prototypes for the window procedures
+LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); 
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+
+LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    static HWND hUsername, hEmail, hPassword, hRegisterButton;
+
+    switch (msg) {
+        case WM_CREATE:
+            CreateWindow("STATIC", "Username:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
+            hUsername = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
+
+            CreateWindow("STATIC", "E-Mail:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
+            hEmail = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
+
+            CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 100, 80, 25, hwnd, NULL, NULL, NULL);
+            hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 100, 150, 25, hwnd, NULL, NULL, NULL);
+
+            hRegisterButton = CreateWindow("BUTTON", "Register", WS_VISIBLE | WS_CHILD, 100, 140, 80, 25, hwnd, (HMENU)4, NULL, NULL);
+
+            SetFocus(hUsername);
+            break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == 4) {
+                char username[100], email[100], password[100];
+                GetWindowText(hUsername, username, 100);
+                GetWindowText(hEmail, email, 100);
+                GetWindowText(hPassword, password, 100);
+
+                // Call the function to register the user using the REST API
+                RegisterUser(username, email, password);
+            }
+            break;
+
+        case WM_CLOSE_REGISTRATION_WINDOW:
+            // Destroy the registration window and show a message box
+            DestroyWindow(hwnd);
+            MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION);
+            // Open the login window
+            CreateLoginWindow(hInstance);
+            break;
+
+        case WM_DESTROY:
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
+}
+
+void CreateRegistrationWindow(HINSTANCE hInstance) {
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = RegistrationWindowProcedure;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = "RegistrationWindowClass";
+
+    RegisterClass(&wc);
+
+    hRegistrationWindow = CreateWindowEx(
+        0,
+        "RegistrationWindowClass",
+        "Register",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 200,
+        NULL, NULL, hInstance, NULL
+    );
+
+    ShowWindow(hRegistrationWindow, SW_SHOW);
+}
+
+// Global variables for login window
+HWND hLogin, hPassword, hLoginButton, hRegisterButton;
+
+// Login Window Procedure
+LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_CREATE:
+            CreateWindow("STATIC", "Username or E-Mail:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
+            hLogin = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
+
+            CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
+            hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
+
+            hLoginButton = CreateWindow("BUTTON", "Login", WS_VISIBLE | WS_CHILD, 100, 100, 80, 25, hwnd, (HMENU)1, NULL, NULL);
+
+            // button to register (open link in webbrowser)
+            CreateWindow("BUTTON", "Register", WS_VISIBLE | WS_CHILD, 100, 140, 80, 25, hwnd, (HMENU)2, NULL, NULL);
+
+            // button to open the website
+            CreateWindow("BUTTON", "PwReset", WS_VISIBLE | WS_CHILD, 100, 180, 80, 25, hwnd, (HMENU)3, NULL, NULL);
+
+            // Set the focus to the login edit control
+            SetFocus(hLogin);
+
+            break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == 1) {
+                char login[100], password[100];
+                GetWindowText(hLogin, login, 100);
+                GetWindowText(hPassword, password, 100);
+
+                SaveLoginCredentials(login, password);
+
+                Log("Login credentials saved");
+                DestroyWindow(hwnd);
+            }
+
+            if (LOWORD(wParam) == 2) {
+                CreateRegistrationWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+                DestroyWindow(hwnd); // Close the login window
+            }
+
+            if (LOWORD(wParam) == 3) {
+                // open the password reset link in the default web browser
+                ShellExecute(NULL, "open", "https://cort.cor-forum.de/#pwreset", NULL, NULL, SW_SHOWNORMAL);
+            }
+            break;
+
+        case WM_DESTROY:
+            // PostQuitMessage(0);
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
+}
+
+// Function to create the login window
+void CreateLoginWindow(HINSTANCE hInstance) {
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = LoginWindowProcedure;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = "LoginWindowClass";
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0,
+        "LoginWindowClass",
+        "Login",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 300,
+        NULL, NULL, hInstance, NULL
+    );
+
+    ShowWindow(hwnd, SW_SHOW);
+}
+
+// Global hook handle
+HHOOK hKeyboardHook;
+
+
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    Log("Sylent-X " + currentVersion + " started");
-    Log("Made with hate in Germany");
+    hInstanceGlobal = hInstance; // Assign to global variable
 
-    LoadSettings();  // Load saved settings on startup
+    Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
+
+    LoadSettings();
+
+    LoadLoginCredentials(hInstance);
+
+    if (!Login(login, password)) {
+        Log("Login failed. Opening login window.");
+        CreateLoginWindow(hInstance); // Open login window if login fails
+    }
 
     // Register the window class
     WNDCLASSEX wc = { 0 };
@@ -71,7 +263,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     wc.hInstance = hInstance;
     wc.lpszClassName = appName;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
     if (!RegisterClassEx(&wc)) {
         Log("Failed to register window class");
         MessageBox(NULL, "Failed to register window class.", "Error", MB_ICONERROR);
@@ -93,6 +285,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
 
+    // Set the global keyboard hook
+    hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
+    if (!hKeyboardHook) {
+        Log("Failed to set keyboard hook");
+        MessageBox(NULL, "Failed to set keyboard hook.", "Error", MB_ICONERROR);
+        return 0;
+    }
+    LogDebug("Keyboard hook set successfully");
+
     // Post custom message to start self-update
     PostMessage(hwnd, WM_START_SELF_UPDATE, 0, 0);
 
@@ -107,51 +308,85 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     return (int)msg.wParam;
 }
 
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode >= 0) {
+        KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
+
+        if (wParam == WM_KEYDOWN && p->vkCode == VK_SPACE) {
+            if (!isGravityKeyPressed) {
+                isGravityKeyPressed = true;
+                if (optionGravity) {
+                    isWriting = true;
+                    memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
+                }
+            }
+        } else if (wParam == WM_KEYUP && p->vkCode == VK_SPACE) {
+            if (isGravityKeyPressed) {
+                isGravityKeyPressed = false;
+                isWriting = false;
+                if (memoryThread.joinable()) {
+                    memoryThread.join();
+                }
+            }
+        }
+
+        if (wParam == WM_KEYDOWN && p->vkCode == VK_LCONTROL) {
+            if (!isGravityKeyPressed) {
+                isGravityKeyPressed = true;
+                if (optionGravity) {
+                    isWriting = true;
+                    memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
+                }
+            }
+        } else if (wParam == WM_KEYUP && p->vkCode == VK_LCONTROL) {
+            if (isGravityKeyPressed) {
+                isGravityKeyPressed = false;
+                isWriting = false;
+                if (memoryThread.joinable()) {
+                    memoryThread.join();
+                }
+            }
+        }
+    }
+    return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
+}
+
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionNoclip, chkoptionSpeedhack, chkoptionZoom;
+    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom, hLogoutButton;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
-    static HBITMAP hBackgroundImage = NULL;
 
     switch (msg) {
-        case WM_CREATE:
+        case WM_CREATE:            
             LogDebug("Creating checkboxes");
 
-            // Load the background image from resources
-            hBackgroundImage = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BACKGROUND_BITMAP));
-            if (!hBackgroundImage) {
-                DWORD error = GetLastError();
-                LogDebug("Failed to load background image. Error code: " + std::to_string(error));
-            } else {
-                LogDebug("Background image loaded successfully");
-            }
-
-            // Create checkboxes
-            chkoptionNoclip = CreateWindow("BUTTON", "Enable Noclip", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+            // Create checkboxes UI elements
+            chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
-            chkoptionSpeedhack = CreateWindow("BUTTON", "Enable Speedhack", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+            chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
             chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
                                       20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
-            // Create log display
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
                                        20, 200, 760, 100, hwnd, NULL, NULL, NULL);
+
+            // Disable checkboxes by default
+            EnableWindow(chkoptionGravity, FALSE);
+            EnableWindow(chkoptionMoonjump, FALSE);
+            EnableWindow(chkoptionZoom, FALSE);
+
+            // Create the Logout button
+            hLogoutButton = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD, 10, 10, 80, 25, hwnd, (HMENU)4, NULL, NULL);
+
             break;
 
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
 
-            if (hBackgroundImage) {
-                HDC hdcMem = CreateCompatibleDC(hdc);
-                HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, hBackgroundImage);
-
-                BITMAP bm;
-                GetObject(hBackgroundImage, sizeof(bm), &bm);
-                BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
-
-                SelectObject(hdcMem, hbmOld);
-                DeleteDC(hdcMem);
-            }
+            // Fill the background with the custom color
+            HBRUSH hBrush = CreateSolidBrush(RGB(1, 1, 1)); // Custom background color (white)
+            FillRect(hdc, &ps.rcPaint, hBrush);
+            DeleteObject(hBrush);
 
             EndPaint(hwnd, &ps);
             break;
@@ -168,22 +403,25 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_COMMAND:
             if (LOWORD(wParam) == 1) {
-                optionNoclip = !optionNoclip;
-                SendMessage(chkoptionNoclip, BM_SETCHECK, optionNoclip ? BST_CHECKED : BST_UNCHECKED, 0);
-                Log("Noclip toggled");
-                MemoryManipulation(hwnd, SendMessage(chkoptionZoom, BM_GETCHECK, 0, 0) == BST_CHECKED);  // Pass hwnd and zoom state
+                optionGravity = !optionGravity;
+                SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
+                Log("Gravity toggled");
             }
             if (LOWORD(wParam) == 2) {
-                optionSpeedhack = !optionSpeedhack;
-                SendMessage(chkoptionSpeedhack, BM_SETCHECK, optionSpeedhack ? BST_CHECKED : BST_UNCHECKED, 0);
-                Log("Speedhack toggled");
-                MemoryManipulation(hwnd, SendMessage(chkoptionZoom, BM_GETCHECK, 0, 0) == BST_CHECKED);  // Pass hwnd and zoom state
+                optionMoonjump = !optionMoonjump;
+                SendMessage(chkoptionMoonjump, BM_SETCHECK, optionMoonjump ? BST_CHECKED : BST_UNCHECKED, 0);
+                Log("Moonjump toggled");
+                MemoryManipulation("moonjump");
             }
             if (LOWORD(wParam) == 3) {
                 optionZoom = !optionZoom;
                 SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Zoom toggled");
-                MemoryManipulation(hwnd, optionZoom);  // Pass hwnd and zoom state
+                MemoryManipulation("zoom");
+            }
+            if (LOWORD(wParam) == 4) {
+                Log("Logout button clicked");
+                Logout();
             }
             break;
 
@@ -191,16 +429,27 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             Log("Saving settings");
             SaveSettings();  // Save settings on exit
 
-            // Clean up the background image
-            if (hBackgroundImage) {
-                DeleteObject(hBackgroundImage);
-            }
-
             PostQuitMessage(0);
             break;
 
         case WM_START_SELF_UPDATE:
             SelfUpdate();
+            SendMessage(hwnd, WM_ENABLE_CHECKBOXES, 0, 0);
+            break;
+
+        case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
+            LogDebug("WM_ENABLE_CHECKBOXES message received");
+            if (featureGravity == 1) {
+                EnableWindow(chkoptionGravity, TRUE);
+            } else {
+                EnableWindow(chkoptionGravity, FALSE);
+            }
+
+            if (featureZoom == 1) {
+                EnableWindow(chkoptionZoom, TRUE);
+            } else {
+                EnableWindow(chkoptionZoom, FALSE);
+            }
             break;
 
         default:
@@ -210,30 +459,146 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     return 0;
 }
 
+void Logout() {
+    // Clear login credentials
+    login.clear();
+    password.clear();
+
+    // Update the config file to remove login and password
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+    std::ifstream configFile(configFilePath);
+    std::string line;
+    std::vector<std::string> lines;
+
+    while (std::getline(configFile, line)) {
+        if (line.find("login=") == std::string::npos && line.find("password=") == std::string::npos) {
+            lines.push_back(line);
+        }
+    }
+    configFile.close();
+
+    std::ofstream outFile(configFilePath);
+    for (const auto& l : lines) {
+        outFile << l << std::endl;
+    }
+    outFile.close();
+
+    Log("Login credentials removed from config file");
+
+    // Show the login window again
+    CreateLoginWindow(hInstanceGlobal);
+}
+
+void SaveLoginCredentials(const std::string& login, const std::string& password) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ofstream file(configFilePath);
+    if (file.is_open()) {
+        file << "login=" << login << std::endl;
+        file << "password=" << password << std::endl;
+        file.close();
+        Log("Login credentials saved successfully");
+
+        // Attempt to login again
+        if (Login(login, password)) {
+            Log("Login successful after saving credentials - Please restart the application to apply your license");
+            MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
+            // quit the application
+            PostQuitMessage(0);
+        } else {
+            Log("Login failed after saving credentials");
+            // open login window again
+            CreateLoginWindow(hInstanceGlobal);
+        }
+    } else {
+        Log("Failed to open config file for writing");
+    }
+}
+
 void SaveSettings() {
     Log("Saving settings to file");
-    std::ofstream file(std::string(appDataPath) + "\\Sylent-X\\settings.txt");
-    file << "optionNoclip=" << optionNoclip << std::endl;
-    file << "optionSpeedhack=" << optionSpeedhack << std::endl;
-    file.close();
+
+    // Construct the settings file path
+    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
+    std::string settingsFilePath = settingsDir + "\\settings.txt";
+
+    // Create the directory if it doesn't exist
+    CreateDirectory(settingsDir.c_str(), NULL);
+
+    // Open the file and write the settings
+    std::ofstream file(settingsFilePath);
+    if (file.is_open()) {
+        file << "optionGravity=" << optionGravity << std::endl;
+        file << "optionMoonjump=" << optionMoonjump << std::endl;
+        file << "optionZoom=" << optionZoom << std::endl;
+        file.close();
+        Log("Settings saved successfully");
+    } else {
+        Log("Failed to open settings file for writing");
+    }
+}
+
+// Add global variables for login credentials
+std::string login;
+std::string password;
+
+void LoadLoginCredentials(HINSTANCE hInstance) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ifstream file(configFilePath);
+    bool loginFound = false;
+    bool passwordFound = false;
+
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("login=") != std::string::npos) {
+                login = line.substr(line.find("=") + 1);
+                loginFound = true;
+            }
+            if (line.find("password=") != std::string::npos) {
+                password = line.substr(line.find("=") + 1);
+                passwordFound = true;
+            }
+        }
+        file.close();
+        Log("Login credentials loaded successfully");
+    } else {
+        Log("Failed to open config file for reading");
+    }
+
+    if (!loginFound || !passwordFound) {
+        Log("Login or password not found in config file. Opening login window.");
+        CreateLoginWindow(hInstance);
+    }
 }
 
 void LoadSettings() {
     LogDebug("Loading settings from file");
-    std::ifstream file(std::string(appDataPath) + "\\Sylent-X\\settings.txt");
-    if (!file) {
+
+    // Construct the settings file path
+    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
+
+    // Open the file and read the settings
+    std::ifstream file(settingsFilePath);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("optionGravity=") != std::string::npos)
+                optionGravity = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionMoonjump=") != std::string::npos)
+                optionMoonjump = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionZoom=") != std::string::npos)
+                optionZoom = (line.substr(line.find("=") + 1) == "1");
+        }
+        file.close();
+        Log("Settings loaded successfully");
+    } else {
         LogDebug("Settings file not found");
-        return;
     }
 
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.find("optionNoclip=") != std::string::npos)
-            optionNoclip = (line.substr(line.find("=") + 1) == "1");
-        if (line.find("optionSpeedhack=") != std::string::npos)
-            optionSpeedhack = (line.substr(line.find("=") + 1) == "1");
-    }
-    file.close();
+    // Load login credentials
+    LoadLoginCredentials(hInstanceGlobal);
 }
 
 // Define MemoryAddress struct
@@ -248,19 +613,19 @@ uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
     uintptr_t modBaseAddr = 0;
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
     if (hSnap != INVALID_HANDLE_VALUE) {
-        LogDebug("Process snapshot created for process ID: " + std::to_string(procId));
+        // LogDebug("Process snapshot created for process ID: " + std::to_string(procId));
         MODULEENTRY32 modEntry;
         modEntry.dwSize = sizeof(modEntry);
         if (Module32First(hSnap, &modEntry)) {
             do {
                 wchar_t wModuleName[MAX_PATH];
                 MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
-                LogDebug("Checking module: " + std::string(modEntry.szModule));
+                // LogDebug("Checking module: " + std::string(modEntry.szModule));
                 if (!_wcsicmp(wModuleName, modName)) {
                     modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
-                    LogDebug("Module found: " + std::string(modEntry.szModule) + 
-                        " at address: " + std::to_string(modBaseAddr) + 
-                        " in process ID: " + std::to_string(procId));
+                    // LogDebug("Module found: " + std::string(modEntry.szModule) + 
+                    //     " at address: " + std::to_string(modBaseAddr) + 
+                    //     " in process ID: " + std::to_string(procId));
                     break;
                 }
             } while (Module32Next(hSnap, &modEntry));
@@ -308,8 +673,8 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
     return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
 }
 
-void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
-    LogDebug("Performing memory manipulation");
+void MemoryManipulation(const std::string& option) {
+    // LogDebug("Performing memory manipulation for " + option);
 
     // Get process ID for ROClientGame.exe
     pid = GetProcessIdByName(L"ROClientGame.exe");
@@ -318,9 +683,8 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
         MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
-    LogDebug("Process ID for ROClientGame.exe: " + std::to_string(pid));
+    // LogDebug("Process ID for ROClientGame.exe: " + std::to_string(pid));
 
-    // Open the process with write and operation access
     // Open the process with full access
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (!hProcess) {
@@ -328,8 +692,7 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
         MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR);
         return;
     }
-    LogDebug("Successfully opened process with ID: " + std::to_string(pid));
-
+    // LogDebug("Successfully opened process with ID: " + std::to_string(pid));
 
     // Get the base address of ROClientGame.exe
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
@@ -338,80 +701,62 @@ void MemoryManipulation(HWND hwnd, bool isZoomEnabled) {
         CloseHandle(hProcess);
         return;
     }
-    LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
+    // LogDebug("Base address of ROClientGame.exe: " + std::to_string(baseAddress));
 
-    // Directly read from the specified pointer with the offset
-    uintptr_t zoomPointer = baseAddress + 0x007AE4CC; // Base + Offset for zoom pointer
-    LogDebug("Zoom pointer address: " + std::to_string(zoomPointer));
+    // Use the fetched pointers
+    for (const auto& pointer : pointers) {
+        if (pointer.name == option) {
+            uintptr_t optionPointer = baseAddress + pointer.address;
+            // LogDebug(option + " pointer address: " + std::to_string(optionPointer));
 
-    // To read the address stored at that location
-    uintptr_t zoomAddress; // This will hold the address where the zoom value is stored
-    SIZE_T bytesRead;
+            uintptr_t finalAddress = optionPointer;
+            SIZE_T bytesRead;
 
-    // Read the memory at the zoomPointer to get the address of the zoom value
-    if (ReadProcessMemory(hProcess, (LPCVOID)zoomPointer, &zoomAddress, sizeof(zoomAddress), &bytesRead)) {
-        if (bytesRead == sizeof(zoomAddress)) {
-            LogDebug("Successfully read zoom address: " + std::to_string(zoomAddress));
-
-            // Determine the new zoom value based on the checkbox state
-            float newZoomValue = isZoomEnabled ? 25.0f : 15.0f;
-
-            // Write the new zoom value to the memory location
-            if (WriteProcessMemory(hProcess, (LPVOID)(zoomAddress + 0x88), &newZoomValue, sizeof(newZoomValue), NULL)) {
-                Log("Successfully wrote new zoom value: " + std::to_string(newZoomValue));
-            } else {
-                Log("Failed to write new zoom value. Error code: " + std::to_string(GetLastError()));
+            // Apply each offset sequentially
+            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    if (bytesRead != sizeof(finalAddress)) {
+                        LogDebug("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead));
+                        return;
+                    }
+                    finalAddress += pointer.offsets[i];
+                } else {
+                    LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()));
+                    return;
+                }
             }
-        } else {
-            Log("Failed to read the zoom pointer address. Bytes read: " + std::to_string(bytesRead));
+
+            // Convert finalAddress to hexadecimal string
+            std::stringstream ss;
+            ss << std::hex << std::uppercase << finalAddress;
+            std::string finalAddressHex = ss.str();
+
+            // Log the final address and value being written
+            // LogDebug("Final address: " + finalAddressHex);
+
+            float newValue = 0.0f;
+
+            if (option == "zoom") {
+                newValue = optionZoom ? 25.0f : 15.0f;
+            } else if (option == "moonjump") {
+                newValue = optionMoonjump ? 1.0f : 4.0f;
+            } else if (option == "gravity") {
+                newValue = optionGravity ? -8.0f : 8.0f;
+            } else if (option == "gravitydown") {
+                newValue = 8.0f;
+            }
+
+            // LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
+
+            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+                // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
+            } else {
+                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
+            }
         }
-    } else {
-        Log("Failed to read zoom pointer from memory. Error code: " + std::to_string(GetLastError()));
     }
 
     // Close the process handle
     CloseHandle(hProcess);
-    LogDebug("Memory read completed");
-}
-
-
-
-void Log(const std::string& message) {
-    // Get current time
-    std::time_t now = std::time(nullptr);
-    char timestamp[20];
-    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
-
-    // Create log message with timestamp
-    std::string logMessage = "[" + std::string(timestamp) + "] " + message;
-
-    std::ofstream logFile(std::string(appDataPath) + "\\Sylent-X\\log.txt", std::ios_base::app);
-    logFile << logMessage << std::endl;
-    logFile.close();
-    std::cout << logMessage << std::endl;
-
-    // Add message to deque
-    logMessages.push_back(logMessage);
-    if (logMessages.size() > 500) {
-        logMessages.pop_front();
-    }
-
-    // Update the log display in the GUI
-    UpdateLogDisplay();
-}
-
-void LogDebug(const std::string& message) { // Renamed function
-    if (debugLog) {
-        Log("DEBUG: " + message);
-    }
-}
-
-void UpdateLogDisplay() {
-    if (hLogDisplay) {
-        SendMessage(hLogDisplay, LB_RESETCONTENT, 0, 0);
-        for (const auto& msg : logMessages) {
-            SendMessage(hLogDisplay, LB_ADDSTRING, 0, (LPARAM)msg.c_str());
-        }
-        SendMessage(hLogDisplay, LB_SETTOPINDEX, logMessages.size() - 1, 0);
-    }
+    // LogDebug("Memory manipulation completed");
 }

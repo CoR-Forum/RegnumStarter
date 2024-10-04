@@ -13,6 +13,8 @@
 
 #pragma comment(lib, "urlmon.lib")
 
+void InitializePointers();
+
 class DownloadProgressCallback : public IBindStatusCallback {
 public:
     STDMETHOD(OnStartBinding)(DWORD dwReserved, IBinding* pib) { return E_NOTIMPL; }
@@ -57,12 +59,14 @@ void SelfUpdate() {
     auto [latestVersion, downloadURL] = FetchLatestVersion();
     if (latestVersion.empty() || downloadURL.empty()) {
         Log("Failed to fetch the latest version or download URL");
-        MessageBox(NULL, "Failed to fetch the latest version or download URL.", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to fetch the latest version or download URL. This may be due to a network or server error. You can continue.", "Error", MB_ICONERROR);
+        InitializePointers();
         return;
     }
 
     if (latestVersion <= currentVersion) {
-        Log("No new update available");
+        Log("No new update available. Server returned version: " + latestVersion);
+        InitializePointers();
         return;
     }
 
@@ -115,7 +119,7 @@ void SelfUpdate() {
 std::pair<std::string, std::string> FetchLatestVersion() {
     std::string latestVersion;
     std::string downloadURL;
-    HRESULT hr = URLDownloadToFile(NULL, "https://cor-forum.de/regnum/sylent/latest_version.txt", "latest_version.txt", 0, NULL);
+    HRESULT hr = URLDownloadToFile(NULL, "https://patch.sylent-x.com/v0/latest_version.txt", "latest_version.txt", 0, NULL);
     if (SUCCEEDED(hr)) {
         std::ifstream versionFile("latest_version.txt");
         if (versionFile.is_open()) {
