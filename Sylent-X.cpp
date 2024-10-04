@@ -130,7 +130,7 @@ LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam,
             DestroyWindow(hwnd);
             MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION);
             // Open the login window
-            CreateLoginWindow(hInstance);
+            OpenLoginWindow();
             break;
 
         case WM_DESTROY:
@@ -239,6 +239,7 @@ void CreateLoginWindow(HINSTANCE hInstance) {
     );
 
     ShowWindow(hLoginWindow, SW_SHOW);
+    SetForegroundWindow(hLoginWindow); // Bring the login window to the foreground
 }
 
 // Example of sending the WM_OPEN_LOGIN_WINDOW message
@@ -265,11 +266,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     LoadSettings();
 
     LoadLoginCredentials(hInstance);
-
-    if (!Login(login, password)) {
-        Log("Login failed. Opening login window.");
-        OpenLoginWindow(); // Open login window if login fails
-    }
 
     // Register the window class
     WNDCLASSEX wc = { 0 };
@@ -308,6 +304,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         return 0;
     }
     LogDebug("Keyboard hook set successfully");
+
+    if (!Login(login, password)) {
+        Log("Login failed. Opening login window.");
+        OpenLoginWindow(); // Open login window if login fails
+    }
 
     // Post custom message to start self-update
     PostMessage(hwnd, WM_START_SELF_UPDATE, 0, 0);
