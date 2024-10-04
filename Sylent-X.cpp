@@ -52,10 +52,12 @@ const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 bool optionGravity = false;
 bool optionMoonjump = false;
 bool optionZoom = true;
+bool optionFreecam = false;
 
 // license status
 bool featureZoom = false;
 bool featureGravity = false;
+bool featureFreecam = false;
 
 bool isGravityKeyPressed = false;
 
@@ -361,7 +363,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 }
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom, hLogoutButton;
+    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom, hLogoutButton, chkoptionFreecam;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
 
     switch (msg) {
@@ -377,11 +379,15 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                                       20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
                                        20, 200, 760, 100, hwnd, NULL, NULL, NULL);
+            chkoptionFreecam = CreateWindow("BUTTON", "Enable Freecam", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+                                      20, 140, 150, 20, hwnd, (HMENU)4, NULL, NULL);
+            
 
             // Disable checkboxes by default
             EnableWindow(chkoptionGravity, FALSE);
             EnableWindow(chkoptionMoonjump, FALSE);
             EnableWindow(chkoptionZoom, FALSE);
+            EnableWindow(chkoptionFreecam, FALSE);
 
             // Create the Logout button
             hLogoutButton = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD, 10, 10, 80, 25, hwnd, (HMENU)4, NULL, NULL);
@@ -429,6 +435,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 MemoryManipulation("zoom");
             }
             if (LOWORD(wParam) == 4) {
+                optionFreecam = !optionFreecam;
+                SendMessage(chkoptionFreecam, BM_SETCHECK, optionFreecam ? BST_CHECKED : BST_UNCHECKED, 0);
+                Log("Freecam toggled");
+                MemoryManipulation("freecam");
+            }
+            if (LOWORD(wParam) == 4) {
                 Log("Logout button clicked");
                 Logout();
             }
@@ -458,6 +470,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 EnableWindow(chkoptionZoom, TRUE);
             } else {
                 EnableWindow(chkoptionZoom, FALSE);
+            }
+
+            if (featureFreecam == 1) {
+                EnableWindow(chkoptionFreecam, TRUE);
+            } else {
+                EnableWindow(chkoptionFreecam, FALSE);
             }
             break;
 
@@ -728,6 +746,8 @@ void MemoryManipulation(const std::string& option) {
                 newValue = optionGravity ? -8.0f : 8.0f;
             } else if (option == "gravitydown") {
                 newValue = 8.0f;
+            } else if (option == "freecam") {
+                newValue = optionFreecam ? 5.181988172E-8f : 5.169434303E-8f;
             }
 
             // LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
