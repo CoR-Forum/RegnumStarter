@@ -54,8 +54,6 @@ STDMETHODIMP DownloadProgressCallback::OnProgress(ULONG ulProgress, ULONG ulProg
 }
 
 void SelfUpdate() {
-    Log("Checking for updates...");
-
     auto [latestVersion, downloadURL] = FetchLatestVersion();
     if (latestVersion.empty() || downloadURL.empty()) {
         Log("Failed to fetch the latest version or download URL");

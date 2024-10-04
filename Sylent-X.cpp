@@ -166,7 +166,6 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
                 SaveLoginCredentials(login, password);
 
-                Log("Login credentials saved");
                 DestroyWindow(hwnd);
             }
 
@@ -216,11 +215,9 @@ void CreateLoginWindow(HINSTANCE hInstance) {
 void OpenLoginWindow() {
     Log("Opening login window");
     if (hLoginWindow && IsWindow(hLoginWindow)) {
-        Log("Login window already open, destroying it and creating a new one");
         DestroyWindow(hLoginWindow);
         CreateLoginWindow(hInstance);
     } else {
-        Log("Creating login window");
         CreateLoginWindow(hInstance);
     }
 }
@@ -246,7 +243,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
     if (!RegisterClassEx(&wc)) {
-        Log("Failed to register window class");
         MessageBox(NULL, "Failed to register window class.", "Error", MB_ICONERROR);
         return 0;
     }
@@ -257,7 +253,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                                CW_USEDEFAULT, CW_USEDEFAULT, 756, 504, NULL, NULL, hInstance, NULL);
 
     if (hwnd == NULL) {
-        Log("Failed to create window");
         MessageBox(NULL, "Failed to create window.", "Error", MB_ICONERROR);
         return 0;
     }
@@ -269,15 +264,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     // Set the global keyboard hook
     hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
     if (!hKeyboardHook) {
-        Log("Failed to set keyboard hook");
         MessageBox(NULL, "Failed to set keyboard hook.", "Error", MB_ICONERROR);
         return 0;
     }
     LogDebug("Keyboard hook set successfully");
 
     if (!Login(login, password)) {
-        Log("Login failed. Opening login window.");
-        OpenLoginWindow(); // Open login window if login fails
+        Log("Login failed.");
+        OpenLoginWindow();
     }
 
     // Post custom message to start self-update
@@ -342,18 +336,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     static HINSTANCE hInstance = GetModuleHandle(NULL);
 
     switch (msg) {
-        case WM_CREATE:            
-            LogDebug("Creating checkboxes");
-
-            // Create checkboxes UI elements
-            chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-                                      20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
-            chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-                                      20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
-            chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-                                      20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
-            hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
-                                       20, 200, 760, 100, hwnd, NULL, NULL, NULL);
+        case WM_CREATE:
+            // Create checkboxes
+            chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
+            chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
+            chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
+            hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY, 20, 200, 760, 100, hwnd, NULL, NULL, NULL);
 
             // Disable checkboxes by default
             EnableWindow(chkoptionGravity, FALSE);
@@ -370,7 +358,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             HDC hdc = BeginPaint(hwnd, &ps);
 
             // Fill the background with the custom color
-            HBRUSH hBrush = CreateSolidBrush(RGB(1, 1, 1)); // Custom background color (white)
+            HBRUSH hBrush = CreateSolidBrush(RGB(2, 2, 2)); // Custom background color (white)
             FillRect(hdc, &ps.rcPaint, hBrush);
             DeleteObject(hBrush);
 
