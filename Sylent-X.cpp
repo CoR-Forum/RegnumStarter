@@ -74,6 +74,8 @@ DWORD pid; // Process ID of the target process
 
 std::deque<std::string> logMessages; // Deque to store log
 std::string EncryptPasswordMD5(const std::string& password);
+extern std::string login;
+extern std::string password;
 
 // Function Prototypes
 void SaveSettings();
@@ -85,8 +87,8 @@ void LogDebug(const std::string& message);
 void CreateLoginWindow(HINSTANCE hInstance);
 void OpenLoginWindow();
 void CreateRegistrationWindow(HINSTANCE hInstance);
-void LoadLoginCredentials(HINSTANCE hInstance);
-void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
+extern void LoadLoginCredentials(HINSTANCE hInstance);
+extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 
 // Prototypes for the window procedures
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); 
@@ -243,8 +245,9 @@ void CreateLoginWindow(HINSTANCE hInstance) {
 void OpenLoginWindow() {
     Log("Opening login window");
     if (hLoginWindow && IsWindow(hLoginWindow)) {
-        Log("Login window already open");
-        SetForegroundWindow(hLoginWindow);
+        Log("Login window already open, destroying it and creating a new one");
+        DestroyWindow(hLoginWindow);
+        CreateLoginWindow(hInstance);
     } else {
         Log("Creating login window");
         CreateLoginWindow(hInstance);
@@ -476,32 +479,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     return 0;
 }
 
-void SaveLoginCredentials(const std::string& login, const std::string& password) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-
-    std::ofstream file(configFilePath);
-    if (file.is_open()) {
-        file << "login=" << login << std::endl;
-        file << "password=" << password << std::endl;
-        file.close();
-        Log("Login credentials saved successfully");
-
-        // Attempt to login again
-        if (Login(login, password)) {
-            Log("Login successful after saving credentials - Please restart the application to apply your license");
-            MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
-            // quit the application
-            PostQuitMessage(0);
-        } else {
-            Log("Login failed after saving credentials");
-            // open login window again
-            OpenLoginWindow();
-        }
-    } else {
-        Log("Failed to open config file for writing");
-    }
-}
-
 void SaveSettings() {
     Log("Saving settings to file");
 
@@ -522,41 +499,6 @@ void SaveSettings() {
         Log("Settings saved successfully");
     } else {
         Log("Failed to open settings file for writing");
-    }
-}
-
-// Add global variables for login credentials
-std::string login;
-std::string password;
-
-void LoadLoginCredentials(HINSTANCE hInstance) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-
-    std::ifstream file(configFilePath);
-    bool loginFound = false;
-    bool passwordFound = false;
-
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.find("login=") != std::string::npos) {
-                login = line.substr(line.find("=") + 1);
-                loginFound = true;
-            }
-            if (line.find("password=") != std::string::npos) {
-                password = line.substr(line.find("=") + 1);
-                passwordFound = true;
-            }
-        }
-        file.close();
-        Log("Login credentials loaded successfully");
-    } else {
-        Log("Failed to open config file for reading");
-    }
-
-    if (!loginFound || !passwordFound) {
-        Log("Login or password not found in config file. Opening login window.");
-        OpenLoginWindow();
     }
 }
 
