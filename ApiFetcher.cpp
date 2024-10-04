@@ -23,7 +23,7 @@ extern bool featureZoom;
 extern bool featureGravity;
 
 bool Login(const std::string& login, const std::string& password) {
-    std::string path = "/api/v1/login?login=" + login + "&password=" + password;
+    std::string path = "/public/login.php?username=" + login + "&password=" + password;
 
     HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) {
@@ -31,7 +31,7 @@ bool Login(const std::string& login, const std::string& password) {
         return false;
     }
 
-    HINTERNET hConnect = InternetConnect(hInternet, "cort.cor-forum.de", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect = InternetConnect(hInternet, "localhost", 5500, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) {
         Log("Failed to connect to API");
         InternetCloseHandle(hInternet);
@@ -39,7 +39,7 @@ bool Login(const std::string& login, const std::string& password) {
     }
 
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
     if (!hRequest) {
         Log("Failed to open HTTP request");
         InternetCloseHandle(hConnect);
@@ -71,18 +71,22 @@ bool Login(const std::string& login, const std::string& password) {
     if (response.find("\"status\":\"success\"") != std::string::npos) {
         Log("User " + login + " logged in successfully: " + response);
 
-        // Check for feature_zoom in the response
-        if (response.find("\"feature_zoom\":1") != std::string::npos) {
-            featureZoom = true;
-        } else {
-            featureZoom = false;
-        }
+        // Reset features
+        featureZoom = false;
+        featureGravity = false;
 
-        // if feature_gravity is found in the response
-        if (response.find("\"feature_gravity\":1") != std::string::npos) {
-            featureGravity = true;
-        } else {
-            featureGravity = false;
+        // Check for licensed features in the response
+        if (response.find("\"licensed_features\":[") != std::string::npos) {
+            size_t startPos = response.find("\"licensed_features\":[") + 21;
+            size_t endPos = response.find("]", startPos);
+            std::string featuresStr = response.substr(startPos, endPos - startPos);
+
+            if (featuresStr.find("\"zoom\"") != std::string::npos) {
+                featureZoom = true;
+            }
+            if (featuresStr.find("\"gravity\"") != std::string::npos) {
+                featureGravity = true;
+            }
         }
 
         Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : ""));

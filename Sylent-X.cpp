@@ -182,10 +182,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         CreateLoginWindow(hInstance); // Open login window if login fails
     }
 
-    // print license status
-    Log("Feature Zoom: " + std::to_string(featureZoom));
-    Log("Feature Gravity: " + std::to_string(featureGravity));
-
     // Register the window class
     WNDCLASSEX wc = { 0 };
     wc.cbSize = sizeof(WNDCLASSEX);
