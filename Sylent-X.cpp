@@ -54,7 +54,6 @@ bool optionZoom = true;
 bool featureZoom = false;
 bool featureGravity = false;
 
-// Add a new boolean variable to track the state of the key
 bool isGravityKeyPressed = false;
 
 bool debugLog = false; // Debug Log enabled
