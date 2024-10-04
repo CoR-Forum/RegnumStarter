@@ -72,11 +72,6 @@ HINSTANCE hInstance;
 
 DWORD pid; // Process ID of the target process
 
-std::deque<std::string> logMessages; // Deque to store log
-std::string EncryptPasswordMD5(const std::string& password);
-extern std::string login;
-extern std::string password;
-
 // Function Prototypes
 void SaveSettings();
 void LoadSettings();

@@ -23,11 +23,6 @@ extern void OpenLoginWindow();
 void SaveLoginCredentials(const std::string& login, const std::string& password);
 void LoadLoginCredentials(HINSTANCE hInstance);
 
-
-// load login and password from settings.txt
-std::string login;
-std::string password;
-
 extern bool featureZoom;
 extern bool featureGravity;
 
