@@ -38,7 +38,6 @@ HWND hLogDisplay = nullptr; // Handle to the log display control
 DWORD pid; // Process ID of the target process
 
 // Function Prototypes
-void UpdateLogDisplay();
 void CreateLoginWindow(HINSTANCE hInstance);
 void OpenLoginWindow();
 void CreateRegistrationWindow(HINSTANCE hInstance);
