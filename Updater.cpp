@@ -32,7 +32,6 @@ public:
     }
 };
 
-void SelfUpdate();
 std::pair<std::string, std::string> FetchLatestVersion();
 void Log(const std::string& message);
 
