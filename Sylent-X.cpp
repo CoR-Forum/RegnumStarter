@@ -18,7 +18,7 @@
 #include "Utils.h"
 #include "Updater.cpp"
 #include "Logger.cpp"
-#include "ApiFetcher.cpp"
+#include "ApiHandler.cpp"
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
