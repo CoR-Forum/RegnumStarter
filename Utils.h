@@ -27,10 +27,7 @@ LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); // Handles message
 
 // Pull some functions to the top
 void MemoryManipulation(const std::string& option);
-void OpenLoginWindow();
 void InitializePointers();
-void CreateLoginWindow(HINSTANCE hInstance);
-void CreateRegistrationWindow(HINSTANCE hInstance);
 extern void LoadLoginCredentials(HINSTANCE hInstance);
 extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 
@@ -64,7 +61,10 @@ HWND hwnd = nullptr;
 HWND hRegistrationWindow;
 HWND hLoginWindow;
 
-// Functions
+// Functions for login and registration windows
+void CreateLoginWindow(HINSTANCE hInstance);
+void OpenLoginWindow();
+void CreateRegistrationWindow(HINSTANCE hInstance);
 
 // Convert wstring to string
 std::string WStringToString(const std::wstring& wstr) {
