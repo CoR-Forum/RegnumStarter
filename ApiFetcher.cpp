@@ -6,6 +6,9 @@
 #include "Logger.cpp" // Include the Logger for logging
 
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
+#define WM_OPEN_LOGIN_WINDOW (WM_USER + 2)
+
+extern HWND hwnd; // Declare the handle to the main window
 
 // Declare the Pointer struct
 struct Pointer {
@@ -98,6 +101,38 @@ bool Login(const std::string& login, const std::string& password) {
         Log("Failed to log in: " + response);
         return false;
     }
+}
+
+extern HWND hLoginWindow; // Declare the handle to the login window
+
+void Logout() {
+    // Clear login credentials
+    login.clear();
+    password.clear();
+
+    // Update the config file to remove login and password
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+    std::ifstream configFile(configFilePath);
+    std::string line;
+    std::vector<std::string> lines;
+
+    while (std::getline(configFile, line)) {
+        if (line.find("login=") == std::string::npos && line.find("password=") == std::string::npos) {
+            lines.push_back(line);
+        }
+    }
+    configFile.close();
+
+    std::ofstream outFile(configFilePath);
+    for (const auto& l : lines) {
+        outFile << l << std::endl;
+    }
+    outFile.close();
+
+    Log("Login credentials removed from config file");
+
+    // Show the login window again
+    SendMessage(hwnd, WM_OPEN_LOGIN_WINDOW, 0, 0);
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
