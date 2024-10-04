@@ -23,6 +23,7 @@
 #pragma comment(lib, "urlmon.lib")
 
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
+#define WM_OPEN_LOGIN_WINDOW_OLD (WM_USER + 2) // Renamed the old definition
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
@@ -39,7 +40,7 @@ void ContinuousMemoryWrite(const std::string& option) {
 // Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
 const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x00, 0xaa, 0x00, 0x4b, 0xa9, 0x0b}};
 const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
-const UINT WM_ENABLE_CHECKBOXES = WM_USER + 2; // New custom message identifier
+const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // New custom message identifier
 
 // Constants
 const std::string currentVersion = "0.1.41"; // Current version of the application
@@ -64,6 +65,7 @@ HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 HWND hLogDisplay = nullptr; // Handle to the log display control
 HWND hwnd = nullptr; // Declare hwnd globally to be accessible
 HWND hRegistrationWindow; // Declare the handle to the registration window
+HWND hLoginWindow; // Declare the handle to the login window
 
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
@@ -81,6 +83,7 @@ void Logout();
 void Log(const std::string& message);
 void LogDebug(const std::string& message);
 void CreateLoginWindow(HINSTANCE hInstance);
+void OpenLoginWindow();
 void CreateRegistrationWindow(HINSTANCE hInstance);
 void LoadLoginCredentials(HINSTANCE hInstance);
 void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
@@ -216,7 +219,6 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
     return 0;
 }
 
-// Function to create the login window
 void CreateLoginWindow(HINSTANCE hInstance) {
     WNDCLASS wc = {0};
     wc.lpfnWndProc = LoginWindowProcedure;
@@ -225,7 +227,7 @@ void CreateLoginWindow(HINSTANCE hInstance) {
 
     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowEx(
+    hLoginWindow = CreateWindowEx(
         0,
         "LoginWindowClass",
         "Login",
@@ -234,13 +236,20 @@ void CreateLoginWindow(HINSTANCE hInstance) {
         NULL, NULL, hInstance, NULL
     );
 
-    ShowWindow(hwnd, SW_SHOW);
+    ShowWindow(hLoginWindow, SW_SHOW);
+}
+
+// Example of sending the WM_OPEN_LOGIN_WINDOW message
+void OpenLoginWindow() {
+    if (hLoginWindow) {
+        SendMessage(hLoginWindow, WM_OPEN_LOGIN_WINDOW, 0, 0);
+    } else {
+        CreateLoginWindow(hInstance);
+    }
 }
 
 // Global hook handle
 HHOOK hKeyboardHook;
-
-
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     hInstanceGlobal = hInstance; // Assign to global variable
@@ -452,41 +461,16 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
             break;
 
+        case WM_OPEN_LOGIN_WINDOW:
+            Log("Opening login window");
+            OpenLoginWindow();
+            break;
+
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
 
     return 0;
-}
-
-void Logout() {
-    // Clear login credentials
-    login.clear();
-    password.clear();
-
-    // Update the config file to remove login and password
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-    std::ifstream configFile(configFilePath);
-    std::string line;
-    std::vector<std::string> lines;
-
-    while (std::getline(configFile, line)) {
-        if (line.find("login=") == std::string::npos && line.find("password=") == std::string::npos) {
-            lines.push_back(line);
-        }
-    }
-    configFile.close();
-
-    std::ofstream outFile(configFilePath);
-    for (const auto& l : lines) {
-        outFile << l << std::endl;
-    }
-    outFile.close();
-
-    Log("Login credentials removed from config file");
-
-    // Show the login window again
-    CreateLoginWindow(hInstanceGlobal);
 }
 
 void SaveLoginCredentials(const std::string& login, const std::string& password) {
