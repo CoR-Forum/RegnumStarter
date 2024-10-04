@@ -74,6 +74,7 @@ LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
 void UpdateLogDisplay();
+void Logout();
 void Log(const std::string& message);
 void LogDebug(const std::string& message); // Renamed function
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam); // Added prototype
@@ -83,8 +84,68 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 std::string EncryptPasswordMD5(const std::string& password);
 
+LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    static HWND hUsername, hEmail, hPassword, hRegisterButton;
+
+    switch (msg) {
+        case WM_CREATE:
+            CreateWindow("STATIC", "Username:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
+            hUsername = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
+
+            CreateWindow("STATIC", "E-Mail:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
+            hEmail = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
+
+            CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 100, 80, 25, hwnd, NULL, NULL, NULL);
+            hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 100, 150, 25, hwnd, NULL, NULL, NULL);
+
+            hRegisterButton = CreateWindow("BUTTON", "Register", WS_VISIBLE | WS_CHILD, 100, 140, 80, 25, hwnd, (HMENU)4, NULL, NULL);
+
+            SetFocus(hUsername);
+            break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == 1) {
+                char username[100], email[100], password[100];
+                GetWindowText(hUsername, username, 100);
+                GetWindowText(hEmail, email, 100);
+                GetWindowText(hPassword, password, 100);
+
+                // Call the function to register the user using the REST API
+                RegisterUser(username, email, password);
+            }
+            break;
+
+        case WM_DESTROY:
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
+}
+
+void CreateRegistrationWindow(HINSTANCE hInstance) {
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = RegistrationWindowProcedure;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = "RegistrationWindowClass";
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0,
+        "RegistrationWindowClass",
+        "Register",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 200,
+        NULL, NULL, hInstance, NULL
+    );
+
+    ShowWindow(hwnd, SW_SHOW);
+}
+
 // Global variables for login window
-HWND hLogin, hPassword, hLoginButton;
+HWND hLogin, hPassword, hLoginButton, hRegisterButton;
 
 void CreateLoginWindow(HINSTANCE hInstance) {
     WNDCLASS wc = {0};
@@ -141,8 +202,8 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             }
 
             if (LOWORD(wParam) == 2) {
-                // open the registration link in the default web browser
-                ShellExecute(NULL, "open", "https://cort.cor-forum.de/#register", NULL, NULL, SW_SHOWNORMAL);
+                CreateRegistrationWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+                DestroyWindow(hwnd); // Close the login window
             }
 
             if (LOWORD(wParam) == 3) {
@@ -278,11 +339,11 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 }
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom;
+    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom, hLogoutButton;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
 
     switch (msg) {
-        case WM_CREATE:
+        case WM_CREATE:            
             LogDebug("Creating checkboxes");
 
             // Create checkboxes UI elements
@@ -299,6 +360,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             EnableWindow(chkoptionGravity, FALSE);
             EnableWindow(chkoptionMoonjump, FALSE);
             EnableWindow(chkoptionZoom, FALSE);
+
+            // Create the Logout button
+            hLogoutButton = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD, 10, 10, 80, 25, hwnd, (HMENU)4, NULL, NULL);
+
             break;
 
         case WM_PAINT: {
@@ -341,6 +406,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 Log("Zoom toggled");
                 MemoryManipulation("zoom");
             }
+            if (LOWORD(wParam) == 4) {
+                Log("Logout button clicked");
+                Logout();
+            }
             break;
 
         case WM_DESTROY:
@@ -375,6 +444,36 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 
     return 0;
+}
+
+void Logout() {
+    // Clear login credentials
+    login.clear();
+    password.clear();
+
+    // Update the config file to remove login and password
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+    std::ifstream configFile(configFilePath);
+    std::string line;
+    std::vector<std::string> lines;
+
+    while (std::getline(configFile, line)) {
+        if (line.find("login=") == std::string::npos && line.find("password=") == std::string::npos) {
+            lines.push_back(line);
+        }
+    }
+    configFile.close();
+
+    std::ofstream outFile(configFilePath);
+    for (const auto& l : lines) {
+        outFile << l << std::endl;
+    }
+    outFile.close();
+
+    Log("Login credentials removed from config file");
+
+    // Show the login window again
+    CreateLoginWindow(hInstanceGlobal);
 }
 
 void SaveLoginCredentials(const std::string& login, const std::string& password) {

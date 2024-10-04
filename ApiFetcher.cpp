@@ -200,3 +200,39 @@ void InitializePointers() {
         Log("Failed to fetch or parse pointers");
     }
 }
+
+void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
+    HINTERNET hSession = InternetOpen("RegistrationAgent", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    if (!hSession) {
+        Log("Failed to open internet session");
+        return;
+    }
+
+    HINTERNET hConnect = InternetConnect(hSession, "api.example.com", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) {
+        Log("Failed to connect to server");
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "/register", NULL, NULL, NULL, 0, 0);
+    if (!hRequest) {
+        Log("Failed to open HTTP request");
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    std::string postData = "username=" + username + "&email=" + email + "&password=" + password;
+    const char* headers = "Content-Type: application/x-www-form-urlencoded";
+
+    if (!HttpSendRequest(hRequest, headers, strlen(headers), (LPVOID)postData.c_str(), postData.length())) {
+        Log("Failed to send HTTP request");
+    } else {
+        Log("Registration successful");
+    }
+
+    InternetCloseHandle(hRequest);
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hSession);
+}
