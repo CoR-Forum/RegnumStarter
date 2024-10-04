@@ -125,9 +125,9 @@ void Logout() {
     outFile.close();
 
     Log("Login credentials removed from config file");
-
-    // Show the login window again
-    OpenLoginWindow();
+    
+    // Quit
+    PostQuitMessage(0);
 }
 
 void LoadLoginCredentials(HINSTANCE hInstance) {
