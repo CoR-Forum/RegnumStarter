@@ -19,6 +19,7 @@ struct Pointer {
 
 extern void Log(const std::string& message);
 extern void LogDebug(const std::string& message);
+extern void OpenLoginWindow();
 
 // load login and password from settings.txt
 extern std::string login;
@@ -132,7 +133,7 @@ void Logout() {
     Log("Login credentials removed from config file");
 
     // Show the login window again
-    SendMessage(hwnd, WM_OPEN_LOGIN_WINDOW, 0, 0);
+    OpenLoginWindow();
 }
 
 std::string FetchDataFromAPI(const std::string& url) {

@@ -241,9 +241,12 @@ void CreateLoginWindow(HINSTANCE hInstance) {
 
 // Example of sending the WM_OPEN_LOGIN_WINDOW message
 void OpenLoginWindow() {
-    if (hLoginWindow) {
-        SendMessage(hLoginWindow, WM_OPEN_LOGIN_WINDOW, 0, 0);
+    Log("Opening login window");
+    if (hLoginWindow && IsWindow(hLoginWindow)) {
+        Log("Login window already open");
+        SetForegroundWindow(hLoginWindow);
     } else {
+        Log("Creating login window");
         CreateLoginWindow(hInstance);
     }
 }
@@ -262,7 +265,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     if (!Login(login, password)) {
         Log("Login failed. Opening login window.");
-        CreateLoginWindow(hInstance); // Open login window if login fails
+        OpenLoginWindow(); // Open login window if login fails
     }
 
     // Register the window class
@@ -492,7 +495,7 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
         } else {
             Log("Login failed after saving credentials");
             // open login window again
-            CreateLoginWindow(hInstanceGlobal);
+            OpenLoginWindow();
         }
     } else {
         Log("Failed to open config file for writing");
@@ -553,7 +556,7 @@ void LoadLoginCredentials(HINSTANCE hInstance) {
 
     if (!loginFound || !passwordFound) {
         Log("Login or password not found in config file. Opening login window.");
-        CreateLoginWindow(hInstance);
+        OpenLoginWindow();
     }
 }
 
