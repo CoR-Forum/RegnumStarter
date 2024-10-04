@@ -10,17 +10,19 @@
 #include <objbase.h>
 #include <vector>
 #include <tlhelp32.h>
-#include "Updater.cpp"
-#include "Utils.h"
-#include "Logger.cpp" // Include the combined Logger file
 #include <wininet.h>
 #include <thread>
 #include <atomic>
 #include <sstream>
 #include <iomanip>
-#include "ApiFetcher.cpp" // Include the new ApiFetcher file
+#include "Utils.h"
+#include "Updater.cpp"
+#include "Logger.cpp"
+#include "ApiFetcher.cpp"
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
+
+#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
@@ -59,29 +61,33 @@ bool isGravityKeyPressed = false;
 bool debugLog = false; // Debug Log enabled
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
-
 HWND hLogDisplay = nullptr; // Handle to the log display control
-
 HWND hwnd = nullptr; // Declare hwnd globally to be accessible
+HWND hRegistrationWindow; // Declare the handle to the registration window
 
-std::deque<std::string> logMessages; // Deque to store log
+HINSTANCE hInstanceGlobal;
+HINSTANCE hInstance;
 
 DWORD pid; // Process ID of the target process
 
+std::deque<std::string> logMessages; // Deque to store log
+std::string EncryptPasswordMD5(const std::string& password);
+
 // Function Prototypes
-LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 void SaveSettings();
 void LoadSettings();
 void UpdateLogDisplay();
 void Logout();
 void Log(const std::string& message);
-void LogDebug(const std::string& message); // Renamed function
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam); // Added prototype
-
-// Function prototypes
-LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void LogDebug(const std::string& message);
+void CreateLoginWindow(HINSTANCE hInstance);
+void CreateRegistrationWindow(HINSTANCE hInstance);
+void LoadLoginCredentials(HINSTANCE hInstance);
 void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
-std::string EncryptPasswordMD5(const std::string& password);
+
+// Prototypes for the window procedures
+LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); 
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND hUsername, hEmail, hPassword, hRegisterButton;
@@ -103,7 +109,7 @@ LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam,
             break;
 
         case WM_COMMAND:
-            if (LOWORD(wParam) == 1) {
+            if (LOWORD(wParam) == 4) {
                 char username[100], email[100], password[100];
                 GetWindowText(hUsername, username, 100);
                 GetWindowText(hEmail, email, 100);
@@ -112,6 +118,14 @@ LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam,
                 // Call the function to register the user using the REST API
                 RegisterUser(username, email, password);
             }
+            break;
+
+        case WM_CLOSE_REGISTRATION_WINDOW:
+            // Destroy the registration window and show a message box
+            DestroyWindow(hwnd);
+            MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION);
+            // Open the login window
+            CreateLoginWindow(hInstance);
             break;
 
         case WM_DESTROY:
@@ -131,7 +145,7 @@ void CreateRegistrationWindow(HINSTANCE hInstance) {
 
     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowEx(
+    hRegistrationWindow = CreateWindowEx(
         0,
         "RegistrationWindowClass",
         "Register",
@@ -140,32 +154,13 @@ void CreateRegistrationWindow(HINSTANCE hInstance) {
         NULL, NULL, hInstance, NULL
     );
 
-    ShowWindow(hwnd, SW_SHOW);
+    ShowWindow(hRegistrationWindow, SW_SHOW);
 }
 
 // Global variables for login window
 HWND hLogin, hPassword, hLoginButton, hRegisterButton;
 
-void CreateLoginWindow(HINSTANCE hInstance) {
-    WNDCLASS wc = {0};
-    wc.lpfnWndProc = LoginWindowProcedure;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = "LoginWindowClass";
-
-    RegisterClass(&wc);
-
-    HWND hwnd = CreateWindowEx(
-        0,
-        "LoginWindowClass",
-        "Login",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 300, 300,
-        NULL, NULL, hInstance, NULL
-    );
-
-    ShowWindow(hwnd, SW_SHOW);
-}
-
+// Login Window Procedure
 LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_CREATE:
@@ -221,12 +216,31 @@ LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
     return 0;
 }
 
+// Function to create the login window
+void CreateLoginWindow(HINSTANCE hInstance) {
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = LoginWindowProcedure;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = "LoginWindowClass";
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0,
+        "LoginWindowClass",
+        "Login",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 300,
+        NULL, NULL, hInstance, NULL
+    );
+
+    ShowWindow(hwnd, SW_SHOW);
+}
+
 // Global hook handle
 HHOOK hKeyboardHook;
 
-HINSTANCE hInstanceGlobal;
 
-void LoadLoginCredentials(HINSTANCE hInstance);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     hInstanceGlobal = hInstance; // Assign to global variable

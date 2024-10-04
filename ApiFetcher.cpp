@@ -5,6 +5,8 @@
 #include <sstream>
 #include "Logger.cpp" // Include the Logger for logging
 
+#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
+
 // Declare the Pointer struct
 struct Pointer {
     std::string name;
@@ -23,7 +25,7 @@ extern bool featureZoom;
 extern bool featureGravity;
 
 bool Login(const std::string& login, const std::string& password) {
-    std::string path = "/public/login.php?username=" + login + "&password=" + password;
+    std::string path = "/login.php?username=" + login + "&password=" + password;
 
     HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) {
@@ -31,7 +33,7 @@ bool Login(const std::string& login, const std::string& password) {
         return false;
     }
 
-    HINTERNET hConnect = InternetConnect(hInternet, "localhost", 5500, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) {
         Log("Failed to connect to API");
         InternetCloseHandle(hInternet);
@@ -39,7 +41,7 @@ bool Login(const std::string& login, const std::string& password) {
     }
 
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
     if (!hRequest) {
         Log("Failed to open HTTP request");
         InternetCloseHandle(hConnect);
@@ -201,6 +203,7 @@ void InitializePointers() {
     }
 }
 
+extern HWND hRegistrationWindow; // Declare the handle to the registration window
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     HINTERNET hSession = InternetOpen("RegistrationAgent", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hSession) {
@@ -208,14 +211,15 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         return;
     }
 
-    HINTERNET hConnect = InternetConnect(hSession, "api.example.com", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect = InternetConnect(hSession, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) {
         Log("Failed to connect to server");
         InternetCloseHandle(hSession);
         return;
     }
 
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "/register", NULL, NULL, NULL, 0, 0);
+    std::string path = "/register.php?username=" + username + "&email=" + email + "&password=" + password;
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
     if (!hRequest) {
         Log("Failed to open HTTP request");
         InternetCloseHandle(hConnect);
@@ -223,13 +227,32 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         return;
     }
 
-    std::string postData = "username=" + username + "&email=" + email + "&password=" + password;
-    const char* headers = "Content-Type: application/x-www-form-urlencoded";
-
-    if (!HttpSendRequest(hRequest, headers, strlen(headers), (LPVOID)postData.c_str(), postData.length())) {
+    if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) {
         Log("Failed to send HTTP request");
     } else {
-        Log("Registration successful");
+        // Log the response
+        char buffer[4096];
+        DWORD bytesRead;
+        std::string response;
+
+        while (InternetReadFile(hRequest, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
+            response.append(buffer, bytesRead);
+        }
+
+        Log("Registration response: " + response);
+
+        // Parse the response and show the message
+        size_t messagePos = response.find("\"message\":\"") + 11;
+        size_t messageEnd = response.find("\"", messagePos);
+        std::string message = response.substr(messagePos, messageEnd - messagePos);
+
+        if (response.find("\"status\":\"success\"") != std::string::npos) {
+            Log("User registered successfully: " + message);
+            // Send message to close the registration window
+            SendMessage(hRegistrationWindow, WM_CLOSE_REGISTRATION_WINDOW, 0, 0);
+        } else {
+            Log("Registration failed: " + message);
+        }
     }
 
     InternetCloseHandle(hRequest);
