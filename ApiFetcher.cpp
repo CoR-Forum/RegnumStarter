@@ -5,6 +5,8 @@
 #include <sstream>
 #include "Logger.cpp" // Include the Logger for logging
 
+#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
+
 // Declare the Pointer struct
 struct Pointer {
     std::string name;
@@ -23,7 +25,7 @@ extern bool featureZoom;
 extern bool featureGravity;
 
 bool Login(const std::string& login, const std::string& password) {
-    std::string path = "/api/v1/login?login=" + login + "&password=" + password;
+    std::string path = "/login.php?username=" + login + "&password=" + password;
 
     HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) {
@@ -31,7 +33,7 @@ bool Login(const std::string& login, const std::string& password) {
         return false;
     }
 
-    HINTERNET hConnect = InternetConnect(hInternet, "cort.cor-forum.de", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) {
         Log("Failed to connect to API");
         InternetCloseHandle(hInternet);
@@ -71,18 +73,22 @@ bool Login(const std::string& login, const std::string& password) {
     if (response.find("\"status\":\"success\"") != std::string::npos) {
         Log("User " + login + " logged in successfully: " + response);
 
-        // Check for feature_zoom in the response
-        if (response.find("\"feature_zoom\":1") != std::string::npos) {
-            featureZoom = true;
-        } else {
-            featureZoom = false;
-        }
+        // Reset features
+        featureZoom = false;
+        featureGravity = false;
 
-        // if feature_gravity is found in the response
-        if (response.find("\"feature_gravity\":1") != std::string::npos) {
-            featureGravity = true;
-        } else {
-            featureGravity = false;
+        // Check for licensed features in the response
+        if (response.find("\"licensed_features\":[") != std::string::npos) {
+            size_t startPos = response.find("\"licensed_features\":[") + 21;
+            size_t endPos = response.find("]", startPos);
+            std::string featuresStr = response.substr(startPos, endPos - startPos);
+
+            if (featuresStr.find("\"zoom\"") != std::string::npos) {
+                featureZoom = true;
+            }
+            if (featuresStr.find("\"gravity\"") != std::string::npos) {
+                featureGravity = true;
+            }
         }
 
         Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : ""));
@@ -195,4 +201,61 @@ void InitializePointers() {
     } else {
         Log("Failed to fetch or parse pointers");
     }
+}
+
+extern HWND hRegistrationWindow; // Declare the handle to the registration window
+void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
+    HINTERNET hSession = InternetOpen("RegistrationAgent", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    if (!hSession) {
+        Log("Failed to open internet session");
+        return;
+    }
+
+    HINTERNET hConnect = InternetConnect(hSession, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) {
+        Log("Failed to connect to server");
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    std::string path = "/register.php?username=" + username + "&email=" + email + "&password=" + password;
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
+    if (!hRequest) {
+        Log("Failed to open HTTP request");
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) {
+        Log("Failed to send HTTP request");
+    } else {
+        // Log the response
+        char buffer[4096];
+        DWORD bytesRead;
+        std::string response;
+
+        while (InternetReadFile(hRequest, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
+            response.append(buffer, bytesRead);
+        }
+
+        Log("Registration response: " + response);
+
+        // Parse the response and show the message
+        size_t messagePos = response.find("\"message\":\"") + 11;
+        size_t messageEnd = response.find("\"", messagePos);
+        std::string message = response.substr(messagePos, messageEnd - messagePos);
+
+        if (response.find("\"status\":\"success\"") != std::string::npos) {
+            Log("User registered successfully: " + message);
+            // Send message to close the registration window
+            SendMessage(hRegistrationWindow, WM_CLOSE_REGISTRATION_WINDOW, 0, 0);
+        } else {
+            Log("Registration failed: " + message);
+        }
+    }
+
+    InternetCloseHandle(hRequest);
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hSession);
 }
