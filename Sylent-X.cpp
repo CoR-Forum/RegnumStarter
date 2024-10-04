@@ -48,10 +48,8 @@ const char* appDataPath = getenv("APPDATA");
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
-bool isGravityKeyPressed = false;
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 HWND hLogDisplay = nullptr; // Handle to the log display control
-HWND hwnd = nullptr; // Declare hwnd globally to be accessible
 
 DWORD pid; // Process ID of the target process
 

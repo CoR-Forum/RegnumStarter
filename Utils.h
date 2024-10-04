@@ -25,6 +25,12 @@ bool optionZoom = true;
 bool featureZoom = false;
 bool featureGravity = false;
 
+// Keydown states
+bool isGravityKeyPressed = false;
+
+// Seems to be the main window declaration?
+HWND hwnd = nullptr;
+
 // Declare the window handles
 HWND hRegistrationWindow;
 HWND hLoginWindow;
