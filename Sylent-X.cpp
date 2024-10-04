@@ -1,24 +1,14 @@
 #include <windows.h>
 #include <urlmon.h>
 #include <comdef.h>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <deque>
-#include <ctime>
-#include <cstdio>
 #include <objbase.h>
-#include <vector>
 #include <tlhelp32.h>
 #include <wininet.h>
-#include <thread>
-#include <atomic>
-#include <sstream>
-#include <iomanip>
 #include "Utils.h"
 #include "Updater.cpp"
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
+
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
@@ -35,14 +25,10 @@ void ContinuousMemoryWrite(const std::string& option) {
     }
 }
 
-// Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
-const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x00, 0xaa, 0x00, 0x4b, 0xa9, 0x0b}};
-const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // New custom message identifier
 
 // Constants
-const std::string currentVersion = "0.1.41"; // Current version of the application
-const char* appDataPath = getenv("APPDATA");
+const std::string currentVersion = "0.1.39"; // Current version of the application
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
@@ -52,8 +38,6 @@ HWND hLogDisplay = nullptr; // Handle to the log display control
 DWORD pid; // Process ID of the target process
 
 // Function Prototypes
-void SaveSettings();
-void LoadSettings();
 void UpdateLogDisplay();
 void CreateLoginWindow(HINSTANCE hInstance);
 void OpenLoginWindow();

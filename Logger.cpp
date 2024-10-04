@@ -2,17 +2,8 @@
 #define LOGGER_H
 
 #include "Utils.h"
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <deque>
-#include <ctime>
-#include <windows.h>
 
-extern const char* appDataPath;
-extern bool debugLog;
 extern HWND hLogDisplay;
-
 
 // Deque to store log messages
 std::deque<std::string> logMessages;

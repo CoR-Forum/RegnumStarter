@@ -1,7 +1,23 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <windows.h>
 #include <string>
+#include <ctime>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <deque>
+#include <sstream>
+#include <thread>
+#include <atomic>
+#include <sstream>
+#include <urlmon.h>
+#include <comdef.h>
+#include <objbase.h>
+#include <wininet.h>
 
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
@@ -12,13 +28,18 @@ LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); // Handles message
 // Pull some functions to the top
 void MemoryManipulation(const std::string& option);
 void OpenLoginWindow();
+void InitializePointers();
 
 // Declare login and password globally
 std::string login;
 std::string password;
 
+// Global constants
+const char* appDataPath = getenv("APPDATA");
+extern const std::string currentVersion;
+
 // Global variables
-bool debugLog = false; //
+bool debugLog = false;
 
 // Checkboxes states
 bool optionGravity = false;

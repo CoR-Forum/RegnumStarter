@@ -1,10 +1,3 @@
-#include <windows.h>
-#include <wininet.h>
-#include <string>
-#include <vector>
-#include <sstream>
-#include "Logger.cpp" // Include the Logger for logging
-
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
 #define WM_OPEN_LOGIN_WINDOW (WM_USER + 2)
 
