@@ -6,8 +6,12 @@
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
 
-void Log(const std::string& message);
-void LogDebug(const std::string& message);
+// Window procedures
+LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); // Handles messages sent to the main window, such as creating and destroying windows, and custom messages like
+
+// Pull some functions to the top
+void MemoryManipulation(const std::string& option);
+void OpenLoginWindow();
 
 // Declare login and password globally
 std::string login;

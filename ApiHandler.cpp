@@ -17,10 +17,6 @@ struct Pointer {
     std::vector<unsigned long> offsets;
 };
 
-void OpenLoginWindow();
-void SaveLoginCredentials(const std::string& login, const std::string& password);
-void LoadLoginCredentials(HINSTANCE hInstance);
-
 extern bool featureZoom;
 extern bool featureGravity;
 

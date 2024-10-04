@@ -28,8 +28,6 @@
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
 
-void MemoryManipulation(const std::string& option); // Updated prototype
-
 void ContinuousMemoryWrite(const std::string& option) {
     while (isWriting) {
         MemoryManipulation(option);
@@ -57,17 +55,13 @@ DWORD pid; // Process ID of the target process
 void SaveSettings();
 void LoadSettings();
 void UpdateLogDisplay();
-void Logout();
-void Log(const std::string& message);
-void LogDebug(const std::string& message);
 void CreateLoginWindow(HINSTANCE hInstance);
 void OpenLoginWindow();
 void CreateRegistrationWindow(HINSTANCE hInstance);
 extern void LoadLoginCredentials(HINSTANCE hInstance);
 extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 
-// Prototypes for the window procedures
-LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); 
+// Handle keyboard input
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
