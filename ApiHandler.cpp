@@ -1,12 +1,6 @@
-#include <windows.h>
-#include <wininet.h>
-#include <string>
-#include <vector>
-#include <sstream>
-#include "Logger.cpp" // Include the Logger for logging
+#include "Utils.h"
 
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
-#define WM_OPEN_LOGIN_WINDOW (WM_USER + 2)
 
 extern HWND hwnd; // Declare the handle to the main window
 
@@ -16,13 +10,6 @@ struct Pointer {
     unsigned long address;
     std::vector<unsigned long> offsets;
 };
-
-extern void Log(const std::string& message);
-extern void LogDebug(const std::string& message);
-
-// load login and password from settings.txt
-extern std::string login;
-extern std::string password;
 
 extern bool featureZoom;
 extern bool featureGravity;
@@ -103,8 +90,6 @@ bool Login(const std::string& login, const std::string& password) {
     }
 }
 
-extern HWND hLoginWindow; // Declare the handle to the login window
-
 void Logout() {
     // Clear login credentials
     login.clear();
@@ -130,9 +115,113 @@ void Logout() {
     outFile.close();
 
     Log("Login credentials removed from config file");
+    
+    // Quit
+    PostQuitMessage(0);
+}
 
-    // Show the login window again
-    SendMessage(hwnd, WM_OPEN_LOGIN_WINDOW, 0, 0);
+void LoadLoginCredentials(HINSTANCE hInstance) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ifstream file(configFilePath);
+    bool loginFound = false;
+    bool passwordFound = false;
+
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("login=") != std::string::npos) {
+                login = line.substr(line.find("=") + 1);
+                loginFound = true;
+            }
+            if (line.find("password=") != std::string::npos) {
+                password = line.substr(line.find("=") + 1);
+                passwordFound = true;
+            }
+        }
+        file.close();
+        Log("Login credentials loaded successfully");
+    } else {
+        Log("Failed to open config file for reading");
+    }
+
+    if (!loginFound || !passwordFound) {
+        Log("Login or password not found in config file. Opening login window.");
+        OpenLoginWindow();
+    }
+}
+
+void SaveLoginCredentials(const std::string& login, const std::string& password) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ofstream file(configFilePath);
+    if (file.is_open()) {
+        file << "login=" << login << std::endl;
+        file << "password=" << password << std::endl;
+        file.close();
+        Log("Login credentials saved successfully");
+
+        // Attempt to login again
+        if (Login(login, password)) {
+            Log("Login successful after saving credentials - Please restart the application to apply your license");
+            MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
+            // quit the application
+            PostQuitMessage(0);
+        } else {
+            Log("Login failed after saving credentials");
+            // open login window again
+            OpenLoginWindow();
+        }
+    } else {
+        Log("Failed to open config file for writing");
+    }
+}
+
+void SaveSettings() {
+    // Construct the settings file path
+    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
+    std::string settingsFilePath = settingsDir + "\\settings.txt";
+
+    // Create the directory if it doesn't exist
+    CreateDirectory(settingsDir.c_str(), NULL);
+
+    // Open the file and write the settings
+    std::ofstream file(settingsFilePath);
+    if (file.is_open()) {
+        file << "optionGravity=" << optionGravity << std::endl;
+        file << "optionMoonjump=" << optionMoonjump << std::endl;
+        file << "optionZoom=" << optionZoom << std::endl;
+        file.close();
+        Log("Settings saved successfully");
+    } else {
+        Log("Failed to open settings file for writing");
+    }
+}
+
+void LoadSettings() {
+    // Construct the settings file path
+    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
+
+    // Open the file and read the settings
+    std::ifstream file(settingsFilePath);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("optionGravity=") != std::string::npos)
+                optionGravity = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionMoonjump=") != std::string::npos)
+                optionMoonjump = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionZoom=") != std::string::npos)
+                optionZoom = (line.substr(line.find("=") + 1) == "1");
+        }
+        file.close();
+        Log("Settings loaded successfully");
+    } else {
+        LogDebug("Settings file not found");
+    }
+
+    // Load login credentials
+    LoadLoginCredentials(hInstanceGlobal);
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
@@ -238,7 +327,6 @@ void InitializePointers() {
     }
 }
 
-extern HWND hRegistrationWindow; // Declare the handle to the registration window
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     HINTERNET hSession = InternetOpen("RegistrationAgent", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hSession) {

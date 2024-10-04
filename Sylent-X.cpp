@@ -1,34 +1,22 @@
 #include <windows.h>
 #include <urlmon.h>
 #include <comdef.h>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <deque>
-#include <ctime>
-#include <cstdio>
 #include <objbase.h>
-#include <vector>
 #include <tlhelp32.h>
 #include <wininet.h>
-#include <thread>
-#include <atomic>
-#include <sstream>
-#include <iomanip>
 #include "Utils.h"
 #include "Updater.cpp"
 #include "Logger.cpp"
-#include "ApiFetcher.cpp"
+#include "ApiHandler.cpp"
+#include "Windows.cpp"
+
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
-#define WM_OPEN_LOGIN_WINDOW_OLD (WM_USER + 2) // Renamed the old definition
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
-
-void MemoryManipulation(const std::string& option); // Updated prototype
 
 void ContinuousMemoryWrite(const std::string& option) {
     while (isWriting) {
@@ -37,218 +25,20 @@ void ContinuousMemoryWrite(const std::string& option) {
     }
 }
 
-// Define GUIDs for IID_IBindStatusCallback and IID_IUnknown
-const IID IID_IBindStatusCallback = {0x79eac9c1, 0xbaf9, 0x11ce, {0x8c, 0x82, 0x00, 0xaa, 0x00, 0x4b, 0xa9, 0x0b}};
-const IID IID_IUnknown = {0x00000000, 0x0000, 0x0000, {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
-const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // New custom message identifier
+const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // Message Identifier for retrieving message to enable checkboxes
 
 // Constants
-const std::string currentVersion = "0.1.41"; // Current version of the application
-const char* appDataPath = getenv("APPDATA");
+const std::string currentVersion = "0.1.50"; // Current version of the application
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
-// Checkboxes states
-bool optionGravity = false;
-bool optionMoonjump = false;
-bool optionZoom = true;
-bool optionFreecam = false;
-
-// license status
-bool featureZoom = false;
-bool featureGravity = false;
-bool featureFreecam = false;
-
-bool isGravityKeyPressed = false;
-
-bool debugLog = false; // Debug Log enabled
-
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 HWND hLogDisplay = nullptr; // Handle to the log display control
-HWND hwnd = nullptr; // Declare hwnd globally to be accessible
-HWND hRegistrationWindow; // Declare the handle to the registration window
-HWND hLoginWindow; // Declare the handle to the login window
-
-HINSTANCE hInstanceGlobal;
-HINSTANCE hInstance;
 
 DWORD pid; // Process ID of the target process
 
-std::deque<std::string> logMessages; // Deque to store log
-std::string EncryptPasswordMD5(const std::string& password);
-
-// Function Prototypes
-void SaveSettings();
-void LoadSettings();
-void UpdateLogDisplay();
-void Logout();
-void Log(const std::string& message);
-void LogDebug(const std::string& message);
-void CreateLoginWindow(HINSTANCE hInstance);
-void OpenLoginWindow();
-void CreateRegistrationWindow(HINSTANCE hInstance);
-void LoadLoginCredentials(HINSTANCE hInstance);
-void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
-
-// Prototypes for the window procedures
-LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); 
+// Handle keyboard input
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-
-LRESULT CALLBACK RegistrationWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND hUsername, hEmail, hPassword, hRegisterButton;
-
-    switch (msg) {
-        case WM_CREATE:
-            CreateWindow("STATIC", "Username:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
-            hUsername = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
-
-            CreateWindow("STATIC", "E-Mail:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
-            hEmail = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
-
-            CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 100, 80, 25, hwnd, NULL, NULL, NULL);
-            hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 100, 150, 25, hwnd, NULL, NULL, NULL);
-
-            hRegisterButton = CreateWindow("BUTTON", "Register", WS_VISIBLE | WS_CHILD, 100, 140, 80, 25, hwnd, (HMENU)4, NULL, NULL);
-
-            SetFocus(hUsername);
-            break;
-
-        case WM_COMMAND:
-            if (LOWORD(wParam) == 4) {
-                char username[100], email[100], password[100];
-                GetWindowText(hUsername, username, 100);
-                GetWindowText(hEmail, email, 100);
-                GetWindowText(hPassword, password, 100);
-
-                // Call the function to register the user using the REST API
-                RegisterUser(username, email, password);
-            }
-            break;
-
-        case WM_CLOSE_REGISTRATION_WINDOW:
-            // Destroy the registration window and show a message box
-            DestroyWindow(hwnd);
-            MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION);
-            // Open the login window
-            CreateLoginWindow(hInstance);
-            break;
-
-        case WM_DESTROY:
-            break;
-
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-    return 0;
-}
-
-void CreateRegistrationWindow(HINSTANCE hInstance) {
-    WNDCLASS wc = {0};
-    wc.lpfnWndProc = RegistrationWindowProcedure;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = "RegistrationWindowClass";
-
-    RegisterClass(&wc);
-
-    hRegistrationWindow = CreateWindowEx(
-        0,
-        "RegistrationWindowClass",
-        "Register",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 300, 200,
-        NULL, NULL, hInstance, NULL
-    );
-
-    ShowWindow(hRegistrationWindow, SW_SHOW);
-}
-
-// Global variables for login window
-HWND hLogin, hPassword, hLoginButton, hRegisterButton;
-
-// Login Window Procedure
-LRESULT CALLBACK LoginWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-        case WM_CREATE:
-            CreateWindow("STATIC", "Username or E-Mail:", WS_VISIBLE | WS_CHILD, 20, 20, 80, 25, hwnd, NULL, NULL, NULL);
-            hLogin = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 100, 20, 150, 25, hwnd, NULL, NULL, NULL);
-
-            CreateWindow("STATIC", "Password:", WS_VISIBLE | WS_CHILD, 20, 60, 80, 25, hwnd, NULL, NULL, NULL);
-            hPassword = CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_PASSWORD, 100, 60, 150, 25, hwnd, NULL, NULL, NULL);
-
-            hLoginButton = CreateWindow("BUTTON", "Login", WS_VISIBLE | WS_CHILD, 100, 100, 80, 25, hwnd, (HMENU)1, NULL, NULL);
-
-            // button to register (open link in webbrowser)
-            CreateWindow("BUTTON", "Register", WS_VISIBLE | WS_CHILD, 100, 140, 80, 25, hwnd, (HMENU)2, NULL, NULL);
-
-            // button to open the website
-            CreateWindow("BUTTON", "PwReset", WS_VISIBLE | WS_CHILD, 100, 180, 80, 25, hwnd, (HMENU)3, NULL, NULL);
-
-            // Set the focus to the login edit control
-            SetFocus(hLogin);
-
-            break;
-
-        case WM_COMMAND:
-            if (LOWORD(wParam) == 1) {
-                char login[100], password[100];
-                GetWindowText(hLogin, login, 100);
-                GetWindowText(hPassword, password, 100);
-
-                SaveLoginCredentials(login, password);
-
-                Log("Login credentials saved");
-                DestroyWindow(hwnd);
-            }
-
-            if (LOWORD(wParam) == 2) {
-                CreateRegistrationWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
-                DestroyWindow(hwnd); // Close the login window
-            }
-
-            if (LOWORD(wParam) == 3) {
-                // open the password reset link in the default web browser
-                ShellExecute(NULL, "open", "https://cort.cor-forum.de/#pwreset", NULL, NULL, SW_SHOWNORMAL);
-            }
-            break;
-
-        case WM_DESTROY:
-            // PostQuitMessage(0);
-            break;
-
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-    return 0;
-}
-
-void CreateLoginWindow(HINSTANCE hInstance) {
-    WNDCLASS wc = {0};
-    wc.lpfnWndProc = LoginWindowProcedure;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = "LoginWindowClass";
-
-    RegisterClass(&wc);
-
-    hLoginWindow = CreateWindowEx(
-        0,
-        "LoginWindowClass",
-        "Login",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 300, 300,
-        NULL, NULL, hInstance, NULL
-    );
-
-    ShowWindow(hLoginWindow, SW_SHOW);
-}
-
-// Example of sending the WM_OPEN_LOGIN_WINDOW message
-void OpenLoginWindow() {
-    if (hLoginWindow) {
-        SendMessage(hLoginWindow, WM_OPEN_LOGIN_WINDOW, 0, 0);
-    } else {
-        CreateLoginWindow(hInstance);
-    }
-}
 
 // Global hook handle
 HHOOK hKeyboardHook;
@@ -262,11 +52,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     LoadLoginCredentials(hInstance);
 
-    if (!Login(login, password)) {
-        Log("Login failed. Opening login window.");
-        CreateLoginWindow(hInstance); // Open login window if login fails
-    }
-
     // Register the window class
     WNDCLASSEX wc = { 0 };
     wc.cbSize = sizeof(WNDCLASSEX);
@@ -276,7 +61,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
     if (!RegisterClassEx(&wc)) {
-        Log("Failed to register window class");
         MessageBox(NULL, "Failed to register window class.", "Error", MB_ICONERROR);
         return 0;
     }
@@ -287,11 +71,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                                CW_USEDEFAULT, CW_USEDEFAULT, 756, 504, NULL, NULL, hInstance, NULL);
 
     if (hwnd == NULL) {
-        Log("Failed to create window");
         MessageBox(NULL, "Failed to create window.", "Error", MB_ICONERROR);
         return 0;
     }
-    LogDebug("Window created");
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
@@ -299,11 +81,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     // Set the global keyboard hook
     hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
     if (!hKeyboardHook) {
-        Log("Failed to set keyboard hook");
         MessageBox(NULL, "Failed to set keyboard hook.", "Error", MB_ICONERROR);
         return 0;
     }
-    LogDebug("Keyboard hook set successfully");
+
+    if (!Login(login, password)) {
+        Log("Login failed.");
+        OpenLoginWindow();
+    }
 
     // Post custom message to start self-update
     PostMessage(hwnd, WM_START_SELF_UPDATE, 0, 0);
@@ -367,21 +152,14 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     static HINSTANCE hInstance = GetModuleHandle(NULL);
 
     switch (msg) {
-        case WM_CREATE:            
-            LogDebug("Creating checkboxes");
-
-            // Create checkboxes UI elements
-            chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-                                      20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
-            chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-                                      20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
-            chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-                                      20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
-            hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY,
-                                       20, 200, 760, 100, hwnd, NULL, NULL, NULL);
-            chkoptionFreecam = CreateWindow("BUTTON", "Enable Freecam", WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-                                      20, 140, 150, 20, hwnd, (HMENU)4, NULL, NULL);
-            
+           
+        case WM_CREATE:
+            // Create checkboxes
+            chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
+            chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
+            chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
+            hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY, 20, 200, 760, 100, hwnd, NULL, NULL, NULL);
+            chkoptionFreecam = CreateWindow("BUTTON", "Enable Freecam", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 140, 150, 20, hwnd, (HMENU)4, NULL, NULL);
 
             // Disable checkboxes by default
             EnableWindow(chkoptionGravity, FALSE);
@@ -399,7 +177,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             HDC hdc = BeginPaint(hwnd, &ps);
 
             // Fill the background with the custom color
-            HBRUSH hBrush = CreateSolidBrush(RGB(1, 1, 1)); // Custom background color (white)
+            HBRUSH hBrush = CreateSolidBrush(RGB(2, 2, 2)); // Custom background color (white)
             FillRect(hdc, &ps.rcPaint, hBrush);
             DeleteObject(hBrush);
 
@@ -447,7 +225,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             break;
 
         case WM_DESTROY:
-            Log("Saving settings");
             SaveSettings();  // Save settings on exit
 
             PostQuitMessage(0);
@@ -459,7 +236,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             break;
 
         case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
-            LogDebug("WM_ENABLE_CHECKBOXES message received");
             if (featureGravity == 1) {
                 EnableWindow(chkoptionGravity, TRUE);
             } else {
@@ -479,128 +255,11 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
             break;
 
-        case WM_OPEN_LOGIN_WINDOW:
-            Log("Opening login window");
-            OpenLoginWindow();
-            break;
-
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
 
     return 0;
-}
-
-void SaveLoginCredentials(const std::string& login, const std::string& password) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-
-    std::ofstream file(configFilePath);
-    if (file.is_open()) {
-        file << "login=" << login << std::endl;
-        file << "password=" << password << std::endl;
-        file.close();
-        Log("Login credentials saved successfully");
-
-        // Attempt to login again
-        if (Login(login, password)) {
-            Log("Login successful after saving credentials - Please restart the application to apply your license");
-            MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
-            // quit the application
-            PostQuitMessage(0);
-        } else {
-            Log("Login failed after saving credentials");
-            // open login window again
-            CreateLoginWindow(hInstanceGlobal);
-        }
-    } else {
-        Log("Failed to open config file for writing");
-    }
-}
-
-void SaveSettings() {
-    Log("Saving settings to file");
-
-    // Construct the settings file path
-    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
-    std::string settingsFilePath = settingsDir + "\\settings.txt";
-
-    // Create the directory if it doesn't exist
-    CreateDirectory(settingsDir.c_str(), NULL);
-
-    // Open the file and write the settings
-    std::ofstream file(settingsFilePath);
-    if (file.is_open()) {
-        file << "optionGravity=" << optionGravity << std::endl;
-        file << "optionMoonjump=" << optionMoonjump << std::endl;
-        file << "optionZoom=" << optionZoom << std::endl;
-        file.close();
-        Log("Settings saved successfully");
-    } else {
-        Log("Failed to open settings file for writing");
-    }
-}
-
-// Add global variables for login credentials
-std::string login;
-std::string password;
-
-void LoadLoginCredentials(HINSTANCE hInstance) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-
-    std::ifstream file(configFilePath);
-    bool loginFound = false;
-    bool passwordFound = false;
-
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.find("login=") != std::string::npos) {
-                login = line.substr(line.find("=") + 1);
-                loginFound = true;
-            }
-            if (line.find("password=") != std::string::npos) {
-                password = line.substr(line.find("=") + 1);
-                passwordFound = true;
-            }
-        }
-        file.close();
-        Log("Login credentials loaded successfully");
-    } else {
-        Log("Failed to open config file for reading");
-    }
-
-    if (!loginFound || !passwordFound) {
-        Log("Login or password not found in config file. Opening login window.");
-        CreateLoginWindow(hInstance);
-    }
-}
-
-void LoadSettings() {
-    LogDebug("Loading settings from file");
-
-    // Construct the settings file path
-    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
-
-    // Open the file and read the settings
-    std::ifstream file(settingsFilePath);
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.find("optionGravity=") != std::string::npos)
-                optionGravity = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionMoonjump=") != std::string::npos)
-                optionMoonjump = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionZoom=") != std::string::npos)
-                optionZoom = (line.substr(line.find("=") + 1) == "1");
-        }
-        file.close();
-        Log("Settings loaded successfully");
-    } else {
-        LogDebug("Settings file not found");
-    }
-
-    // Load login credentials
-    LoadLoginCredentials(hInstanceGlobal);
 }
 
 // Define MemoryAddress struct

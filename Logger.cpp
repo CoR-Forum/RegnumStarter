@@ -1,17 +1,12 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <deque>
-#include <ctime>
-#include <windows.h>
+#include "Utils.h"
 
-extern const char* appDataPath;
-extern bool debugLog;
-extern std::deque<std::string> logMessages;
 extern HWND hLogDisplay;
+
+// Deque to store log messages
+std::deque<std::string> logMessages;
 
 void Log(const std::string& message) {
     // Get current time
