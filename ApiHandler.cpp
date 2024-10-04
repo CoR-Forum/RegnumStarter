@@ -1,5 +1,4 @@
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
-#define WM_OPEN_LOGIN_WINDOW (WM_USER + 2)
 
 extern HWND hwnd; // Declare the handle to the main window
 
@@ -177,8 +176,6 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
 }
 
 void SaveSettings() {
-    Log("Saving settings to file");
-
     // Construct the settings file path
     std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
     std::string settingsFilePath = settingsDir + "\\settings.txt";
@@ -200,8 +197,6 @@ void SaveSettings() {
 }
 
 void LoadSettings() {
-    LogDebug("Loading settings from file");
-
     // Construct the settings file path
     std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
 

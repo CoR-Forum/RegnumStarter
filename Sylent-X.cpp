@@ -13,7 +13,6 @@
 #pragma comment(lib, "urlmon.lib")
 
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
-#define WM_OPEN_LOGIN_WINDOW_OLD (WM_USER + 2) // Renamed the old definition
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
@@ -25,10 +24,10 @@ void ContinuousMemoryWrite(const std::string& option) {
     }
 }
 
-const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // New custom message identifier
+const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // Message Identifier for retrieving message to enable checkboxes
 
 // Constants
-const std::string currentVersion = "0.1.39"; // Current version of the application
+const std::string currentVersion = "0.1.50"; // Current version of the application
 const char* appName = "Sylent-X";
 const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
@@ -36,13 +35,6 @@ HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 HWND hLogDisplay = nullptr; // Handle to the log display control
 
 DWORD pid; // Process ID of the target process
-
-// Function Prototypes
-void CreateLoginWindow(HINSTANCE hInstance);
-void OpenLoginWindow();
-void CreateRegistrationWindow(HINSTANCE hInstance);
-extern void LoadLoginCredentials(HINSTANCE hInstance);
-extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 
 // Handle keyboard input
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -194,9 +186,7 @@ void CreateLoginWindow(HINSTANCE hInstance) {
     SetForegroundWindow(hLoginWindow); // Bring the login window to the foreground
 }
 
-// Example of sending the WM_OPEN_LOGIN_WINDOW message
 void OpenLoginWindow() {
-    Log("Opening login window");
     if (hLoginWindow && IsWindow(hLoginWindow)) {
         DestroyWindow(hLoginWindow);
         CreateLoginWindow(hInstance);
@@ -239,7 +229,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         MessageBox(NULL, "Failed to create window.", "Error", MB_ICONERROR);
         return 0;
     }
-    LogDebug("Window created");
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
@@ -250,7 +239,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         MessageBox(NULL, "Failed to set keyboard hook.", "Error", MB_ICONERROR);
         return 0;
     }
-    LogDebug("Keyboard hook set successfully");
 
     if (!Login(login, password)) {
         Log("Login failed.");
@@ -383,7 +371,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             break;
 
         case WM_DESTROY:
-            Log("Saving settings");
             SaveSettings();  // Save settings on exit
 
             PostQuitMessage(0);
@@ -395,7 +382,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             break;
 
         case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
-            LogDebug("WM_ENABLE_CHECKBOXES message received");
             if (featureGravity == 1) {
                 EnableWindow(chkoptionGravity, TRUE);
             } else {
@@ -407,11 +393,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             } else {
                 EnableWindow(chkoptionZoom, FALSE);
             }
-            break;
-
-        case WM_OPEN_LOGIN_WINDOW:
-            Log("Opening login window");
-            OpenLoginWindow();
             break;
 
         default:
