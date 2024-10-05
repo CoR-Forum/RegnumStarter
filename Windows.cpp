@@ -11,8 +11,10 @@ extern bool isGravityKeyPressed;
 extern bool optionGravity;
 extern bool optionMoonjump;
 extern bool optionZoom;
+extern bool optionMoonwalk;
 extern bool featureGravity;
 extern bool featureZoom;
+extern bool featureMoonwalk;
 
 // Global hook handle
 HHOOK hKeyboardHook;
@@ -57,15 +59,15 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 if (memoryThread.joinable()) {
                     memoryThread.join();
                 }
-            }
-        }
+            }        
+        } 
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
 }
 
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom, hLogoutButton;
+    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom, hLogoutButton,chkoptionMoonwalk;
     static HINSTANCE hInstance = GetModuleHandle(NULL);
 
     switch (msg) {
@@ -75,11 +77,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
             chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
             hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY, 20, 200, 760, 100, hwnd, NULL, NULL, NULL);
-
+            chkoptionMoonwalk = CreateWindow("BUTTON", "Enable Moonwalk", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 140, 150, 20, hwnd, (HMENU)4, NULL, NULL);
             // Disable checkboxes by default
             EnableWindow(chkoptionGravity, FALSE);
             EnableWindow(chkoptionMoonjump, FALSE);
             EnableWindow(chkoptionZoom, FALSE);
+            EnableWindow(chkoptionMoonwalk, FALSE);
 
             // Create the Logout button
             hLogoutButton = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD, 10, 10, 80, 25, hwnd, (HMENU)4, NULL, NULL);
@@ -125,6 +128,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
                 Log("Zoom toggled");
                 MemoryManipulation("zoom");
+            }
+            if (LOWORD(wParam) == 4) {
+                optionMoonwalk = !optionMoonwalk;
+                SendMessage(chkoptionMoonwalk, BM_SETCHECK, optionMoonwalk ? BST_CHECKED : BST_UNCHECKED, 0);
+                Log("Moonwalk toggled");
+                MemoryManipulation("moonwalk");
             }
             if (LOWORD(wParam) == 4) {
                 Log("Logout button clicked");
