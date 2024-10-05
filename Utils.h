@@ -46,10 +46,12 @@ bool debugLog = false;
 bool optionGravity = false;
 bool optionMoonjump = false;
 bool optionZoom = true;
+bool optionFreecam = false;
 
 // Feature states
 bool featureZoom = false;
 bool featureGravity = false;
+bool featureFreecam = false;
 
 // Keydown states
 bool isGravityKeyPressed = false;
