@@ -14,10 +14,14 @@
 #include <thread>
 #include <atomic>
 #include <sstream>
+#include <mutex>
+#include <utility>
 #include <urlmon.h>
 #include <comdef.h>
 #include <objbase.h>
 #include <wininet.h>
+#include <shlobj.h>
+
 
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
