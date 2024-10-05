@@ -14,6 +14,7 @@
 #include <thread>
 #include <atomic>
 #include <sstream>
+#include <mutex>
 #include <urlmon.h>
 #include <comdef.h>
 #include <objbase.h>

@@ -1,34 +1,36 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#pragma once
 
 #include "Utils.h"
 
 extern HWND hLogDisplay;
+extern bool debugLog;
+extern const char* appDataPath;
 
-// Deque to store log messages
-std::deque<std::string> logMessages;
+namespace {
+    const size_t MAX_LOG_MESSAGES = 500;
+    const char* LOG_FILE_PATH = "\\Sylent-X\\log.txt";
+    std::deque<std::string> logMessages;
+    std::mutex logMutex;
+}
 
-void Log(const std::string& message) {
-    // Get current time
+void WriteLogToFile(const std::string& logMessage) {
+    std::ofstream logFile(std::string(appDataPath) + LOG_FILE_PATH, std::ios_base::app);
+    if (logFile.is_open()) {
+        logFile << logMessage << std::endl;
+        logFile.close();
+    } else {
+        std::cerr << "Failed to open log file." << std::endl;
+    }
+}
+
+std::string GetCurrentTimestamp() {
     std::time_t now = std::time(nullptr);
     char timestamp[20];
     std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+    return std::string(timestamp);
+}
 
-    // Create log message with timestamp
-    std::string logMessage = "[" + std::string(timestamp) + "] " + message;
-
-    std::ofstream logFile(std::string(appDataPath) + "\\Sylent-X\\log.txt", std::ios_base::app);
-    logFile << logMessage << std::endl;
-    logFile.close();
-    std::cout << logMessage << std::endl;
-
-    // Add message to deque
-    logMessages.push_back(logMessage);
-    if (logMessages.size() > 500) {
-        logMessages.pop_front();
-    }
-
-    // Update the log display in the GUI
+void UpdateLogDisplay() {
     if (hLogDisplay) {
         SendMessage(hLogDisplay, LB_RESETCONTENT, 0, 0);
         for (const auto& msg : logMessages) {
@@ -38,10 +40,24 @@ void Log(const std::string& message) {
     }
 }
 
+void Log(const std::string& message) {
+    std::string logMessage = "[" + GetCurrentTimestamp() + "] " + message;
+
+    {
+        std::lock_guard<std::mutex> lock(logMutex);
+        logMessages.push_back(logMessage);
+        if (logMessages.size() > MAX_LOG_MESSAGES) {
+            logMessages.pop_front();
+        }
+    }
+
+    WriteLogToFile(logMessage);
+    std::cout << logMessage << std::endl;
+    UpdateLogDisplay();
+}
+
 void LogDebug(const std::string& message) {
     if (debugLog) {
         Log("DEBUG: " + message);
     }
 }
-
-#endif // LOGGER_H
