@@ -50,8 +50,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     LoadSettings();
 
-    LoadLoginCredentials(hInstance);
-
     // Register the window class
     WNDCLASSEX wc = { 0 };
     wc.cbSize = sizeof(WNDCLASSEX);
