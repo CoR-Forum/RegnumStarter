@@ -215,7 +215,10 @@ void MemoryManipulation(const std::string& option) {
                 newValue = 8.0f;
             } else if (option == "freecam") {
                 newValue = optionFreecam ? 5.181988172E-8f : 5.169434303E-8f;
+            } else if (option == "moonwalk") {
+                newValue = 9.219422856E-41f;
             }
+
 
             // LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
 
