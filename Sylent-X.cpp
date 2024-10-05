@@ -90,7 +90,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         OpenLoginWindow();
     }
 
-    // Post custom message to start self-update
+    // Post custom message to start selfupdate
     PostMessage(hwnd, WM_START_SELF_UPDATE, 0, 0);
 
     // Message loop
@@ -109,12 +109,10 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
 
         if (wParam == WM_KEYDOWN && p->vkCode == VK_SPACE) {
-            if (!isGravityKeyPressed) {
+            if (!isGravityKeyPressed && optionGravity) {
                 isGravityKeyPressed = true;
-                if (optionGravity) {
-                    isWriting = true;
-                    memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
-                }
+                isWriting = true;
+                memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
             }
         } else if (wParam == WM_KEYUP && p->vkCode == VK_SPACE) {
             if (isGravityKeyPressed) {
@@ -127,12 +125,10 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         }
 
         if (wParam == WM_KEYDOWN && p->vkCode == VK_LCONTROL) {
-            if (!isGravityKeyPressed) {
+            if (!isGravityKeyPressed && optionGravity) {
                 isGravityKeyPressed = true;
-                if (optionGravity) {
-                    isWriting = true;
-                    memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
-                }
+                isWriting = true;
+                memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
             }
         } else if (wParam == WM_KEYUP && p->vkCode == VK_LCONTROL) {
             if (isGravityKeyPressed) {
@@ -153,24 +149,29 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
     switch (msg) {
            
-        case WM_CREATE:
-            // Create checkboxes
-            chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
-            chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
-            chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
-            hLogDisplay = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL | LBS_NOTIFY, 20, 200, 760, 100, hwnd, NULL, NULL, NULL);
-            chkoptionFreecam = CreateWindow("BUTTON", "Enable Freecam", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 140, 150, 20, hwnd, (HMENU)4, NULL, NULL);
+case WM_CREATE:
+    // Create checkboxes
+    chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
+    chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
+    chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
+    chkoptionFreecam = CreateWindow("BUTTON", "Enable Freecam", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 140, 150, 20, hwnd, (HMENU)4, NULL, NULL);
 
-            // Disable checkboxes by default
-            EnableWindow(chkoptionGravity, FALSE);
-            EnableWindow(chkoptionMoonjump, FALSE);
-            EnableWindow(chkoptionZoom, FALSE);
-            EnableWindow(chkoptionFreecam, FALSE);
+    // Disable checkboxes by default
+    EnableWindow(chkoptionGravity, FALSE);
+    EnableWindow(chkoptionMoonjump, FALSE);
+    EnableWindow(chkoptionZoom, FALSE);
+    EnableWindow(chkoptionFreecam, FALSE);
 
-            // Create the Logout button
-            hLogoutButton = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD, 10, 10, 80, 25, hwnd, (HMENU)4, NULL, NULL);
+    // Set initial checkbox states
+    SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(chkoptionMoonjump, BM_SETCHECK, optionMoonjump ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(chkoptionFreecam, BM_SETCHECK, optionFreecam ? BST_CHECKED : BST_UNCHECKED, 0);
 
-            break;
+    // Create the Logout button
+    hLogoutButton = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD, 10, 10, 80, 25, hwnd, (HMENU)5, NULL, NULL);
+
+    break;
 
         case WM_PAINT: {
             PAINTSTRUCT ps;
@@ -194,35 +195,35 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             }
             break;
 
-        case WM_COMMAND:
-            if (LOWORD(wParam) == 1) {
-                optionGravity = !optionGravity;
-                SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
-                Log("Gravity toggled");
-            }
-            if (LOWORD(wParam) == 2) {
-                optionMoonjump = !optionMoonjump;
-                SendMessage(chkoptionMoonjump, BM_SETCHECK, optionMoonjump ? BST_CHECKED : BST_UNCHECKED, 0);
-                Log("Moonjump toggled");
-                MemoryManipulation("moonjump");
-            }
-            if (LOWORD(wParam) == 3) {
-                optionZoom = !optionZoom;
-                SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
-                Log("Zoom toggled");
-                MemoryManipulation("zoom");
-            }
-            if (LOWORD(wParam) == 4) {
-                optionFreecam = !optionFreecam;
-                SendMessage(chkoptionFreecam, BM_SETCHECK, optionFreecam ? BST_CHECKED : BST_UNCHECKED, 0);
-                Log("Freecam toggled");
-                MemoryManipulation("freecam");
-            }
-            if (LOWORD(wParam) == 4) {
-                Log("Logout button clicked");
-                Logout();
-            }
-            break;
+    case WM_COMMAND:
+        if (LOWORD(wParam) == 1) {
+            optionGravity = !optionGravity;
+            SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
+            Log("Gravity toggled");
+        }
+        if (LOWORD(wParam) == 2) {
+            optionMoonjump = !optionMoonjump;
+            SendMessage(chkoptionMoonjump, BM_SETCHECK, optionMoonjump ? BST_CHECKED : BST_UNCHECKED, 0);
+            Log("Moonjump toggled");
+            MemoryManipulation("moonjump");
+        }
+        if (LOWORD(wParam) == 3) {
+            optionZoom = !optionZoom;
+            SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
+            Log("Zoom toggled");
+            MemoryManipulation("zoom");
+        }
+        if (LOWORD(wParam) == 4) {
+            optionFreecam = !optionFreecam;
+            SendMessage(chkoptionFreecam, BM_SETCHECK, optionFreecam ? BST_CHECKED : BST_UNCHECKED, 0);
+            Log("Freecam toggled");
+            MemoryManipulation("freecam");
+        }
+        if (LOWORD(wParam) == 5) {
+            Log("Logout button clicked");
+            Logout();
+        }
+        break;
 
         case WM_DESTROY:
             SaveSettings();  // Save settings on exit
