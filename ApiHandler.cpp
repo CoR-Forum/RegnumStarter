@@ -32,15 +32,8 @@ bool Login(const std::string& login, const std::string& password) {
 
     const char* acceptTypes[] = { "application/json", NULL };
     HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
-    if (!hRequest) {
-        Log("Failed to open HTTP request");
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
-        return false;
-    }
-
-    if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) {
-        Log("Failed to send HTTP request");
+    if (!hRequest || !HttpSendRequest(hRequest, NULL, 0, NULL, 0)) {
+        Log("Failed to open or send HTTP request");
         InternetCloseHandle(hRequest);
         InternetCloseHandle(hConnect);
         InternetCloseHandle(hInternet);
@@ -61,7 +54,7 @@ bool Login(const std::string& login, const std::string& password) {
 
     // Parse the response manually
     if (response.find("\"status\":\"success\"") != std::string::npos) {
-        Log("User " + login + " logged in successfully: " + response);
+        Log("User " + login + " logged in successfully");
 
         // Reset features
         featureZoom = false;
@@ -91,7 +84,6 @@ bool Login(const std::string& login, const std::string& password) {
 }
 
 void Logout() {
-    // Clear login credentials
     login.clear();
     password.clear();
 
@@ -113,10 +105,7 @@ void Logout() {
         outFile << l << std::endl;
     }
     outFile.close();
-
-    Log("Login credentials removed from config file");
     
-    // Quit
     PostQuitMessage(0);
 }
 
@@ -140,13 +129,12 @@ void LoadLoginCredentials(HINSTANCE hInstance) {
             }
         }
         file.close();
-        Log("Login credentials loaded successfully");
     } else {
         Log("Failed to open config file for reading");
     }
 
     if (!loginFound || !passwordFound) {
-        Log("Login or password not found in config file. Opening login window.");
+        Log("Login or password not found in config file. Please login.");
         OpenLoginWindow();
     }
 }
@@ -159,17 +147,14 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
         file << "login=" << login << std::endl;
         file << "password=" << password << std::endl;
         file.close();
-        Log("Login credentials saved successfully");
 
         // Attempt to login again
         if (Login(login, password)) {
             Log("Login successful after saving credentials - Please restart the application to apply your license");
             MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
-            // quit the application
             PostQuitMessage(0);
         } else {
             Log("Login failed after saving credentials");
-            // open login window again
             OpenLoginWindow();
         }
     } else {
@@ -192,7 +177,6 @@ void SaveSettings() {
         file << "optionMoonjump=" << optionMoonjump << std::endl;
         file << "optionZoom=" << optionZoom << std::endl;
         file.close();
-        Log("Settings saved successfully");
     } else {
         Log("Failed to open settings file for writing");
     }
@@ -215,9 +199,8 @@ void LoadSettings() {
                 optionZoom = (line.substr(line.find("=") + 1) == "1");
         }
         file.close();
-        Log("Settings loaded successfully");
     } else {
-        LogDebug("Settings file not found");
+        Log("Settings file not found");
     }
 
     // Load login credentials
@@ -227,7 +210,7 @@ void LoadSettings() {
 std::string FetchDataFromAPI(const std::string& url) {
     HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) {
-        Log("Failed to open internet connection");
+        Log("No internet connection");
         return "";
     }
 
@@ -330,7 +313,7 @@ void InitializePointers() {
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     HINTERNET hSession = InternetOpen("RegistrationAgent", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hSession) {
-        Log("Failed to open internet session");
+        Log("No internet connection");
         return;
     }
 
