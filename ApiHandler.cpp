@@ -15,6 +15,7 @@ struct Pointer {
 
 extern bool featureZoom;
 extern bool featureGravity;
+extern bool featureMoonjump;
 
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
@@ -74,8 +75,9 @@ bool Login(const std::string& login, const std::string& password) {
 
             featureZoom = response.find("\"zoom\"") != std::string::npos;
             featureGravity = response.find("\"gravity\"") != std::string::npos;
+            featureMoonjump = response.find("\"moonjump\"") != std::string::npos;
 
-            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : ""));
+            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : "") + std::string(featureMoonjump ? ", Moonjump" : ""));
             return true;
         } else {
             Log("Failed to log in: " + response);
@@ -202,7 +204,6 @@ void LoadSettings() {
 
     LoadLoginCredentials(hInstanceGlobal);
 }
-
 std::string FetchDataFromAPI(const std::string& url) {
     try {
         HINTERNET hInternet = OpenInternetConnection();
@@ -220,30 +221,30 @@ std::string FetchDataFromAPI(const std::string& url) {
 
 std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
     std::vector<Pointer> pointers;
-    size_t pos = 0, endPos;
+    size_t pos = jsonResponse.find("\"memory_pointers\":{");
+    if (pos == std::string::npos) return pointers;
 
-    while ((pos = jsonResponse.find("{", pos)) != std::string::npos) {
+    pos += 19; // Move past "memory_pointers":{
+
+    while ((pos = jsonResponse.find("\"", pos)) != std::string::npos) {
         Pointer pointer;
-        endPos = jsonResponse.find("}", pos);
-        std::string object = jsonResponse.substr(pos, endPos - pos + 1);
+        size_t nameEnd = jsonResponse.find("\":{", pos);
+        pointer.name = jsonResponse.substr(pos + 1, nameEnd - pos - 1);
 
-        size_t namePos = object.find("\"name\":") + 8;
-        size_t nameEnd = object.find("\"", namePos);
-        pointer.name = object.substr(namePos, nameEnd - namePos);
-
-        size_t addressPos = object.find("\"address\":") + 11;
-        size_t addressEnd = object.find("\"", addressPos);
-        std::string addressStr = object.substr(addressPos, addressEnd - addressPos);
+        size_t addressPos = jsonResponse.find("\"address\":\"", nameEnd) + 11;
+        size_t addressEnd = jsonResponse.find("\"", addressPos);
+        std::string addressStr = jsonResponse.substr(addressPos, addressEnd - addressPos);
         try {
             pointer.address = std::stoul(addressStr, nullptr, 16);
         } catch (const std::invalid_argument& e) {
             LogDebug("Invalid address: " + addressStr);
+            pos = addressEnd + 1;
             continue;
         }
 
-        size_t offsetsPos = object.find("\"offsets\":") + 11;
-        size_t offsetsEnd = object.find("\"", offsetsPos);
-        std::string offsetsStr = object.substr(offsetsPos, offsetsEnd - offsetsPos);
+        size_t offsetsPos = jsonResponse.find("\"offsets\":\"", addressEnd) + 11;
+        size_t offsetsEnd = jsonResponse.find("\"", offsetsPos);
+        std::string offsetsStr = jsonResponse.substr(offsetsPos, offsetsEnd - offsetsPos);
 
         if (offsetsStr.empty()) {
             LogDebug("No offsets for pointer: " + pointer.name);
@@ -269,7 +270,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
 
         LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address));
         pointers.push_back(pointer);
-        pos = endPos + 1;
+        pos = offsetsEnd + 1;
     }
 
     return pointers;
@@ -278,7 +279,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
 std::vector<Pointer> pointers;
 
 void InitializePointers() {
-    std::string url = "https://cort.cor-forum.de/api/v1/sylentx/memory/pointers?key=aingu8gaiv0daitoj6eeweezeug7Ei";
+    std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
     std::string jsonResponse = FetchDataFromAPI(url);
     if (!jsonResponse.empty()) {
         pointers = ParseJSONResponse(jsonResponse);

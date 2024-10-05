@@ -12,6 +12,7 @@ extern bool optionGravity;
 extern bool optionMoonjump;
 extern bool optionZoom;
 extern bool featureGravity;
+extern bool featureMoonjump;
 extern bool featureZoom;
 
 // Global hook handle
@@ -154,6 +155,12 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
                 EnableWindow(chkoptionZoom, TRUE);
             } else {
                 EnableWindow(chkoptionZoom, FALSE);
+            }
+
+            if (featureMoonjump == 1) {
+                EnableWindow(chkoptionMoonjump, TRUE);
+            } else {
+                EnableWindow(chkoptionMoonjump, FALSE);
             }
             break;
 

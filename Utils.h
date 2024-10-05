@@ -57,7 +57,7 @@ const char* appDataPath = getenv("APPDATA");
 extern const std::string currentVersion;
 
 // Global variables
-bool debugLog = false;
+bool debugLog = true;
 
 // Checkboxes states
 bool optionGravity = false;
@@ -67,6 +67,7 @@ bool optionZoom = true;
 // Feature states
 bool featureZoom = false;
 bool featureGravity = false;
+bool featureMoonjump = false;
 
 // Keydown states
 bool isGravityKeyPressed = false;
