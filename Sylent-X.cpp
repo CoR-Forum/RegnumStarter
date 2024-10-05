@@ -63,7 +63,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         OpenLoginWindow();
     }
 
-    // Post custom message to start self-update
+    // Post custom message to start selfupdate
     PostMessage(hwnd, WM_START_SELF_UPDATE, 0, 0);
 
     // Message loop
@@ -213,7 +213,12 @@ void MemoryManipulation(const std::string& option) {
                 newValue = optionGravity ? -8.0f : 8.0f;
             } else if (option == "gravitydown") {
                 newValue = 8.0f;
+            } else if (option == "freecam") {
+                newValue = optionFreecam ? 5.181988172E-8f : 5.169434303E-8f;
+            } else if (option == "moonwalk") {
+                newValue = 9.219422856E-41f;
             }
+
 
             // LogDebug("Writing value: " + std::to_string(newValue) + " to address: " + finalAddressHex);
 
