@@ -25,23 +25,12 @@ void ContinuousMemoryWrite(const std::string& option) {
     }
 }
 
-const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // Message Identifier for retrieving message to enable checkboxes
-
 // Constants
 const std::string currentVersion = "0.1.50"; // Current version of the application
 const char* appName = "Sylent-X";
-const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
-HWND hLogDisplay = nullptr; // Handle to the log display control
-
 DWORD pid; // Process ID of the target process
-
-// Handle keyboard input
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-
-// Global hook handle
-HHOOK hKeyboardHook;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     hInstanceGlobal = hInstance; // Assign to global variable
@@ -50,33 +39,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     LoadSettings();
 
-    LoadLoginCredentials(hInstance);
-
-    // Register the window class
-    WNDCLASSEX wc = { 0 };
-    wc.cbSize = sizeof(WNDCLASSEX);
-    wc.lpfnWndProc = WindowProcedure;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = appName;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
-    if (!RegisterClassEx(&wc)) {
+    // Register and create the main window
+    if (!RegisterMainWindowClass(hInstance, appName)) {
         MessageBox(NULL, "Failed to register window class.", "Error", MB_ICONERROR);
         return 0;
     }
 
-    // Create the window with the current version in the title
-    std::string windowTitle = "Sylent-X " + currentVersion;
-    HWND hwnd = CreateWindowEx(0, appName, windowTitle.c_str(), WS_OVERLAPPEDWINDOW,
-                               CW_USEDEFAULT, CW_USEDEFAULT, 756, 504, NULL, NULL, hInstance, NULL);
-
+    HWND hwnd = CreateMainWindow(hInstance, appName, currentVersion, nCmdShow);
     if (hwnd == NULL) {
         MessageBox(NULL, "Failed to create window.", "Error", MB_ICONERROR);
         return 0;
     }
-
-    ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);
 
     // Set the global keyboard hook
     hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
@@ -103,172 +76,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     Log("Sylent-X exiting");
     return (int)msg.wParam;
 }
-
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode >= 0) {
-        KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
-
-        if (wParam == WM_KEYDOWN && p->vkCode == VK_SPACE) {
-            if (!isGravityKeyPressed && optionGravity) {
-                isGravityKeyPressed = true;
-                isWriting = true;
-                memoryThread = std::thread(ContinuousMemoryWrite, "gravity");
-            }
-        } else if (wParam == WM_KEYUP && p->vkCode == VK_SPACE) {
-            if (isGravityKeyPressed) {
-                isGravityKeyPressed = false;
-                isWriting = false;
-                if (memoryThread.joinable()) {
-                    memoryThread.join();
-                }
-            }
-        }
-
-        if (wParam == WM_KEYDOWN && p->vkCode == VK_LCONTROL) {
-            if (!isGravityKeyPressed && optionGravity) {
-                isGravityKeyPressed = true;
-                isWriting = true;
-                memoryThread = std::thread(ContinuousMemoryWrite, "gravitydown");
-            }
-        } else if (wParam == WM_KEYUP && p->vkCode == VK_LCONTROL) {
-            if (isGravityKeyPressed) {
-                isGravityKeyPressed = false;
-                isWriting = false;
-                if (memoryThread.joinable()) {
-                    memoryThread.join();
-                }
-            }
-        }
-    }
-    return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
-}
-
-LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND chkoptionGravity, chkoptionMoonjump, chkoptionZoom, hLogoutButton, chkoptionFreecam;
-    static HINSTANCE hInstance = GetModuleHandle(NULL);
-
-    switch (msg) {
-           
-case WM_CREATE:
-    // Create checkboxes
-    chkoptionGravity = CreateWindow("BUTTON", "Enable Gravity", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 50, 150, 20, hwnd, (HMENU)1, NULL, NULL);
-    chkoptionMoonjump = CreateWindow("BUTTON", "Enable Moonjump", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 80, 150, 20, hwnd, (HMENU)2, NULL, NULL);
-    chkoptionZoom = CreateWindow("BUTTON", "Enable Zoom", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 110, 150, 20, hwnd, (HMENU)3, NULL, NULL);
-    chkoptionFreecam = CreateWindow("BUTTON", "Enable Freecam", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 20, 140, 150, 20, hwnd, (HMENU)4, NULL, NULL);
-
-    // Disable checkboxes by default
-    EnableWindow(chkoptionGravity, FALSE);
-    EnableWindow(chkoptionMoonjump, FALSE);
-    EnableWindow(chkoptionZoom, FALSE);
-    EnableWindow(chkoptionFreecam, FALSE);
-
-    // Set initial checkbox states
-    SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
-    SendMessage(chkoptionMoonjump, BM_SETCHECK, optionMoonjump ? BST_CHECKED : BST_UNCHECKED, 0);
-    SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
-    SendMessage(chkoptionFreecam, BM_SETCHECK, optionFreecam ? BST_CHECKED : BST_UNCHECKED, 0);
-
-    // Create the Logout button
-    hLogoutButton = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD, 10, 10, 80, 25, hwnd, (HMENU)5, NULL, NULL);
-
-    break;
-
-        case WM_PAINT: {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
-
-            // Fill the background with the custom color
-            HBRUSH hBrush = CreateSolidBrush(RGB(2, 2, 2)); // Custom background color (white)
-            FillRect(hdc, &ps.rcPaint, hBrush);
-            DeleteObject(hBrush);
-
-            EndPaint(hwnd, &ps);
-            break;
-        }
-
-        case WM_SIZE:
-            if (hLogDisplay) {
-                RECT rect;
-                GetClientRect(hwnd, &rect);
-                int logHeight = 100;
-                SetWindowPos(hLogDisplay, NULL, 20, rect.bottom - logHeight - 20, rect.right - 40, logHeight, SWP_NOZORDER);
-            }
-            break;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == 1) {
-            optionGravity = !optionGravity;
-            SendMessage(chkoptionGravity, BM_SETCHECK, optionGravity ? BST_CHECKED : BST_UNCHECKED, 0);
-            Log("Gravity toggled");
-        }
-        if (LOWORD(wParam) == 2) {
-            optionMoonjump = !optionMoonjump;
-            SendMessage(chkoptionMoonjump, BM_SETCHECK, optionMoonjump ? BST_CHECKED : BST_UNCHECKED, 0);
-            Log("Moonjump toggled");
-            MemoryManipulation("moonjump");
-        }
-        if (LOWORD(wParam) == 3) {
-            optionZoom = !optionZoom;
-            SendMessage(chkoptionZoom, BM_SETCHECK, optionZoom ? BST_CHECKED : BST_UNCHECKED, 0);
-            Log("Zoom toggled");
-            MemoryManipulation("zoom");
-        }
-        if (LOWORD(wParam) == 4) {
-            optionFreecam = !optionFreecam;
-            SendMessage(chkoptionFreecam, BM_SETCHECK, optionFreecam ? BST_CHECKED : BST_UNCHECKED, 0);
-            Log("Freecam toggled");
-            MemoryManipulation("freecam");
-        }
-        if (LOWORD(wParam) == 5) {
-            Log("Logout button clicked");
-            Logout();
-        }
-        break;
-
-        case WM_DESTROY:
-            SaveSettings();  // Save settings on exit
-
-            PostQuitMessage(0);
-            break;
-
-        case WM_START_SELF_UPDATE:
-            SelfUpdate();
-            SendMessage(hwnd, WM_ENABLE_CHECKBOXES, 0, 0);
-            break;
-
-        case WM_ENABLE_CHECKBOXES: // Custom message to enable checkboxes after login
-            if (featureGravity == 1) {
-                EnableWindow(chkoptionGravity, TRUE);
-            } else {
-                EnableWindow(chkoptionGravity, FALSE);
-            }
-
-            if (featureZoom == 1) {
-                EnableWindow(chkoptionZoom, TRUE);
-            } else {
-                EnableWindow(chkoptionZoom, FALSE);
-            }
-
-            if (featureFreecam == 1) {
-                EnableWindow(chkoptionFreecam, TRUE);
-            } else {
-                EnableWindow(chkoptionFreecam, FALSE);
-            }
-            break;
-
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-
-    return 0;
-}
-
-// Define MemoryAddress struct
-struct MemoryAddress {
-    std::string name;
-    uintptr_t baseOffset;
-    std::vector<uintptr_t> offsets;
-};
 
 // Function to get the base address of a module
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
