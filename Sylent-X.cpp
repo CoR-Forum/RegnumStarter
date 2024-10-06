@@ -92,9 +92,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     LoadSettings();
 
     // Register and create the main window
-    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
+    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("ImGui Example"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1980, 1080, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1980, 1080, NULL, NULL, wc.hInstance, NULL);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
     if (!CreateDeviceD3D(hwnd)) {
@@ -116,6 +116,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     ApplyCustomStyle();
 
+
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
@@ -126,7 +127,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     static char regEmail[128] = "";
     static bool loginSuccess = false;
 
-    bool show_demo_window = false;
+    bool show_Sylent_window = false;
     bool show_login_window = true;
     bool show_register_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -175,7 +176,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (loginSuccess) {
                     Log("Login successful");
                     show_login_window = false;
-                    show_demo_window = true;
+                    show_Sylent_window = true;
                 } else {
                     Log("Login failed");
                 }
@@ -229,8 +230,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
         */
 
-        if (show_demo_window) {
-            ImGui::Begin("Welcome, Sylent-X User!");
+        if (show_Sylent_window) {
+            std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
+            ImGui::Begin(windowTitle.c_str());
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             static bool optionGravity = false;
