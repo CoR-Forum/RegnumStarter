@@ -237,13 +237,52 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionZoom = false;
             static bool optionMoonjump = false;
 
-            ImGui::Checkbox("Gravity", &optionGravity);
-            ImGui::Checkbox("Zoom", &optionZoom);
-            ImGui::Checkbox("Moonjump", &optionMoonjump);
-
-            if (ImGui::Button("Close Application")) {
-            done = true;
+            if (ImGui::CollapsingHeader("POV"))
+            {
+                ImGui::Checkbox("Zoom", &optionZoom);
             }
+
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("Movement"))
+            {
+                ImGui::Checkbox("Gravity", &optionGravity);
+                ImGui::Checkbox("Moonjump", &optionMoonjump);
+            }
+
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("ESP"))
+            {
+
+            }
+
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("Player"))
+            {
+
+            }
+            
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("Teleport"))
+            {
+
+            }
+
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("TrollOptions"))
+            {
+
+            }
+
+            ImGui::Spacing();
+
+                if (ImGui::Button("Close Application")) {
+                done = true;
+                }
 
             ImGui::End();
         }
