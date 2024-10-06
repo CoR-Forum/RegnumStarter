@@ -84,7 +84,7 @@ HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 DWORD pid; // Process ID of the target process
 
 // Declare the Register function
-bool RegisterUser(const char* username, const char* password, const char* email);
+//bool RegisterUser(const char* username, const char* password, const char* email);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
