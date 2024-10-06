@@ -83,136 +83,195 @@ const char* appName = "Sylent-X";
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 DWORD pid; // Process ID of the target process
 
+// Declare the Register function
+bool RegisterUser(const char* username, const char* password, const char* email);
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
     LoadSettings();
 
     // Register and create the main window
-  WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
-  ::RegisterClassExW(&wc);
-  HWND hwnd = CreateWindowEx(WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_NOACTIVATE, _T("ImGui Example"), NULL, WS_POPUP, 0, 0, 1980, 1080, NULL, NULL, wc.hInstance, NULL);
-  SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
- 
-  if (!CreateDeviceD3D(hwnd))
-  {
-      CleanupDeviceD3D();
-      ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
-      return 1;
-  }
+    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
+    ::RegisterClassExW(&wc);
+    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("ImGui Example"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1980, 1080, NULL, NULL, wc.hInstance, NULL);
+    SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
-  ::ShowWindow(hwnd, SW_SHOWDEFAULT);
-  ::UpdateWindow(hwnd);
+    if (!CreateDeviceD3D(hwnd)) {
+        CleanupDeviceD3D();
+        ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+        return 1;
+    }
 
+    ::ShowWindow(hwnd, SW_SHOWDEFAULT);
+    ::UpdateWindow(hwnd);
 
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO(); (void)io;
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-  ImGui::StyleColorsDark();
+    ImGui::StyleColorsDark();
 
-  ApplyCustomStyle();
+    ApplyCustomStyle();
 
-  ImGui_ImplWin32_Init(hwnd);
-  ImGui_ImplDX9_Init(g_pd3dDevice);
+    ImGui_ImplWin32_Init(hwnd);
+    ImGui_ImplDX9_Init(g_pd3dDevice);
 
+    static char username[128] = "";
+    static char password[128] = "";
+    static char regUsername[128] = "";
+    static char regPassword[128] = "";
+    static char regEmail[128] = "";
+    static bool loginSuccess = false;
 
-  
-  bool show_demo_window = true;
-  bool show_another_window = false;
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    bool show_demo_window = false;
+    bool show_login_window = true;
+    bool show_register_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
- 
-  bool done = false;
-  while (!done)
-  { 
-      MSG msg;
-      while (::PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
-      {
-          ::TranslateMessage(&msg);
-          ::DispatchMessage(&msg);
-          if (msg.message == WM_QUIT)
-              done = true;
-      }
-      if (done)
-          break;
+    bool done = false;
+    while (!done) {
+        MSG msg;
+        while (::PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+            if (msg.message == WM_QUIT)
+                done = true;
+        }
+        if (done)
+            break;
 
-      if (g_DeviceLost)
-      {
-          HRESULT hr = g_pd3dDevice->TestCooperativeLevel();
-          if (hr == D3DERR_DEVICELOST)
-          {
-              ::Sleep(10);
-              continue;
-          }
-          if (hr == D3DERR_DEVICENOTRESET)
-              ResetDevice();
-          g_DeviceLost = false;
-      }
-      if (g_ResizeWidth != 0 && g_ResizeHeight != 0)
-      {
-          g_d3dpp.BackBufferWidth = g_ResizeWidth;
-          g_d3dpp.BackBufferHeight = g_ResizeHeight;
-          g_ResizeWidth = g_ResizeHeight = 0;
-          ResetDevice();
-      }
-      ImGui_ImplDX9_NewFrame();
-      ImGui_ImplWin32_NewFrame();
-      ImGui::NewFrame();
+        if (g_DeviceLost) {
+            HRESULT hr = g_pd3dDevice->TestCooperativeLevel();
+            if (hr == D3DERR_DEVICELOST) {
+                ::Sleep(10);
+                continue;
+            }
+            if (hr == D3DERR_DEVICENOTRESET)
+                ResetDevice();
+            g_DeviceLost = false;
+        }
+        if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
+            g_d3dpp.BackBufferWidth = g_ResizeWidth;
+            g_d3dpp.BackBufferHeight = g_ResizeHeight;
+            g_ResizeWidth = g_ResizeHeight = 0;
+            ResetDevice();
+        }
+        ImGui_ImplDX9_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
 
-      if (show_demo_window)
+        if (show_login_window) {
+            ImGui::Begin("Login");
+            ImGui::SetWindowSize(ImVec2(500, 300));
 
-      {
-        ImGui::Begin("Welcome, Sylent-X User!");         
-        ImGui::SetWindowSize(ImVec2(500, 300));
+            ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
+            ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
-        static bool optionGravity = false;
-        static bool optionZoom = false;
-        static bool optionMoonjump = false;
+            if (ImGui::Button("Login")) {
+                loginSuccess = Login(username, password);
+                if (loginSuccess) {
+                    Log("Login successful");
+                    show_login_window = false;
+                    show_demo_window = true;
+                } else {
+                    Log("Login failed");
+                }
+            }
 
-        ImGui::Checkbox("Gravity", &optionGravity);
-        ImGui::Checkbox("Zoom", &optionZoom);
-        ImGui::Checkbox("Moonjump", &optionMoonjump);
+            if (loginSuccess) {
+                ImGui::Text("Login successful");
+            } else {
+                ImGui::Text("Login failed");
+            }
 
-        ImGui::End();
-        ImGui::Begin("Welcome, Test!");         
-        ImGui::SetWindowSize(ImVec2(500, 300));
-        ImGui::End();
-        ImGui::Begin("Welcome, Test2!");         
-        ImGui::SetWindowSize(ImVec2(500, 300));
-        ImGui::End();
-      }
+            if (ImGui::Button("Register")) {
+                show_login_window = false;
+                show_register_window = true;
+            }
 
+            if (ImGui::Button("Close Application")) {
+                done = true;
+            }
 
+            ImGui::End();
+        }
 
-      // Rendering
-      ImGui::EndFrame();
-      g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-      g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-      g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-      D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int)(clear_color.x * clear_color.w * 0.0f), (int)(clear_color.y * clear_color.w * 0.0f), (int)(clear_color.z * clear_color.w * 0.0f), (int)(clear_color.w * 0.0f));
-      g_pd3dDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
-      if (g_pd3dDevice->BeginScene() >= 0)
-      {
-          ImGui::Render();
-          ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-          g_pd3dDevice->EndScene();
-      }
-      HRESULT result = g_pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
-      if (result == D3DERR_DEVICELOST)
-          g_DeviceLost = true;
-  }
+        // Commenting out the register window
+        /*
+        if (show_register_window) {
+            ImGui::Begin("Register");
+            ImGui::SetWindowSize(ImVec2(500, 300));
 
-  
-  ImGui_ImplDX9_Shutdown();
-  ImGui_ImplWin32_Shutdown();
-  ImGui::DestroyContext();
+            ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
+            ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
+            ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
 
-  CleanupDeviceD3D();
-  ::DestroyWindow(hwnd);
-  ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+            if (ImGui::Button("Register")) {
+            bool registerSuccess = RegisterUser(regUsername, regPassword, regEmail);
+            if (registerSuccess) {
+                Log("Registration successful");
+                show_register_window = false;
+                show_login_window = true;
+            } else {
+                Log("Registration failed");
+            }
+            }
+
+            if (ImGui::Button("Back to Login")) {
+            show_register_window = false;
+            show_login_window = true;
+            }
+
+            ImGui::End();
+        }
+        */
+
+        if (show_demo_window) {
+            ImGui::Begin("Welcome, Sylent-X User!");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            static bool optionGravity = false;
+            static bool optionZoom = false;
+            static bool optionMoonjump = false;
+
+            ImGui::Checkbox("Gravity", &optionGravity);
+            ImGui::Checkbox("Zoom", &optionZoom);
+            ImGui::Checkbox("Moonjump", &optionMoonjump);
+
+            if (ImGui::Button("Close Application")) {
+            done = true;
+            }
+
+            ImGui::End();
+        }
+
+        // Rendering
+        ImGui::EndFrame();
+        g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+        g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+        D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int)(clear_color.x * clear_color.w * 0.0f), (int)(clear_color.y * clear_color.w * 0.0f), (int)(clear_color.z * clear_color.w * 0.0f), (int)(clear_color.w * 0.0f));
+        g_pd3dDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
+        if (g_pd3dDevice->BeginScene() >= 0) {
+            ImGui::Render();
+            ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+            g_pd3dDevice->EndScene();
+        }
+        HRESULT result = g_pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
+        if (result == D3DERR_DEVICELOST)
+            g_DeviceLost = true;
+    }
+
+    ImGui_ImplDX9_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+
+    CleanupDeviceD3D();
+    ::DestroyWindow(hwnd);
+    ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
 
     Log("Sylent-X exiting");
     return 0;
