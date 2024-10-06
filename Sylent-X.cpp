@@ -14,6 +14,7 @@
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
 #include <d3d9.h>
+#include "Style.cpp"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -112,6 +113,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
   ImGui::StyleColorsDark();
 
+  ApplyCustomStyle();
+
   ImGui_ImplWin32_Init(hwnd);
   ImGui_ImplDX9_Init(g_pd3dDevice);
 
@@ -164,6 +167,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
       {
         ImGui::Begin("Welcome, Sylent-X User!");         
         ImGui::SetWindowSize(ImVec2(500, 300));
+
+        static bool optionGravity = false;
+        static bool optionZoom = false;
+        static bool optionMoonjump = false;
+
+        ImGui::Checkbox("Gravity", &optionGravity);
+        ImGui::Checkbox("Zoom", &optionZoom);
+        ImGui::Checkbox("Moonjump", &optionMoonjump);
+
         ImGui::End();
         ImGui::Begin("Welcome, Test!");         
         ImGui::SetWindowSize(ImVec2(500, 300));
