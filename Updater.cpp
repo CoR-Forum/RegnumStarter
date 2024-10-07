@@ -106,7 +106,7 @@ void SelfUpdate() {
 std::pair<std::string, std::string> FetchLatestVersion() {
     std::string latestVersion;
     std::string downloadURL;
-    HRESULT hr = URLDownloadToFile(NULL, "https://patch.sylent-x.com/v0/latest_version.txt", "latest_version.txt", 0, NULL);
+    HRESULT hr = URLDownloadToFile(NULL, "https://patch.sylent-x.com/v0/", "latest_version.txt", 0, NULL);
     if (SUCCEEDED(hr)) {
         std::ifstream versionFile("latest_version.txt");
         if (versionFile.is_open()) {
