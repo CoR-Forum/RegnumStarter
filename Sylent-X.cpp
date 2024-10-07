@@ -83,7 +83,7 @@ void ResetDevice() {
 }
 
 // Constants
-const std::string currentVersion = "0.1.60"; // Current version of the application
+const std::string currentVersion = "0.1.40"; // Current version of the application
 const char* appName = "Sylent-X";
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
@@ -94,6 +94,12 @@ void RegisterUser(const std::string& username, const std::string& email, const s
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
+    // Create a named mutex
+    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex"));
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
+        return 1;
+    }
 
     LoadSettings();
     SelfUpdate();
