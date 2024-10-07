@@ -83,7 +83,7 @@ void ResetDevice() {
 }
 
 // Constants
-const std::string currentVersion = "0.1.50"; // Current version of the application
+const std::string currentVersion = "0.1.60"; // Current version of the application
 const char* appName = "Sylent-X";
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
