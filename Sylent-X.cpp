@@ -21,6 +21,9 @@
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
 
+// Discord webhook URL
+const std::string webhook_url = "https://discord.com/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6";
+
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
 
 static LPDIRECT3D9              g_pD3D = nullptr;
@@ -28,6 +31,7 @@ static LPDIRECT3DDEVICE9        g_pd3dDevice = nullptr;
 static bool                     g_DeviceLost = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS    g_d3dpp = {};
+static char feedbackSender[128] = ""; // Add this line
 
 bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
@@ -38,6 +42,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
+extern std::string login;
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
@@ -47,6 +52,43 @@ void ContinuousMemoryWrite(const std::string& option) {
         MemoryManipulation(option);
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
     }
+}
+
+void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
+    HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    if (!hSession) {
+        std::cerr << "InternetOpenA failed" << std::endl;
+        return;
+    }
+
+    HINTERNET hConnect = InternetConnectA(hSession, "discord.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) {
+        std::cerr << "InternetConnectA failed" << std::endl;
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6", NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
+    if (!hRequest) {
+        std::cerr << "HttpOpenRequestA failed" << std::endl;
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    std::string headers = "Content-Type: application/json\r\n";
+    std::string payload = "{\"content\": \"Feedback from: " + login + " Type: " + feedbackType + " Input: " + feedback + "\"}";
+
+    BOOL result = HttpSendRequestA(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
+    if (!result) {
+        std::cerr << "HttpSendRequestA failed" << std::endl;
+    } else {
+        std::cout << "Feedback submitted successfully." << std::endl;
+    }
+
+    InternetCloseHandle(hRequest);
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hSession);
 }
 
 // Function to initialize DirectX
@@ -83,7 +125,7 @@ void ResetDevice() {
 }
 
 // Constants
-const std::string currentVersion = "0.1.40"; // Current version of the application
+const std::string currentVersion = "0.1.63"; // Current version of the application
 const char* appName = "Sylent-X";
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
@@ -148,8 +190,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     static char regUsername[128] = "";
     static char regPassword[128] = "";
     static char regEmail[128] = "";
+    static char feedbackText[1024] = "";
 
     bool show_register_window = false;
+    bool show_feedback_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -312,8 +356,36 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::SameLine();
 
+            if (ImGui::Button("Feedback")) {
+                show_feedback_window = true;
+            }
+
+            ImGui::SameLine();
+
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
+            }
+
+            ImGui::End();
+        }
+
+        if (show_feedback_window) {
+            ImGui::Begin("Feedback");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            static int feedbackType = 0;
+            const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
+
+            ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
+            ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
+
+            if (ImGui::Button("Submit")) {
+                // Handle feedback submission logic here
+                SendFeedbackToDiscord(feedbackText, feedbackTypes[feedbackType]); // Pass feedback text and type
+            }
+
+            if (ImGui::Button("Close")) {
+                show_feedback_window = false;
             }
 
             ImGui::End();
