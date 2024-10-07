@@ -99,6 +99,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         Log("Auto-login successful");
         show_login_window = false;
         show_Sylent_window = true;
+        InitializePointers(); // Initialize pointers after successful login
     } else {
         Log("Auto-login failed");
         show_login_window = true;
@@ -186,6 +187,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveLoginCredentials(username, password);
                     show_login_window = false;
                     show_Sylent_window = true;
+                    InitializePointers(); // Initialize pointers after successful login
                 } else {
                     Log("Login failed");
                 }
@@ -246,9 +248,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::CollapsingHeader("POV")) {
                 if (ImGui::Checkbox("Zoom", &optionZoom)) {
-                    if (optionZoom) {
-                        MemoryManipulation("zoom");
-                    }
+                    float newValue = optionZoom ? 25.0f : 15.0f;
+                    MemoryManipulation("zoom", newValue);
                 }
             }
 
@@ -256,14 +257,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::CollapsingHeader("Movement")) {
                 if (ImGui::Checkbox("Gravity", &optionGravity)) {
-                    if (optionGravity) {
-                        MemoryManipulation("gravity");
-                    }
+                    float newValue = optionGravity ? -8.0f : 8.0f;
+                    MemoryManipulation("gravity", newValue);
                 }
                 if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
-                    if (optionMoonjump) {
-                        MemoryManipulation("moonjump");
-                    }
+                    float newValue = optionMoonjump ? 1.0f : 4.0f;
+                    MemoryManipulation("moonjump", newValue);
                 }
             }
 
@@ -393,7 +392,8 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
     return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
 }
 
-void MemoryManipulation(const std::string& option) {
+void MemoryManipulation(const std::string& option, float newValue) {
+    Log("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
     if (pid == 0) {
         Log("Failed to find ROClientGame.exe process");
@@ -410,7 +410,7 @@ void MemoryManipulation(const std::string& option) {
 
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
     if (baseAddress == 0) {
-        Log("Failed to get the base address of ROClientGame.exe");
+        MessageBox(NULL, "Failed to get the base address of ROClientGame.exe.", "Error", MB_ICONERROR);
         CloseHandle(hProcess);
         return;
     }
@@ -424,47 +424,26 @@ void MemoryManipulation(const std::string& option) {
             for (size_t i = 0; i < pointer.offsets.size(); ++i) {
                 if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
                     if (bytesRead != sizeof(finalAddress)) {
-                        LogDebug("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead));
+                        MessageBox(NULL, ("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead)).c_str(), "Error", MB_ICONERROR);
                         return;
                     }
                     finalAddress += pointer.offsets[i];
                 } else {
-                    LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()));
+                    MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR);
                     return;
                 }
-            }
-
-            std::stringstream ss;
-            ss << std::hex << std::uppercase << finalAddress;
-            std::string finalAddressHex = ss.str();
-
-            float newValue = 0.0f;
-
-            if (option == "zoom") {
-                newValue = optionZoom ? 25.0f : 15.0f;
-            } else if (option == "moonjump") {
-                newValue = optionMoonjump ? 1.0f : 4.0f;
-            } else if (option == "gravity") {
-                newValue = optionGravity ? -8.0f : 8.0f;
-            } else if (option == "gravitydown") {
-                newValue = 8.0f;
-            } else if (option == "freecam") {
-                newValue = optionFreecam ? 5.181988172E-8f : 5.169434303E-8f;
-            } else if (option == "moonwalk") {
-                newValue = 9.219422856E-41f;
             }
 
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                 // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
-                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()));
+                MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR);
             }
         }
     }
 
     CloseHandle(hProcess);
 }
-
 void CleanupDeviceD3D()
 {
     if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = nullptr; }

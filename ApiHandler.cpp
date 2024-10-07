@@ -277,7 +277,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
 std::vector<Pointer> pointers;
 
 void InitializePointers() {
-    std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
+    std::string url = "https://cort.cor-forum.de/api/v1/sylentx/memory/pointers?key=aingu8gaiv0daitoj6eeweezeug7Ei";
     std::string jsonResponse = FetchDataFromAPI(url);
     if (!jsonResponse.empty()) {
         pointers = ParseJSONResponse(jsonResponse);
