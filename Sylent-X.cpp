@@ -361,15 +361,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::SameLine();
 
-            if (ImGui::Button("Feedback")) {
-                show_feedback_window = true;
+            if (ImGui::Button("Chat")) {
+                show_chat_window = true;
                 show_Sylent_window = false;
             }
 
             ImGui::SameLine();
-
-            if (ImGui::Button("Chat")) {
-                show_chat_window = true;
+            
+            if (ImGui::Button("Feedback")) {
+                show_feedback_window = true;
                 show_Sylent_window = false;
             }
 
