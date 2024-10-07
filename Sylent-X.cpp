@@ -93,7 +93,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
     LoadSettings();
-    LoadLoginCredentials(hInstance); // Call LoadLoginCredentials from apihandler.cpp
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
