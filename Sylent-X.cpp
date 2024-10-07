@@ -191,9 +191,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     static char regPassword[128] = "";
     static char regEmail[128] = "";
     static char feedbackText[1024] = "";
+    static char chatInput[256] = "";
+    static std::vector<std::string> chatMessages;
 
     bool show_register_window = false;
     bool show_feedback_window = false;
+    bool show_chat_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -365,6 +368,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::SameLine();
 
+            if (ImGui::Button("Chat")) {
+                show_chat_window = true;
+                show_Sylent_window = false;
+            }
+
+            ImGui::SameLine();
+
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
             }
@@ -389,6 +399,32 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Close")) {
                 show_feedback_window = false;
+                show_Sylent_window = true;
+            }
+
+            ImGui::End();
+        }
+
+        if (show_chat_window) {
+            ImGui::Begin("Chat");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            ImGui::BeginChild("ChatMessages", ImVec2(480, 200), true);
+            for (const auto& message : chatMessages) {
+                ImGui::TextWrapped("%s", message.c_str());
+            }
+            ImGui::EndChild();
+
+            ImGui::InputText("Message", chatInput, IM_ARRAYSIZE(chatInput));
+            if (ImGui::Button("Send")) {
+                if (strlen(chatInput) > 0) {
+                    chatMessages.push_back(std::string(username) + ": " + chatInput);
+                    chatInput[0] = '\0'; // Clear input field
+                }
+            }
+
+            if (ImGui::Button("Close")) {
+                show_chat_window = false;
                 show_Sylent_window = true;
             }
 
