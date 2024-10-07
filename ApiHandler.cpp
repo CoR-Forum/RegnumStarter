@@ -95,7 +95,7 @@ void Logout() {
     login.clear();
     password.clear();
 
-    std::string configFilePath = std::string(appDataPath) + "config.txt";
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
     std::ifstream configFile(configFilePath);
     std::string line;
     std::vector<std::string> lines;
@@ -117,7 +117,7 @@ void Logout() {
 }
 
 void LoadLoginCredentials(HINSTANCE hInstance) {
-    std::string configFilePath = std::string(appDataPath) + "config.txt";
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
 
     std::ifstream file(configFilePath);
     bool loginFound = false;
@@ -146,7 +146,7 @@ void LoadLoginCredentials(HINSTANCE hInstance) {
 }
 
 void SaveLoginCredentials(const std::string& login, const std::string& password) {
-    std::string configFilePath = std::string(appDataPath) + "config.txt";
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
 
     std::ofstream file(configFilePath);
     if (file.is_open()) {
@@ -166,8 +166,8 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
 }
 
 void SaveSettings() {
-    std::string settingsDir = std::string(appDataPath);
-    std::string settingsFilePath = settingsDir + "settings.txt";
+    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
+    std::string settingsFilePath = settingsDir + "\\settings.txt";
 
     CreateDirectory(settingsDir.c_str(), NULL);
 
@@ -183,7 +183,7 @@ void SaveSettings() {
 }
 
 void LoadSettings() {
-    std::string settingsFilePath = std::string(appDataPath) + "settings.txt";
+    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
 
     std::ifstream file(settingsFilePath);
     if (file.is_open()) {
