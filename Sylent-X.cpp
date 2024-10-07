@@ -358,6 +358,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Feedback")) {
                 show_feedback_window = true;
+                show_Sylent_window = false;
             }
 
             ImGui::SameLine();
@@ -386,6 +387,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Close")) {
                 show_feedback_window = false;
+                show_Sylent_window = true;
             }
 
             ImGui::End();
