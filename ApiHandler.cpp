@@ -140,8 +140,7 @@ void LoadLoginCredentials(HINSTANCE hInstance) {
 
     if (!loginFound || !passwordFound) {
         Log("Login or password not found in config file. Please login.");
-        OpenLoginWindow();
-    }
+    } 
 }
 
 void SaveLoginCredentials(const std::string& login, const std::string& password) {
@@ -154,15 +153,13 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
         file.close();
 
         if (Login(login, password)) {
-            Log("Login successful after saving credentials - Please restart the application to apply your license");
-            MessageBox(NULL, "Login successful! Please restart the application to apply your license.", "Success", MB_ICONINFORMATION);
+            MessageBox(NULL, "Login successful after saving credentials - Please restart the application to apply your license", "Success", MB_ICONINFORMATION);
             PostQuitMessage(0);
         } else {
-            Log("Login failed after saving credentials");
-            OpenLoginWindow();
+            MessageBox(NULL, "Login failed after saving credentials", "Error", MB_ICONERROR);
         }
     } else {
-        Log("Failed to open config file for writing");
+        MessageBox(NULL, "Failed to open config file for writing", "Error", MB_ICONERROR);
     }
 }
 

@@ -32,6 +32,8 @@ static D3DPRESENT_PARAMETERS    g_d3dpp = {};
 bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
 void ResetDevice();
+bool show_login_window = true;
+bool show_Sylent_window = false;
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 std::atomic<bool> isWriting(false);
@@ -91,6 +93,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
     LoadSettings();
+    LoadLoginCredentials(hInstance); // Call LoadLoginCredentials from apihandler.cpp
+
+    bool loginSuccess = Login(login, password);
+    if (loginSuccess) {
+        Log("Auto-login successful");
+        show_login_window = false;
+        show_Sylent_window = true;
+    } else {
+        Log("Auto-login failed");
+        show_login_window = true;
+    }
 
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
@@ -125,10 +138,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     static char regUsername[128] = "";
     static char regPassword[128] = "";
     static char regEmail[128] = "";
-    static bool loginSuccess = false;
 
-    bool show_Sylent_window = false;
-    bool show_login_window = true;
+
     bool show_register_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -163,18 +174,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
-
         if (show_login_window) {
             ImGui::Begin("Login");
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
             ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
-
+            
             if (ImGui::Button("Login")) {
                 loginSuccess = Login(username, password);
                 if (loginSuccess) {
                     Log("Login successful");
+                    SaveLoginCredentials(username, password);
                     show_login_window = false;
                     show_Sylent_window = true;
                 } else {
@@ -212,7 +223,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 RegisterUser(regUsername, regEmail, regPassword);
                 show_register_window = false;
                 show_login_window = true;
-
             }
 
             if (ImGui::Button("Back to Login")) {
@@ -236,8 +246,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionZoom = false;
             static bool optionMoonjump = false;
 
-            if (ImGui::CollapsingHeader("POV"))
-            {
+            if (ImGui::CollapsingHeader("POV")) {
                 if (ImGui::Checkbox("Zoom", &optionZoom)) {
                     if (optionZoom) {
                         MemoryManipulation("zoom");
@@ -247,8 +256,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Spacing();
 
-            if (ImGui::CollapsingHeader("Movement"))
-            {
+            if (ImGui::CollapsingHeader("Movement")) {
                 if (ImGui::Checkbox("Gravity", &optionGravity)) {
                     if (optionGravity) {
                         MemoryManipulation("gravity");
@@ -263,29 +271,25 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Spacing();
 
-            if (ImGui::CollapsingHeader("ESP"))
-            {
+            if (ImGui::CollapsingHeader("ESP")) {
 
             }
 
             ImGui::Spacing();
 
-            if (ImGui::CollapsingHeader("Player"))
-            {
-
-            }
-            
-            ImGui::Spacing();
-
-            if (ImGui::CollapsingHeader("Teleport"))
-            {
+            if (ImGui::CollapsingHeader("Player")) {
 
             }
 
             ImGui::Spacing();
 
-            if (ImGui::CollapsingHeader("TrollOptions"))
-            {
+            if (ImGui::CollapsingHeader("Teleport")) {
+
+            }
+
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("TrollOptions")) {
 
             }
 
