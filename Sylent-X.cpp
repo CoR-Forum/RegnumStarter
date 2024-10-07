@@ -35,6 +35,9 @@ void ResetDevice();
 bool show_login_window = true;
 bool show_Sylent_window = false;
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern bool featureZoom;
+extern bool featureGravity;
+extern bool featureMoonjump;
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
@@ -256,42 +259,45 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::Spacing();
 
             if (ImGui::CollapsingHeader("Movement")) {
+                ImGui::BeginDisabled(!featureGravity);
                 if (ImGui::Checkbox("Gravity", &optionGravity)) {
                     float newValue = optionGravity ? -8.0f : 8.0f;
                     MemoryManipulation("gravity", newValue);
                 }
+                ImGui::EndDisabled();
+                ImGui::BeginDisabled(!featureMoonjump);
                 if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
                     float newValue = optionMoonjump ? 1.0f : 4.0f;
                     MemoryManipulation("moonjump", newValue);
                 }
+                ImGui::EndDisabled();
             }
 
             ImGui::Spacing();
 
             if (ImGui::CollapsingHeader("ESP")) {
-
+                // Add ESP related checkboxes here
             }
 
             ImGui::Spacing();
 
             if (ImGui::CollapsingHeader("Player")) {
-
+                // Add Player related checkboxes here
             }
 
             ImGui::Spacing();
 
             if (ImGui::CollapsingHeader("Teleport")) {
-
+                // Add Teleport related checkboxes here
             }
 
             ImGui::Spacing();
 
             if (ImGui::CollapsingHeader("TrollOptions")) {
-
+                // Add TrollOptions related checkboxes here
             }
 
             ImGui::Spacing();
-
 
             if (ImGui::Button("Close Application")) {
                 done = true;

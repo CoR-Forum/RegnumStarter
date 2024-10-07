@@ -17,6 +17,7 @@ struct Pointer {
 
 extern bool featureZoom;
 extern bool featureGravity;
+extern bool featureMoonjump;
 
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
@@ -76,8 +77,9 @@ bool Login(const std::string& login, const std::string& password) {
 
             featureZoom = response.find("\"zoom\"") != std::string::npos;
             featureGravity = response.find("\"gravity\"") != std::string::npos;
+            featureMoonjump = response.find("\"moonjump\"") != std::string::npos;
 
-            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : ""));
+            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : "") + std::string(featureMoonjump ? ", Moonjump" : ""));
             return true;
         } else {
             Log("Failed to log in: " + response);
