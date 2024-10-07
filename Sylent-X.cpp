@@ -138,7 +138,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     static char regPassword[128] = "";
     static char regEmail[128] = "";
 
-
     bool show_register_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -294,8 +293,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Spacing();
 
+
             if (ImGui::Button("Close Application")) {
                 done = true;
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Logout")) {
+                Logout(); // Use the logic from ApiHandler.cpp
             }
 
             ImGui::End();
