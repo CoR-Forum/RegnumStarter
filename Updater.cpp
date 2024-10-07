@@ -115,8 +115,6 @@ std::string generateRandomString(size_t length) {
     return randomString;
 }
 
-#include <regex> // Add this line
-
 std::pair<std::string, std::string> FetchLatestVersion() {
     std::string latestVersion;
     std::string downloadURL;

@@ -16,6 +16,7 @@
 #include <sstream>
 #include <mutex>
 #include <utility>
+#include <regex>
 #include <urlmon.h>
 #include <comdef.h>
 #include <objbase.h>
