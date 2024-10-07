@@ -46,7 +46,7 @@ void SelfUpdate() {
     auto [latestVersion, downloadURL] = FetchLatestVersion();
     if (latestVersion.empty() || downloadURL.empty()) {
         Log("Failed to fetch the latest version or download URL");
-        MessageBox(NULL, "Failed to fetch the latest version or download URL. This may be due to a network or server error. You can continue.", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to fetch the latest version or download URL. This may be due to a network or server error. You can continue.", "Error", MB_ICONERROR | MB_TOPMOST);
         InitializePointers();
         return;
     }
@@ -64,7 +64,7 @@ void SelfUpdate() {
     HRESULT hr = URLDownloadToFile(NULL, downloadURL.c_str(), "Sylent-X_New.exe", 0, &progressCallback);
     if (SUCCEEDED(hr)) {
         Log("Update downloaded successfully");
-        MessageBox(NULL, "Update downloaded! The application will now restart to complete the update.", "Update", MB_OK);
+        MessageBox(NULL, "Update downloaded! The application will now restart to complete the update.", "Update", MB_OK | MB_TOPMOST);
 
         // Get the name of the currently running executable
         char currentExePath[MAX_PATH];
@@ -92,14 +92,14 @@ void SelfUpdate() {
             PostQuitMessage(0);
         } else {
             Log("Failed to create update batch file");
-            MessageBox(NULL, "Failed to create batch file.", "Error", MB_ICONERROR);
+            MessageBox(NULL, "Failed to create batch file.", "Error", MB_ICONERROR | MB_TOPMOST);
         }
     } else {
         // Get the error message from HRESULT
         _com_error err(hr);
         LPCTSTR errMsg = err.ErrorMessage();
         Log("Failed to download update: " + std::string(errMsg));
-        MessageBox(NULL, ("Failed to download update: " + std::string(errMsg)).c_str(), "Error", MB_ICONERROR);
+        MessageBox(NULL, ("Failed to download update: " + std::string(errMsg)).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
     }
 }
 
