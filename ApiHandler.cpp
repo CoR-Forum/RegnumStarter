@@ -221,56 +221,58 @@ std::string FetchDataFromAPI(const std::string& url) {
 
 std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
     std::vector<Pointer> pointers;
-    size_t pos = 0, endPos;
+    size_t pos = jsonResponse.find("\"memory_pointers\":{");
+    if (pos == std::string::npos) {
+        Log("Invalid JSON response: memory_pointers not found");
+        return pointers;
+    }
+    pos += 19; // Move past "memory_pointers":{
 
-    while ((pos = jsonResponse.find("{", pos)) != std::string::npos) {
+    while (pos < jsonResponse.size() && jsonResponse[pos] != '}') {
         Pointer pointer;
-        endPos = jsonResponse.find("}", pos);
-        std::string object = jsonResponse.substr(pos, endPos - pos + 1);
 
-        size_t namePos = object.find("\"name\":") + 8;
-        size_t nameEnd = object.find("\"", namePos);
-        pointer.name = object.substr(namePos, nameEnd - namePos);
+        // Extract the pointer name
+        size_t nameStart = jsonResponse.find("\"", pos) + 1;
+        size_t nameEnd = jsonResponse.find("\"", nameStart);
+        pointer.name = jsonResponse.substr(nameStart, nameEnd - nameStart);
 
-        size_t addressPos = object.find("\"address\":") + 11;
-        size_t addressEnd = object.find("\"", addressPos);
-        std::string addressStr = object.substr(addressPos, addressEnd - addressPos);
+        // Extract the address
+        size_t addressPos = jsonResponse.find("\"address\":\"", nameEnd) + 11;
+        size_t addressEnd = jsonResponse.find("\"", addressPos);
+        std::string addressStr = jsonResponse.substr(addressPos, addressEnd - addressPos);
         try {
             pointer.address = std::stoul(addressStr, nullptr, 16);
         } catch (const std::invalid_argument& e) {
             LogDebug("Invalid address: " + addressStr);
+            pos = jsonResponse.find("}", addressEnd) + 1;
             continue;
         }
 
-        size_t offsetsPos = object.find("\"offsets\":") + 11;
-        size_t offsetsEnd = object.find("\"", offsetsPos);
-        std::string offsetsStr = object.substr(offsetsPos, offsetsEnd - offsetsPos);
+        // Extract the offsets
+        size_t offsetsPos = jsonResponse.find("\"offsets\":\"", addressEnd) + 11;
+        size_t offsetsEnd = jsonResponse.find("\"", offsetsPos);
+        std::string offsetsStr = jsonResponse.substr(offsetsPos, offsetsEnd - offsetsPos);
 
-        if (offsetsStr.empty()) {
-            LogDebug("No offsets for pointer: " + pointer.name);
-        } else {
-            size_t offsetPos = 0, offsetEnd;
-            while ((offsetEnd = offsetsStr.find(",", offsetPos)) != std::string::npos) {
-                std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
-                try {
-                    pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
-                } catch (const std::invalid_argument& e) {
-                    LogDebug("Invalid offset: " + offsetStr);
-                    continue;
-                }
-                offsetPos = offsetEnd + 1;
-            }
+        size_t offsetPos = 0, offsetEnd;
+        while ((offsetEnd = offsetsStr.find(",", offsetPos)) != std::string::npos) {
+            std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
             try {
-                pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
+                pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
             } catch (const std::invalid_argument& e) {
-                LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
-                continue;
+                LogDebug("Invalid offset: " + offsetStr);
             }
+            offsetPos = offsetEnd + 1;
+        }
+        try {
+            pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
+        } catch (const std::invalid_argument& e) {
+            LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
         }
 
         LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address));
         pointers.push_back(pointer);
-        pos = endPos + 1;
+
+        pos = jsonResponse.find("}", offsetsEnd) + 1;
     }
 
     return pointers;
@@ -279,7 +281,7 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
 std::vector<Pointer> pointers;
 
 void InitializePointers() {
-    std::string url = "https://cort.cor-forum.de/api/v1/sylentx/memory/pointers?key=aingu8gaiv0daitoj6eeweezeug7Ei";
+    std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
     std::string jsonResponse = FetchDataFromAPI(url);
     if (!jsonResponse.empty()) {
         pointers = ParseJSONResponse(jsonResponse);

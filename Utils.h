@@ -57,7 +57,7 @@ const char* appDataPath = getenv("APPDATA");
 extern const std::string currentVersion;
 
 // Global variables
-bool debugLog = false;
+bool debugLog = true;
 
 // Checkboxes states
 bool optionGravity = false;
