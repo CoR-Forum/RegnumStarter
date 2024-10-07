@@ -301,9 +301,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionMoonjump = false;
 
             if (ImGui::CollapsingHeader("POV")) {
-                if (ImGui::Checkbox("Zoom", &optionZoom)) {
-                    float newValue = optionZoom ? 25.0f : 15.0f;
-                    MemoryManipulation("zoom", newValue);
+                static float zoomValue = 15.0f; // Default zoom value
+                ImGui::Checkbox("Enable Zoom", &optionZoom);
+                ImGui::SameLine();
+                if (optionZoom && ImGui::SliderFloat("Zoom", &zoomValue, 10.0f, 50.0f)) { // Adjust the range as needed
+                    MemoryManipulation("zoom", zoomValue);
                 }
             }
 
