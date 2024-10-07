@@ -106,15 +106,26 @@ void SelfUpdate() {
 std::pair<std::string, std::string> FetchLatestVersion() {
     std::string latestVersion;
     std::string downloadURL;
-    HRESULT hr = URLDownloadToFile(NULL, "https://patch.sylent-x.com/v0/", "latest_version.txt", 0, NULL);
+    HRESULT hr = URLDownloadToFile(NULL, "https://patch.sylent-x.com/v0/latest_version.txt", "latest_version.txt", 0, NULL);
     if (SUCCEEDED(hr)) {
         std::ifstream versionFile("latest_version.txt");
         if (versionFile.is_open()) {
             std::getline(versionFile, latestVersion);
             std::getline(versionFile, downloadURL);
             versionFile.close();
+
+            // Check if the content is valid
+            if (latestVersion.find("<!DOCTYPE HTML") != std::string::npos || downloadURL.find("<html>") != std::string::npos) {
+                Log("Error: Received HTML content instead of version information.");
+                return {"", ""};
+            }
+        } else {
+            Log("Error: Unable to open the version file.");
         }
+        Log("Fetched latest version: " + latestVersion + " - Download URL: " + downloadURL);
         std::remove("latest_version.txt");
+    } else {
+        Log("Error: Failed to download the version file.");
     }
     return {latestVersion, downloadURL};
 }
