@@ -96,6 +96,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
 
     LoadSettings();
+    SelfUpdate();
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
