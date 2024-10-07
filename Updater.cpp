@@ -103,10 +103,26 @@ void SelfUpdate() {
     }
 }
 
+
+std::string generateRandomString(size_t length) {
+    const std::string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::string randomString;
+    srand(static_cast<unsigned int>(time(0))); // Seed for randomness
+
+    for (size_t i = 0; i < length; ++i) {
+        randomString += characters[rand() % characters.size()];
+    }
+    return randomString;
+}
+
 std::pair<std::string, std::string> FetchLatestVersion() {
     std::string latestVersion;
     std::string downloadURL;
-    HRESULT hr = URLDownloadToFile(NULL, "https://patch.sylent-x.com/v0/latest_version.txt", "latest_version.txt", 0, NULL);
+    std::string randomString = generateRandomString(10); // Generate a random string of length 10
+    std::string url = "https://patch.sylent-x.com/v0/latest_version.txt?v=" + randomString;
+    Log("Fetching latest version from: " + url);
+
+    HRESULT hr = URLDownloadToFile(NULL, url.c_str(), "latest_version.txt", 0, NULL);
     if (SUCCEEDED(hr)) {
         std::ifstream versionFile("latest_version.txt");
         if (versionFile.is_open()) {
