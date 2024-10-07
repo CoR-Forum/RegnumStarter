@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <sstream>
 
+#pragma once //added for register in sylent-x.cpp maybe check it 
+
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
 
 extern HWND hwnd; // Declare the handle to the main window
@@ -297,19 +299,17 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
 
-        Log("Registration response: " + response);
-
         size_t messagePos = response.find("\"message\":\"") + 11;
         size_t messageEnd = response.find("\"", messagePos);
         std::string message = response.substr(messagePos, messageEnd - messagePos);
 
         if (response.find("\"status\":\"success\"") != std::string::npos) {
-            Log("User registered successfully: " + message);
+            MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION);
             SendMessage(hRegistrationWindow, WM_CLOSE_REGISTRATION_WINDOW, 0, 0);
         } else {
-            Log("Registration failed: " + message);
+            MessageBox(NULL, ("Registration failed: " + message).c_str(), "Error", MB_ICONERROR);
         }
     } catch (const std::exception& e) {
-        Log(e.what());
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR);
     }
 }

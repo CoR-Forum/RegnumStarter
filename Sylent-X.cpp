@@ -15,6 +15,7 @@
 #include "imgui_impl_win32.h"
 #include <d3d9.h>
 #include "Style.cpp"
+#include "ApiHandler.cpp"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -84,7 +85,7 @@ HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 DWORD pid; // Process ID of the target process
 
 // Declare the Register function
-//bool RegisterUser(const char* username, const char* password, const char* email);
+void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -115,7 +116,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui::StyleColorsDark();
 
     ApplyCustomStyle();
-
 
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
@@ -200,8 +200,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::End();
         }
 
-        // Commenting out the register window
-        /*
         if (show_register_window) {
             ImGui::Begin("Register");
             ImGui::SetWindowSize(ImVec2(500, 300));
@@ -211,24 +209,23 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
 
             if (ImGui::Button("Register")) {
-            bool registerSuccess = RegisterUser(regUsername, regPassword, regEmail);
-            if (registerSuccess) {
-                Log("Registration successful");
+                RegisterUser(regUsername, regEmail, regPassword);
                 show_register_window = false;
                 show_login_window = true;
-            } else {
-                Log("Registration failed");
-            }
+
             }
 
             if (ImGui::Button("Back to Login")) {
-            show_register_window = false;
-            show_login_window = true;
+                show_register_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Close Application")) {
+                done = true;
             }
 
             ImGui::End();
         }
-        */
 
         if (show_Sylent_window) {
             std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
@@ -282,9 +279,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Spacing();
 
-                if (ImGui::Button("Close Application")) {
+            if (ImGui::Button("Close Application")) {
                 done = true;
-                }
+            }
 
             ImGui::End();
         }
