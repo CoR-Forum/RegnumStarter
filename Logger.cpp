@@ -8,7 +8,7 @@ extern const char* appDataPath;
 
 namespace {
     const size_t MAX_LOG_MESSAGES = 500;
-    const char* LOG_FILE_PATH = "Sylent-X\\log.txt";
+    const char* LOG_FILE_PATH = "\\Sylent-X\\log.txt";
     std::deque<std::string> logMessages;
     std::mutex logMutex;
 }
