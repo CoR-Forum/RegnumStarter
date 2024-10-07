@@ -238,15 +238,27 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::CollapsingHeader("POV"))
             {
-                ImGui::Checkbox("Zoom", &optionZoom);
+                if (ImGui::Checkbox("Zoom", &optionZoom)) {
+                    if (optionZoom) {
+                        MemoryManipulation("zoom");
+                    }
+                }
             }
 
             ImGui::Spacing();
 
             if (ImGui::CollapsingHeader("Movement"))
             {
-                ImGui::Checkbox("Gravity", &optionGravity);
-                ImGui::Checkbox("Moonjump", &optionMoonjump);
+                if (ImGui::Checkbox("Gravity", &optionGravity)) {
+                    if (optionGravity) {
+                        MemoryManipulation("gravity");
+                    }
+                }
+                if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
+                    if (optionMoonjump) {
+                        MemoryManipulation("moonjump");
+                    }
+                }
             }
 
             ImGui::Spacing();
