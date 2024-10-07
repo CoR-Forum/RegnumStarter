@@ -108,7 +108,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1980, 1080, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 2560, 1440, NULL, NULL, wc.hInstance, NULL);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
     if (!CreateDeviceD3D(hwnd)) {
@@ -397,20 +397,20 @@ void MemoryManipulation(const std::string& option, float newValue) {
     pid = GetProcessIdByName(L"ROClientGame.exe");
     if (pid == 0) {
         Log("Failed to find ROClientGame.exe process");
-        MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR | MB_TOPMOST);
         return;
     }
 
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (!hProcess) {
         Log("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
-        MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR | MB_TOPMOST);
         return;
     }
 
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
     if (baseAddress == 0) {
-        MessageBox(NULL, "Failed to get the base address of ROClientGame.exe.", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to get the base address of ROClientGame.exe.", "Error", MB_ICONERROR | MB_TOPMOST);
         CloseHandle(hProcess);
         return;
     }
@@ -424,12 +424,12 @@ void MemoryManipulation(const std::string& option, float newValue) {
             for (size_t i = 0; i < pointer.offsets.size(); ++i) {
                 if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
                     if (bytesRead != sizeof(finalAddress)) {
-                        MessageBox(NULL, ("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead)).c_str(), "Error", MB_ICONERROR);
+                        MessageBox(NULL, ("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead)).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
                         return;
                     }
                     finalAddress += pointer.offsets[i];
                 } else {
-                    MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR);
+                    MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
                     return;
                 }
             }
@@ -437,7 +437,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                 // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
-                MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR);
+                MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
             }
         }
     }

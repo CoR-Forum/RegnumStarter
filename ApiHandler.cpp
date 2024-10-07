@@ -153,13 +153,13 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
         file.close();
 
         if (Login(login, password)) {
-            MessageBox(NULL, "Login successful after saving credentials - Please restart the application to apply your license", "Success", MB_ICONINFORMATION);
+            MessageBox(NULL, "Login successful after saving credentials - Please restart the application to apply your license", "Success", MB_ICONINFORMATION | MB_TOPMOST);
             PostQuitMessage(0);
         } else {
-            MessageBox(NULL, "Login failed after saving credentials", "Error", MB_ICONERROR);
+            MessageBox(NULL, "Login failed after saving credentials", "Error", MB_ICONERROR | MB_TOPMOST);
         }
     } else {
-        MessageBox(NULL, "Failed to open config file for writing", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to open config file for writing", "Error", MB_ICONERROR | MB_TOPMOST);
     }
 }
 
@@ -301,12 +301,12 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         std::string message = response.substr(messagePos, messageEnd - messagePos);
 
         if (response.find("\"status\":\"success\"") != std::string::npos) {
-            MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION);
+            MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
             SendMessage(hRegistrationWindow, WM_CLOSE_REGISTRATION_WINDOW, 0, 0);
         } else {
-            MessageBox(NULL, ("Registration failed: " + message).c_str(), "Error", MB_ICONERROR);
+            MessageBox(NULL, ("Registration failed: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
         }
     } catch (const std::exception& e) {
-        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR);
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
     }
 }
