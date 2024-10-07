@@ -133,6 +133,14 @@ DWORD pid; // Process ID of the target process
 
 // Declare the Register function
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
+void ForgotPassword(const std::string& email);
+
+void ForgotPassword(const std::string& email) {
+    // Implement the function logic here
+    // For example, send a password reset request to the server
+    std::cout << "ForgotPassword called with email: " << email << std::endl;
+}
+
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -192,11 +200,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     static char regEmail[128] = "";
     static char feedbackText[1024] = "";
     static char chatInput[256] = "";
+    static char forgotPasswordEmail[128] = "";
     static std::vector<std::string> chatMessages;
 
     bool show_register_window = false;
     bool show_feedback_window = false;
     bool show_chat_window = false;
+    bool show_forgot_password_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -261,6 +271,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_register_window = true;
             }
 
+            if (ImGui::Button("Forgot Password")) {
+                show_login_window = false;
+                show_forgot_password_window = true;
+            }
+
             if (ImGui::Button("Close Application")) {
                 done = true;
             }
@@ -284,6 +299,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Back to Login")) {
                 show_register_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Close Application")) {
+                done = true;
+            }
+
+            ImGui::End();
+        }
+
+        if (show_forgot_password_window) {
+            ImGui::Begin("Forgot Password");
+            ImGui::SetWindowSize(ImVec2(500, 200));
+
+            ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
+
+            if (ImGui::Button("Submit")) {
+                ForgotPassword(forgotPasswordEmail);
+                show_forgot_password_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Back to Login")) {
+                show_forgot_password_window = false;
                 show_login_window = true;
             }
 
