@@ -116,6 +116,33 @@ void Logout() {
     PostQuitMessage(0);
 }
 
+void ResetPasswordRequest(const std::string& email) {
+    try {
+        std::string path = "/reset.php?action=init&email=" + email;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        size_t statusPos = response.find("\"status\":\"") + 10;
+        size_t statusEnd = response.find("\"", statusPos);
+        std::string status = response.substr(statusPos, statusEnd - statusPos);
+
+        size_t messagePos = response.find("\"message\":\"") + 11;
+        size_t messageEnd = response.find("\"", messagePos);
+        std::string message = response.substr(messagePos, messageEnd - messagePos);
+
+        if (status == "success") {
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+        } else {
+            MessageBox(NULL, ("Failed to send password reset e-mail: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+        }
+    } catch (const std::exception& e) {
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+    }
+}
+
 void LoadLoginCredentials(HINSTANCE hInstance) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
 

@@ -133,14 +133,6 @@ DWORD pid; // Process ID of the target process
 
 // Declare the Register function
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
-void ForgotPassword(const std::string& email);
-
-void ForgotPassword(const std::string& email) {
-    // Implement the function logic here
-    // For example, send a password reset request to the server
-    std::cout << "ForgotPassword called with email: " << email << std::endl;
-}
-
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -316,7 +308,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
 
             if (ImGui::Button("Submit")) {
-                ForgotPassword(forgotPasswordEmail);
+                ResetPasswordRequest(forgotPasswordEmail);
                 show_forgot_password_window = false;
                 show_login_window = true;
             }
