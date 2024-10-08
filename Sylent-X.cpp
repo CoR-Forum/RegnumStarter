@@ -622,7 +622,7 @@ uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
     }
     CloseHandle(hSnap);
     // Return the base address of the target module
-    LogDebug(L"Base address of " + std::wstring(modName) + L": " + std::to_wstring(modBaseAddr));
+    LogDebug(L"Base address of " + std::wstring(modName) + L": 0x" + std::to_wstring(reinterpret_cast<uintptr_t>(modBaseAddr)));
     return modBaseAddr;
 }
 
