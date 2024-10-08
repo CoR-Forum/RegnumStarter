@@ -682,28 +682,28 @@ void MemoryManipulation(const std::string& option, float newValue) {
 
     // Initialize the Memory class
     for (const auto& pointer : pointers) {
-        LogDebug("Checking pointer: " + pointer.name + " at address: " + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
+        LogDebug("Checking pointer: " + pointer.name + " at address: 0x" + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
         // Check if the pointer name matches the option
         if (pointer.name == option) {
-            LogDebug("Found the " + option + " pointer at address: 0x" + std::stringstream() << std::hex << pointer.address + " with " + std::to_string(pointer.offsets.size()) + " offsets");
+            LogDebug("Found the " + option + " pointer at address: 0x" + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
             // Calculate the final address
             uintptr_t optionPointer = baseAddress + pointer.address;
-            LogDebug(option + " pointer address: " + std::to_string(optionPointer));
+            LogDebug(option + " pointer address: 0x" + std::to_string(optionPointer));
             uintptr_t finalAddress = optionPointer;
-            LogDebug(option + " final address: " + std::to_string(finalAddress));
+            LogDebug(option + " final address: 0x" + std::to_string(finalAddress));
             SIZE_T bytesRead;
-            LogDebug("Found the " + option + " pointer at address: " + std::to_string(optionPointer));
+            LogDebug("Found the " + option + " pointer at address: 0x" + std::to_string(optionPointer));
 
             for (size_t i = 0; i < pointer.offsets.size(); ++i) {
                 if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
                     if (bytesRead != sizeof(finalAddress)) {
-                        LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: " + std::to_string(pointer.offsets[i]) + ")");
+                        LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: 0x" + std::to_string(pointer.offsets[i]) + ")");
                         return;
                     }
                     finalAddress += pointer.offsets[i];
-                    LogDebug("Got " + std::to_string(i) + " offsets (to be specific: " + std::to_string(pointer.offsets[i]) + "). Final address: " + std::to_string(finalAddress));
+                    LogDebug("Got " + std::to_string(i) + " offsets (to be specific: 0x" + std::to_string(pointer.offsets[i]) + "). Final address: 0x" + std::to_string(finalAddress));
                 } else {
-                    LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: " + std::to_string(pointer.offsets[i]) + ")");
+                    LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: 0x" + std::to_string(pointer.offsets[i]) + ")");
                     return;
                 }
             }
