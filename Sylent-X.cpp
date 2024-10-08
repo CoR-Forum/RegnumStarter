@@ -208,7 +208,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     bool show_chat_window = false;
     bool show_forgot_password_window = false;
     bool show_token_window = false;
-    bool show_admin_window = false; // Add this line
+    bool show_admin_window = false;
+    bool show_settings_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -351,6 +352,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static char newPassword[128] = "";
 
             ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
+            ImGui::SameLine();
+            ShowHelpMarker("Sent to you by e-mail");
+
             ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
 
             static std::string statusText = "";
@@ -385,6 +389,22 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::End();
         }
 
+        if (show_settings_window) {
+            ImGui::Begin("Settings");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            // Dropdown for selecting the update channel
+            static int updateChannel = 0;
+            const char* updateChannels[] = { "Stable", "Beta", "Dev" };
+            ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));            
+
+            if (ImGui::Button("Save Settings")) {
+                SaveSettings();
+            }
+
+            ImGui::End();
+        }
+
         if (show_main_window) {
             std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
             ImGui::Begin(windowTitle.c_str());
@@ -395,7 +415,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionMoonjump = false;
 
 
-            if (ImGui::CollapsingHeader("POV")) {
+            if (ImGui::CollapsingHeader("POV", ImGuiTreeNodeFlags_DefaultOpen)) {
                 static float zoomValue = 15.0f; // Default zoom value
                 ImGui::Checkbox("Enable Zoom", &optionZoom);
                 ImGui::SameLine();
@@ -406,7 +426,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Spacing();
 
-            if (ImGui::CollapsingHeader("Movement")) {
+            if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::BeginDisabled(!featureGravity);
                 if (ImGui::Checkbox("Gravity", &optionGravity)) {
                     float newValue = optionGravity ? -8.0f : 8.0f;
@@ -442,65 +462,42 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Spacing();
 
-            if (ImGui::CollapsingHeader("ESP")) {
-                // Add ESP related checkboxes here
-            }
-
-            ImGui::Spacing();
-
-            if (ImGui::CollapsingHeader("Player")) {
-                // Add Player related checkboxes here
-            }
-
-            ImGui::Spacing();
-
-            if (ImGui::CollapsingHeader("Teleport")) {
-                // Add Teleport related checkboxes here
-            }
-
-            ImGui::Spacing();
-
-            if (ImGui::CollapsingHeader("TrollOptions")) {
-                // Add TrollOptions related checkboxes here
-            }
-
-            ImGui::Spacing();
-
-            if (ImGui::Button("Close Application")) {
+            if (ImGui::Button("Exit")) {
                 done = true;
             }
-
             ImGui::SameLine();
 
             if (ImGui::Button("Chat")) {
                 show_chat_window = true;
             }
-
             ImGui::SameLine();
             
             if (ImGui::Button("Feedback")) {
                 show_feedback_window = true;
                 show_main_window = false;
             }
-
             ImGui::SameLine();
 
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
             }
-
             ImGui::SameLine();
             
+            if (ImGui::Button("Settings")) {
+                show_settings_window = true;
+            }
 
             // checkbox to toggle debug logging
             ImGui::Checkbox("Debug Log", &debugLog);
+
+                        ImGui::SameLine();
+
 
             // button to call admin UI, only visible if isAdmin is true
             if (isAdmin && ImGui::Button("Admin UI")) {
                 GetAllUsers();
                 show_admin_window = true; // Show the admin window
             }
-
             // Log display box at the bottom
             ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             for (const auto& msg : logMessages) {
@@ -592,12 +589,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             // Add admin-specific controls here
             ImGui::Text("Admin Controls");
-
-            ImGui::Spacing();
-            
-            ImGui::Text("Hover over the (?) Joshua ;)");
-            ImGui::SameLine();
-            ShowHelpMarker("Thats a Test for User Joshua");
 
             ImGui::Spacing();
 
