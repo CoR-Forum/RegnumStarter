@@ -47,13 +47,11 @@ void SelfUpdate() {
     if (latestVersion.empty() || downloadURL.empty()) {
         Log("Failed to fetch the latest version or download URL");
         MessageBox(NULL, "Failed to fetch the latest version or download URL. This may be due to a network or server error. You can continue.", "Error", MB_ICONERROR | MB_TOPMOST);
-        InitializePointers();
         return;
     }
 
     if (latestVersion <= currentVersion) {
         Log("No new update available. Server returned version: " + latestVersion);
-        InitializePointers();
         return;
     }
 

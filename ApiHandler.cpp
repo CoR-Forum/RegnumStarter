@@ -8,13 +8,6 @@
 
 extern HWND hwnd; // Declare the handle to the main window
 
-// Declare the Pointer struct
-struct Pointer {
-    std::string name;
-    unsigned long address;
-    std::vector<unsigned long> offsets;
-};
-
 extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
@@ -72,17 +65,31 @@ bool Login(const std::string& login, const std::string& password) {
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
-        if (response.find("\"status\":\"success\"") != std::string::npos) {
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+
+        if (status == "success") {
             Log("User " + login + " logged in successfully");
 
-            featureZoom = response.find("\"zoom\"") != std::string::npos;
-            featureGravity = response.find("\"gravity\"") != std::string::npos;
-            featureMoonjump = response.find("\"moonjump\"") != std::string::npos;
+            auto licensedFeatures = jsonResponse["licensed_features"];
+            featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
+            featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
+            featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
 
-            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : "") + std::string(featureMoonjump ? ", Moonjump" : ""));
+            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
+                std::string(featureGravity ? ", Gravity" : "") + 
+                std::string(featureMoonjump ? ", Moonjump" : ""));
+
+            g_pointers = InitializePointers();
+
+            // Start the CheckChatMessages process in a new thread
+            std::thread chatThread(CheckChatMessages);
+            chatThread.detach(); // Detach the thread to run independently
+
             return true;
         } else {
-            Log("Failed to log in: " + response);
+            std::string message = jsonResponse["message"];
+            Log("Failed to log in: " + message);
             return false;
         }
     } catch (const std::exception& e) {
@@ -114,6 +121,58 @@ void Logout() {
     outFile.close();
     
     PostQuitMessage(0);
+}
+
+bool ResetPasswordRequest(const std::string& email) {
+    try {
+        std::string path = "/reset.php?action=init&email=" + email;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            return true;
+        } else {
+            MessageBox(NULL, ("Failed to send password reset e-mail: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            return false;
+        }
+    } catch (const std::exception& e) {
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+        return false;
+    }
+}
+
+bool SetNewPassword(const std::string& token, const std::string& password) {
+    try {
+        std::string path = "/reset.php?action=reset&token=" + token + "&password=" + password;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            return true;
+        } else {
+            MessageBox(NULL, ("Failed to set new password: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            return false;
+        }
+    } catch (const std::exception& e) {
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+        return false;
+    }
 }
 
 void LoadLoginCredentials(HINSTANCE hInstance) {
@@ -218,78 +277,53 @@ std::string FetchDataFromAPI(const std::string& url) {
         return "";
     }
 }
-
-std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
+std::vector<Pointer> InitializePointers() {
     std::vector<Pointer> pointers;
-    size_t pos = jsonResponse.find("\"memory_pointers\":{");
-    if (pos == std::string::npos) {
-        Log("Invalid JSON response: memory_pointers not found");
-        return pointers;
-    }
-    pos += 19; // Move past "memory_pointers":{
-
-    while (pos < jsonResponse.size() && jsonResponse[pos] != '}') {
-        Pointer pointer;
-
-        // Extract the pointer name
-        size_t nameStart = jsonResponse.find("\"", pos) + 1;
-        size_t nameEnd = jsonResponse.find("\"", nameStart);
-        pointer.name = jsonResponse.substr(nameStart, nameEnd - nameStart);
-
-        // Extract the address
-        size_t addressPos = jsonResponse.find("\"address\":\"", nameEnd) + 11;
-        size_t addressEnd = jsonResponse.find("\"", addressPos);
-        std::string addressStr = jsonResponse.substr(addressPos, addressEnd - addressPos);
+    std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
+    std::string jsonResponse = FetchDataFromAPI(url);
+    LogDebug("Fetched pointers from API: " + jsonResponse);
+    
+    if (!jsonResponse.empty()) {
         try {
-            pointer.address = std::stoul(addressStr, nullptr, 16);
-        } catch (const std::invalid_argument& e) {
-            LogDebug("Invalid address: " + addressStr);
-            pos = jsonResponse.find("}", addressEnd) + 1;
-            continue;
-        }
-
-        // Extract the offsets
-        size_t offsetsPos = jsonResponse.find("\"offsets\":\"", addressEnd) + 11;
-        size_t offsetsEnd = jsonResponse.find("\"", offsetsPos);
-        std::string offsetsStr = jsonResponse.substr(offsetsPos, offsetsEnd - offsetsPos);
-
-        size_t offsetPos = 0, offsetEnd;
-        while ((offsetEnd = offsetsStr.find(",", offsetPos)) != std::string::npos) {
-            std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
-            try {
-                pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
-            } catch (const std::invalid_argument& e) {
-                LogDebug("Invalid offset: " + offsetStr);
+            auto json = nlohmann::json::parse(jsonResponse);
+            if (!json.contains("memory_pointers")) {
+                Log("Invalid JSON response: memory_pointers not found");
+                return pointers;
             }
-            offsetPos = offsetEnd + 1;
-        }
-        try {
-            pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
+
+            for (const auto& item : json["memory_pointers"].items()) {
+                Pointer pointer;
+                pointer.name = item.key();
+                pointer.address = std::stoul(item.value()["address"].get<std::string>(), nullptr, 16);
+
+                std::string offsetsStr = item.value()["offsets"].get<std::string>();
+                if (!offsetsStr.empty()) {
+                    std::stringstream ss(offsetsStr);
+                    std::string offset;
+                    while (std::getline(ss, offset, ',')) {
+                        pointer.offsets.push_back(std::stoul(offset, nullptr, 16));
+                    }
+                }
+
+                std::stringstream addressHex;
+                addressHex << std::hex << pointer.address;
+                LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsetsStr);
+                pointers.push_back(pointer);
+            }
+            Log("Pointers fetched and parsed successfully");
+        } catch (const nlohmann::json::exception& e) {
+            LogDebug("JSON parsing error: " + std::string(e.what()));
         } catch (const std::invalid_argument& e) {
-            LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
+            Log("Invalid address or offset format");
         }
-
-        LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address));
-        pointers.push_back(pointer);
-
-        pos = jsonResponse.find("}", offsetsEnd) + 1;
+    } else {
+        Log("Failed to fetch or parse pointers");
     }
 
     return pointers;
 }
 
-std::vector<Pointer> pointers;
-
-void InitializePointers() {
-    std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
-    std::string jsonResponse = FetchDataFromAPI(url);
-    if (!jsonResponse.empty()) {
-        pointers = ParseJSONResponse(jsonResponse);
-        Log("Pointers fetched and parsed successfully");
-    } else {
-        Log("Failed to fetch or parse pointers");
-    }
-}
+std::vector<Pointer> g_pointers;
 
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     try {
@@ -300,17 +334,101 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
 
-        size_t messagePos = response.find("\"message\":\"") + 11;
-        size_t messageEnd = response.find("\"", messagePos);
-        std::string message = response.substr(messagePos, messageEnd - messagePos);
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
 
-        if (response.find("\"status\":\"success\"") != std::string::npos) {
+        if (status == "success") {
             MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
-            SendMessage(hRegistrationWindow, WM_CLOSE_REGISTRATION_WINDOW, 0, 0);
         } else {
             MessageBox(NULL, ("Registration failed: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
         }
     } catch (const std::exception& e) {
         MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+    }
+}
+std::vector<std::string> g_chatMessages;
+
+
+void SendChatMessage(const std::string& message) {
+    try {
+        std::string path = "/shoutbox.php?action=add&username=" + login + "&password=" + password + "&message=" + message;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("Chat message sent successfully");
+
+            // Process the messages array
+            auto messages = jsonResponse["messages"];
+            std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
+            for (const auto& msg : messages) {
+                std::string msgText = msg["message"];
+                std::string createdAt = msg["created_at"];
+                std::string user = msg["username"];
+                std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+
+                // Only store new messages
+                if (existingMessages.find(fullMessage) == existingMessages.end()) {
+                    g_chatMessages.push_back(fullMessage);
+                    logMessages.push_back(fullMessage); // Add to logMessages
+                    existingMessages.insert(fullMessage); // Update the set with the new message
+                }
+            }
+        } else {
+            Log("Failed to send chat message.");
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+    }
+}
+
+// Check for new chat messages every 2 seconds and store them in g_chatMessages
+void CheckChatMessages() {
+    bool keepRunning = true;
+    while (keepRunning) {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        try {
+            std::string path = "/shoutbox.php?action=get&username=" + login + "&password=" + password;
+            HINTERNET hInternet = OpenInternetConnection();
+            HINTERNET hConnect = ConnectToAPI(hInternet);
+            HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+            std::string response = ReadResponse(hRequest);
+            CloseInternetHandles(hRequest, hConnect, hInternet);
+
+            auto jsonResponse = nlohmann::json::parse(response);
+            std::string status = jsonResponse["status"];
+            if (status == "success") {
+                LogDebug("Chat messages fetched successfully");
+
+                // Process the messages array
+                auto messages = jsonResponse["messages"];
+                std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
+                for (const auto& msg : messages) {
+                    std::string msgText = msg["message"];
+                    std::string createdAt = msg["created_at"];
+                    std::string user = msg["username"];
+                    std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+
+                    // Only store new messages
+                    if (existingMessages.find(fullMessage) == existingMessages.end()) {
+                        g_chatMessages.push_back(fullMessage);
+                        logMessages.push_back(fullMessage); // Add to logMessages
+                        existingMessages.insert(fullMessage); // Update the set with the new message
+                    }
+                }
+            } else {
+                LogDebug("Failed to fetch chat messages.");
+            }
+        } catch (const std::exception& e) {
+            Log("Exception: " + std::string(e.what()));
+        }
     }
 }

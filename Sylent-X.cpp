@@ -9,7 +9,7 @@
 #include "Updater.cpp"
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
-#include "Windows.cpp"
+#include "Keyboard.cpp"
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
@@ -37,22 +37,15 @@ bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
 void ResetDevice();
 bool show_login_window = true;
-bool show_Sylent_window = false;
+bool show_main_window = false;
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern std::string login;
 
-std::atomic<bool> isWriting(false);
-std::thread memoryThread;
+std::vector<Pointer> pointers;
 
-void ContinuousMemoryWrite(const std::string& option) {
-    while (isWriting) {
-        MemoryManipulation(option);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
-    }
-}
 
 void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
     HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -125,22 +118,10 @@ void ResetDevice() {
 }
 
 // Constants
-const std::string currentVersion = "0.1.63"; // Current version of the application
-const char* appName = "Sylent-X";
 
-HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
-DWORD pid; // Process ID of the target process
 
 // Declare the Register function
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
-void ForgotPassword(const std::string& email);
-
-void ForgotPassword(const std::string& email) {
-    // Implement the function logic here
-    // For example, send a password reset request to the server
-    std::cout << "ForgotPassword called with email: " << email << std::endl;
-}
-
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -158,8 +139,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     if (loginSuccess) {
         Log("Auto-login successful");
         show_login_window = false;
-        show_Sylent_window = true;
-        InitializePointers(); // Initialize pointers after successful login
+        show_main_window = true;
+        // InitializePointers(); // Initialize pointers after successful login
     } else {
         Log("Auto-login failed");
         show_login_window = true;
@@ -168,7 +149,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 800, 600, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1200, 1000, NULL, NULL, wc.hInstance, NULL);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
     if (!CreateDeviceD3D(hwnd)) {
@@ -254,8 +235,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     Log("Login successful");
                     SaveLoginCredentials(username, password);
                     show_login_window = false;
-                    show_Sylent_window = true;
-                    InitializePointers(); // Initialize pointers after successful login
+                    show_main_window = true;
                 } else {
                     Log("Login failed");
                 }
@@ -317,9 +297,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
 
             if (ImGui::Button("Submit")) {
-                ForgotPassword(forgotPasswordEmail);
+                if (ResetPasswordRequest(forgotPasswordEmail)) {
+                    show_forgot_password_window = false;
+                    show_token_window = true;
+                } else {
+                    ImGui::Text("Failed to send reset password request. Please try again.");
+                }
+            }
+
+            if (ImGui::Button("I already have a token")) {
                 show_forgot_password_window = false;
-                show_token_window = true; // Open the token window
+                show_token_window = true;
             }
 
             if (ImGui::Button("Back to Login")) {
@@ -344,12 +332,24 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
             ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
 
+            static std::string statusText = "";
+
             if (ImGui::Button("Submit")) {
                 // Implement the logic to verify the token and update the password
-                // For example, send the token and new password to the server
-                std::cout << "Token: " << token << ", New Password: " << newPassword << std::endl;
+                if (SetNewPassword(token, newPassword)) {
+                    MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
+                    show_token_window = false;
+                    show_login_window = true;
+                } else {
+                    statusText = "Failed to set new password. Please try again.";
+                }
+            }
+            ImGui::SameLine();
+            ImGui::Text("%s", statusText.c_str());
+
+            if (ImGui::Button("Request new token")) {
                 show_token_window = false;
-                show_login_window = true;
+                show_forgot_password_window = true;
             }
 
             if (ImGui::Button("Back to Login")) {
@@ -364,10 +364,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::End();
         }
 
-        if (show_Sylent_window) {
+        if (show_main_window) {
             std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
             ImGui::Begin(windowTitle.c_str());
-            ImGui::SetWindowSize(ImVec2(500, 300));
+            ImGui::SetWindowSize(ImVec2(600, 600));
 
             static bool optionGravity = false;
             static bool optionZoom = false;
@@ -388,6 +388,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::BeginDisabled(!featureGravity);
                 if (ImGui::Checkbox("Gravity", &optionGravity)) {
                     float newValue = optionGravity ? -8.0f : 8.0f;
+                    // print all global pointers from g_pointers
+                    LogDebug("Printing all pointers: ");
+                    for (const auto& pointer : g_pointers) {
+                        std::stringstream ss;
+                        ss << std::hex << pointer.address;
+                        LogDebug("Pointer: " + pointer.name + " Address: 0x" + ss.str() + " Offsets: ");
+                        for (const auto& offset : pointer.offsets) {
+                            ss.str(""); // Clear the stringstream
+                            ss << std::hex << offset;
+                            LogDebug("Offset: 0x" + ss.str());
+                        }
+                    }
                     MemoryManipulation("gravity", newValue);
                 }
                 ImGui::EndDisabled();
@@ -433,14 +445,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Chat")) {
                 show_chat_window = true;
-                show_Sylent_window = false;
+                show_main_window = false;
             }
 
             ImGui::SameLine();
             
             if (ImGui::Button("Feedback")) {
                 show_feedback_window = true;
-                show_Sylent_window = false;
+                show_main_window = false;
             }
 
             ImGui::SameLine();
@@ -448,6 +460,34 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
             }
+
+            ImGui::SameLine();
+
+            // checkbox to toggle debug logging
+            ImGui::Checkbox("Debug Log", &debugLog);
+
+            // Log display box at the bottom
+            ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            for (const auto& msg : logMessages) {
+                ImGui::TextWrapped("%s", msg.c_str());
+            }
+            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+            }
+
+            ImGui::EndChild();
+
+            // input field and button to send chat messages using sendChatMessage function
+            ImGui::InputTextWithHint("Chat Message", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+
+            ImGui::SameLine();
+            
+            if (ImGui::Button("Send Chat")) {
+                if (strlen(chatInput) > 0) {
+                    SendChatMessage(chatInput);
+                    chatInput[0] = '\0'; // Clear input field
+                }
+            }         
 
             ImGui::End();
         }
@@ -469,7 +509,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Close")) {
                 show_feedback_window = false;
-                show_Sylent_window = true;
+                show_main_window = true;
             }
 
             ImGui::End();
@@ -495,7 +535,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Close")) {
                 show_chat_window = false;
-                show_Sylent_window = true;
+                show_main_window = true;
             }
 
             ImGui::End();
@@ -530,125 +570,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     return 0;
 }
 
-// Function to get the base address of a module
-uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
-    uintptr_t modBaseAddr = 0;
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
-    if (hSnap != INVALID_HANDLE_VALUE) {
-        MODULEENTRY32 modEntry;
-        modEntry.dwSize = sizeof(modEntry);
-        if (Module32First(hSnap, &modEntry)) {
-            do {
-                wchar_t wModuleName[MAX_PATH];
-                MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
-                if (!_wcsicmp(wModuleName, modName)) {
-                    modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
-                    break;
-                }
-            } while (Module32Next(hSnap, &modEntry));
-        }
-    }
-    CloseHandle(hSnap);
-    return modBaseAddr;
-}
 
-// Function to get the process ID by name
-DWORD GetProcessIdByName(const std::wstring& processName) {
-    DWORD processId = 0;
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hSnap != INVALID_HANDLE_VALUE) {
-        PROCESSENTRY32 pe32;
-        pe32.dwSize = sizeof(PROCESSENTRY32);
-        if (Process32First(hSnap, &pe32)) {
-            do {
-                std::wstring exeFile(pe32.szExeFile, pe32.szExeFile + strlen(pe32.szExeFile));
-                if (!_wcsicmp(exeFile.c_str(), processName.c_str())) {
-                    processId = pe32.th32ProcessID;
-                    break;
-                }
-            } while (Process32Next(hSnap, &pe32));
-        }
-    }
-    CloseHandle(hSnap);
-    return processId;
-}
-
-class Memory {
-public:
-    uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
-    bool WriteFloat(uintptr_t address, float value);
-};
-
-uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
-    return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.baseOffset;
-}
-
-bool Memory::WriteFloat(uintptr_t address, float value) {
-    return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
-}
-
-void MemoryManipulation(const std::string& option, float newValue) {
-    Log("MemoryManipulation called with option: " + option);
-    pid = GetProcessIdByName(L"ROClientGame.exe");
-    if (pid == 0) {
-        Log("Failed to find ROClientGame.exe process");
-        MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR | MB_TOPMOST);
-        return;
-    }
-
-    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (!hProcess) {
-        Log("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
-        MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR | MB_TOPMOST);
-        return;
-    }
-
-    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
-    if (baseAddress == 0) {
-        MessageBox(NULL, "Failed to get the base address of ROClientGame.exe.", "Error", MB_ICONERROR | MB_TOPMOST);
-        CloseHandle(hProcess);
-        return;
-    }
-
-    for (const auto& pointer : pointers) {
-        if (pointer.name == option) {
-            uintptr_t optionPointer = baseAddress + pointer.address;
-            uintptr_t finalAddress = optionPointer;
-            SIZE_T bytesRead;
-
-            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
-                    if (bytesRead != sizeof(finalAddress)) {
-                        MessageBox(NULL, ("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead)).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-                        return;
-                    }
-                    finalAddress += pointer.offsets[i];
-                } else {
-                    MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-                    return;
-                }
-            }
-
-            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
-            } else {
-                MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-            }
-        }
-    }
-
-    CloseHandle(hProcess);
-}
 void CleanupDeviceD3D()
 {
     if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = nullptr; }
     if (g_pD3D) { g_pD3D->Release(); g_pD3D = nullptr; }
 }
 
-
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -691,4 +620,185 @@ bool CreateDeviceD3D(HWND hWnd)
         return false;
 
     return true;
+}
+
+HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
+DWORD pid; // Process ID of the target process
+// Function to get the base address of a module
+uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
+    // Initialize the module base address to 0
+    uintptr_t modBaseAddr = 0;
+    // Create a snapshot of the target process
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
+    // Check if the snapshot is valid
+    if (hSnap != INVALID_HANDLE_VALUE) {
+        MODULEENTRY32 modEntry;
+        modEntry.dwSize = sizeof(modEntry);
+        // Iterate through the modules in the target process
+        if (Module32First(hSnap, &modEntry)) {
+            do {
+                // Convert the module name to wide char
+                wchar_t wModuleName[MAX_PATH];
+                MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
+                // Check if the module name matches the target module name
+                if (!_wcsicmp(wModuleName, modName)) {
+                    modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
+                    break;
+                }
+                // Continue to the next module
+            } while (Module32Next(hSnap, &modEntry));
+        }
+    }
+    CloseHandle(hSnap);
+    // Return the base address of the target module
+    LogDebug(L"Base address of " + std::wstring(modName) + L": 0x" + std::to_wstring(reinterpret_cast<uintptr_t>(modBaseAddr)));
+    return modBaseAddr;
+}
+
+// Function to get the process ID by name
+DWORD GetProcessIdByName(const std::wstring& processName) {
+    // Initialize the process ID to 0
+    DWORD processId = 0;
+    // Create a snapshot of the running processes
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    // Check if the snapshot is valid
+    if (hSnap != INVALID_HANDLE_VALUE) {
+        // Initialize the process entry structure
+        PROCESSENTRY32 pe32;
+        pe32.dwSize = sizeof(PROCESSENTRY32);
+        // Iterate through the running processes
+        if (Process32First(hSnap, &pe32)) {
+            do {
+                // Convert the process name to wide char
+                std::wstring exeFile(pe32.szExeFile, pe32.szExeFile + strlen(pe32.szExeFile));
+                // Check if the process name matches the target process name
+                if (!_wcsicmp(exeFile.c_str(), processName.c_str())) {
+                    processId = pe32.th32ProcessID;
+                    break;
+                }
+                // Continue to the next process
+            } while (Process32Next(hSnap, &pe32));
+        }
+    }
+    CloseHandle(hSnap);
+    LogDebug(L"Process ID of " + processName + L": " + std::to_wstring(processId));
+    return processId;
+}
+
+// Memory class to handle memory operations
+class Memory {
+public:
+    uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
+    bool WriteFloat(uintptr_t address, float value);
+};
+
+// Function to get the base address of a memory address
+uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
+    LogDebug(L"Getting base address of " + std::wstring(memAddr.name.begin(), memAddr.name.end()) + L" at address: " + std::to_wstring(memAddr.address));
+    return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
+}
+
+// Function to write a float value to the game process memory
+bool Memory::WriteFloat(uintptr_t address, float value) {
+    LogDebug(L"Writing " + std::to_wstring(value) + L" to address: " + std::to_wstring(address));
+    return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
+}
+
+// Function to manipulate memory values in the game process
+void MemoryManipulation(const std::string& option, float newValue) {
+    LogDebug("MemoryManipulation called with option: " + option);
+    pid = GetProcessIdByName(L"ROClientGame.exe");
+
+    // Check if the game process is running
+    if (pid == 0) {
+        LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
+        // return;
+    }
+
+    // Open the game process
+    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    // Check if the process is valid
+    if (!hProcess) {
+        LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
+        // return;
+    } else {
+        LogDebug(L"Successfully opened ROClientGame.exe process: " + std::to_wstring(pid));
+    }
+
+    // Get the base address of the game module
+    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
+    // Check if the base address is valid
+    if (baseAddress == 0) {
+        LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
+        CloseHandle(hProcess);
+        // return;
+    } else {
+        LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
+    }
+
+    // Initialize the Memory class
+    LogDebug(L"Initializing Memory class for " + std::wstring(option.begin(), option.end()) + L" option with new value: " + std::to_wstring(newValue) + L" and base address: " + std::to_wstring(baseAddress) + L" and process ID: " + std::to_wstring(pid));
+    LogDebug(L"Global pointers: ");
+    for (const auto& pointer : g_pointers) {
+        std::stringstream ss;
+        ss << std::hex << pointer.address;
+        LogDebug("Pointer: " + pointer.name + " Address: 0x" + ss.str() + " Offsets: ");
+        for (const auto& offset : pointer.offsets) {
+            std::stringstream ss;
+            ss << std::hex << offset;
+            LogDebug("Offset: 0x" + ss.str());
+        }
+    }
+    // Iterate through all pointers and apply the memory manipulation for those that match the option
+    for (const auto& pointer : g_pointers) {
+        if (pointer.name == option) {
+            LogDebug(L"Found the " + std::wstring(option.begin(), option.end()) + L" pointer at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
+
+            // Calculate the final address
+            uintptr_t optionPointer = baseAddress + pointer.address;
+            LogDebug(std::wstring(option.begin(), option.end()) + L" pointer address: " + std::to_wstring(optionPointer));
+
+            // Read the final address
+            uintptr_t finalAddress = optionPointer;
+            LogDebug(std::wstring(option.begin(), option.end()) + L" final address: " + std::to_wstring(finalAddress));
+            SIZE_T bytesRead;
+
+            // Iterate through the offsets
+            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                // Read the final address with the offsets applied
+                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    // Check if the read was successful
+                    if (bytesRead != sizeof(finalAddress)) {
+                        LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
+                        return;
+                    }
+                    // Apply the offsets to the final address
+                    finalAddress += pointer.offsets[i];
+                    LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
+                } else {
+                    LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
+                    return;
+                }
+            }
+
+            // Write the new value to the final address with the offsets applied (if needed)
+            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+                LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
+            } else {
+                LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()).c_str());
+            }
+        }
+    }
+
+    CloseHandle(hProcess);
+}
+
+std::atomic<bool> isWriting(false);
+std::thread memoryThread;
+
+void ContinuousMemoryWrite(const std::string& option) {
+    while (isWriting) {
+        MemoryManipulation(option);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
+    }
 }
