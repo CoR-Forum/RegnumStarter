@@ -16,6 +16,7 @@
 #include <sstream>
 #include <mutex>
 #include <utility>
+#include <regex>
 #include <urlmon.h>
 #include <comdef.h>
 #include <objbase.h>
@@ -32,7 +33,7 @@ const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier for 
 const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // Message Identifier for retrieving message to enable checkboxes
 
 // Pull some functions to the top
-void MemoryManipulation(const std::string& option);
+void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 void InitializePointers();
 extern void LoadLoginCredentials(HINSTANCE hInstance);
 extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
@@ -57,7 +58,7 @@ const char* appDataPath = getenv("APPDATA");
 extern const std::string currentVersion;
 
 // Global variables
-bool debugLog = false;
+bool debugLog = true;
 
 // Checkboxes states
 bool optionGravity = false;
@@ -67,10 +68,11 @@ bool optionFreecam = false;
 bool optionMoonwalk = false;
 
 // Feature states
-bool featureZoom = false;
+bool featureZoom = true;
 bool featureGravity = false;
 bool featureFreecam = false;
 bool featureMoonwalk = false;
+bool featureMoonjump = false;
 
 // Keydown states
 bool isGravityKeyPressed = false;

@@ -39,3 +39,6 @@ background.bmp
 *.exe
 *.out
 *.app
+
+# ImGui
+imgui.ini

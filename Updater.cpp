@@ -46,7 +46,7 @@ void SelfUpdate() {
     auto [latestVersion, downloadURL] = FetchLatestVersion();
     if (latestVersion.empty() || downloadURL.empty()) {
         Log("Failed to fetch the latest version or download URL");
-        MessageBox(NULL, "Failed to fetch the latest version or download URL. This may be due to a network or server error. You can continue.", "Error", MB_ICONERROR);
+        MessageBox(NULL, "Failed to fetch the latest version or download URL. This may be due to a network or server error. You can continue.", "Error", MB_ICONERROR | MB_TOPMOST);
         InitializePointers();
         return;
     }
@@ -64,7 +64,7 @@ void SelfUpdate() {
     HRESULT hr = URLDownloadToFile(NULL, downloadURL.c_str(), "Sylent-X_New.exe", 0, &progressCallback);
     if (SUCCEEDED(hr)) {
         Log("Update downloaded successfully");
-        MessageBox(NULL, "Update downloaded! The application will now restart to complete the update.", "Update", MB_OK);
+        MessageBox(NULL, "Update downloaded! The application will now restart to complete the update.", "Update", MB_OK | MB_TOPMOST);
 
         // Get the name of the currently running executable
         char currentExePath[MAX_PATH];
@@ -92,29 +92,68 @@ void SelfUpdate() {
             PostQuitMessage(0);
         } else {
             Log("Failed to create update batch file");
-            MessageBox(NULL, "Failed to create batch file.", "Error", MB_ICONERROR);
+            MessageBox(NULL, "Failed to create batch file.", "Error", MB_ICONERROR | MB_TOPMOST);
         }
     } else {
         // Get the error message from HRESULT
         _com_error err(hr);
         LPCTSTR errMsg = err.ErrorMessage();
         Log("Failed to download update: " + std::string(errMsg));
-        MessageBox(NULL, ("Failed to download update: " + std::string(errMsg)).c_str(), "Error", MB_ICONERROR);
+        MessageBox(NULL, ("Failed to download update: " + std::string(errMsg)).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
     }
+}
+
+
+std::string generateRandomString(size_t length) {
+    const std::string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::string randomString;
+    srand(static_cast<unsigned int>(time(0))); // Seed for randomness
+
+    for (size_t i = 0; i < length; ++i) {
+        randomString += characters[rand() % characters.size()];
+    }
+    return randomString;
 }
 
 std::pair<std::string, std::string> FetchLatestVersion() {
     std::string latestVersion;
     std::string downloadURL;
-    HRESULT hr = URLDownloadToFile(NULL, "https://patch.sylent-x.com/v0/latest_version.txt", "latest_version.txt", 0, NULL);
+    std::string randomString = generateRandomString(10); // Generate a random string of length 10
+    std::string url = "https://patch.sylent-x.com/v0/latest_version.txt?v=" + randomString;
+    Log("Fetching latest version from: " + url);
+
+    HRESULT hr = URLDownloadToFile(NULL, url.c_str(), "latest_version.txt", 0, NULL);
     if (SUCCEEDED(hr)) {
         std::ifstream versionFile("latest_version.txt");
         if (versionFile.is_open()) {
             std::getline(versionFile, latestVersion);
             std::getline(versionFile, downloadURL);
             versionFile.close();
+            if (latestVersion.empty() || downloadURL.empty()) {
+                Log("Error: Version file is missing version number or download URL.");
+                return {"", ""};
+            }
+
+            // Check version number format
+            std::regex versionRegex(R"(\d+[a-zA-Z]?\.\d+\.\d+(-[a-zA-Z]+)?)");
+            if (!std::regex_match(latestVersion, versionRegex)) {
+                Log("Error: Invalid version number format.");
+                return {"", ""};
+            }
+
+            // Check URL format
+            std::regex urlRegex(R"(https:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?)");
+            if (!std::regex_match(downloadURL, urlRegex)) {
+                Log("Error: Invalid download URL format.");
+                return {"", ""};
+            }
+        } else {
+            Log("Error: Unable to open the version file.");
         }
+        Log("Fetched latest version: " + latestVersion + " - Download URL: " + downloadURL);
         std::remove("latest_version.txt");
+    } else {
+        Log("Error: Failed to download the version file.");
     }
     return {latestVersion, downloadURL};
 }
