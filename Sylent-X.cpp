@@ -665,8 +665,6 @@ void MemoryManipulation(const std::string& option, float newValue) {
     if (!hProcess) {
         LogDebug("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
         return;
-    } else {
-        LogDebug("Successfully opened ROClientGame.exe process: " + std::to_string(pid));
     }
 
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
