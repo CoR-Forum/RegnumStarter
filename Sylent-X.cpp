@@ -689,6 +689,7 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
 }
 
 // Function to manipulate memory values in the game process
+// Function to manipulate memory values in the game process
 void MemoryManipulation(const std::string& option, float newValue) {
     Log("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
@@ -741,6 +742,16 @@ void MemoryManipulation(const std::string& option, float newValue) {
             // Calculate the final address
             uintptr_t optionPointer = baseAddress + pointer.address;
             LogDebug(std::wstring(option.begin(), option.end()) + L" pointer address: " + std::to_wstring(optionPointer));
+
+            // If there are no offsets, directly write the new value
+            if (pointer.offsets.empty()) {
+                if (WriteProcessMemory(hProcess, (LPVOID)optionPointer, &newValue, sizeof(newValue), NULL)) {
+                    LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
+                } else {
+                    LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()).c_str());
+                }
+                continue;
+            }
 
             // Read the final address
             uintptr_t finalAddress = optionPointer;
