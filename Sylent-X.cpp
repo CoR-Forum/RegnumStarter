@@ -585,6 +585,8 @@ DWORD GetProcessIdByName(const std::wstring& processName) {
     return processId;
 }
 
+#include <iomanip> // Include this header for std::hex
+
 class Memory {
 public:
     uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
@@ -627,13 +629,13 @@ void MemoryManipulation(const std::string& option, float newValue) {
             uintptr_t optionPointer = baseAddress + pointer.address;
             uintptr_t finalAddress = optionPointer;
             SIZE_T bytesRead;
-            LogDebug("Found " + option + " pointer address: " + std::to_string(optionPointer));
+            LogDebug("Found " + option + " pointer address: " + std::hex + optionPointer);
 
             if (pointer.offsets.empty()) {
                 LogDebug("No offsets, write directly to optionPointer");
                 // No offsets, write directly to optionPointer
                 finalAddress = optionPointer;
-                LogDebug("Writing directly to " + option + " final pointer address: " + std::to_string(finalAddress));
+                LogDebug("Writing directly to " + option + " final pointer address: " + std::hex + finalAddress);
             } else {
                 for (size_t i = 0; i < pointer.offsets.size(); ++i) {
                     if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
@@ -643,9 +645,9 @@ void MemoryManipulation(const std::string& option, float newValue) {
                             return;
                         }
                         finalAddress += pointer.offsets[i];
-                        LogDebug("Reading " + option + " pointer address: " + std::to_string(finalAddress));
+                        LogDebug("Reading " + option + " pointer address: " + std::hex + finalAddress);
                     } else {
-                        LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()) + " Address: " + std::to_string(finalAddress));
+                        LogDebug("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError()) + " Address: " + std::hex + finalAddress);
                         MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
                         return;
                     }
@@ -655,8 +657,8 @@ void MemoryManipulation(const std::string& option, float newValue) {
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                 LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
-                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()) + " Address: " + std::to_string(finalAddress) + " Value: " + std::to_string(newValue) + " Size: " + std::to_string(sizeof(newValue)));
-                MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()) + " Address: " + std::to_string(finalAddress) + " Value: " + std::to_string(newValue) + " Size: " + std::to_string(sizeof(newValue))).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()) + " Address: " + std::hex + finalAddress + " Value: " + std::to_string(newValue) + " Size: " + std::to_string(sizeof(newValue)));
+                MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()) + " Address: " + std::hex + finalAddress + " Value: " + std::to_string(newValue) + " Size: " + std::to_string(sizeof(newValue))).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
             }
         }
     }
