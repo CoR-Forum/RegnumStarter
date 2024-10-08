@@ -199,6 +199,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     bool show_feedback_window = false;
     bool show_chat_window = false;
     bool show_forgot_password_window = false;
+    bool show_token_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -310,11 +311,41 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (ImGui::Button("Submit")) {
                 ResetPasswordRequest(forgotPasswordEmail);
                 show_forgot_password_window = false;
-                show_login_window = true;
+                show_token_window = true; // Open the token window
             }
 
             if (ImGui::Button("Back to Login")) {
                 show_forgot_password_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Close Application")) {
+                done = true;
+            }
+
+            ImGui::End();
+        }
+
+        if (show_token_window) {
+            ImGui::Begin("Enter Token and New Password");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            static char token[128] = "";
+            static char newPassword[128] = "";
+
+            ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
+            ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
+
+            if (ImGui::Button("Submit")) {
+                // Implement the logic to verify the token and update the password
+                // For example, send the token and new password to the server
+                std::cout << "Token: " << token << ", New Password: " << newPassword << std::endl;
+                show_token_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Back to Login")) {
+                show_token_window = false;
                 show_login_window = true;
             }
 
