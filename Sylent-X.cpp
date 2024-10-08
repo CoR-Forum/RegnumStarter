@@ -714,6 +714,10 @@ void MemoryManipulation(const std::string& option, float newValue) {
             LogDebug(L"Offset: " + std::to_wstring(offset));
         }
     }
+    if (g_pointers.empty()) {
+        LogDebug(L"No global pointers found");
+        return;
+    }
 
     // Initialize the Memory class
     LogDebug(L"Initializing Memory class for " + std::wstring(option.begin(), option.end()) + L" option with new value: " + std::to_wstring(newValue) + L" and base address: " + std::to_wstring(baseAddress) + L" and process ID: " + std::to_wstring(pid));
