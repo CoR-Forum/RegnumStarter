@@ -393,7 +393,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     g_pointers = InitializePointers();
                     LogDebug("Printing all pointers: ");
                     for (const auto& pointer : g_pointers) {
-                        LogDebug("Pointer: " + pointer.name);
+                        std::stringstream ss;
+                        ss << std::hex << pointer.address;
+                        LogDebug("Pointer: " + pointer.name + " Address: 0x" + ss.str() + " Offsets: ");
+                        for (const auto& offset : pointer.offsets) {
+                            ss.str(""); // Clear the stringstream
+                            ss << std::hex << offset;
+                            LogDebug("Offset: 0x" + ss.str());
+                        }
                     }
                     MemoryManipulation("gravity", newValue);
                 }
@@ -717,7 +724,9 @@ void MemoryManipulation(const std::string& option, float newValue) {
     for (const auto& pointer : g_pointers) {
         LogDebug(L"Pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
         for (const auto& offset : pointer.offsets) {
-            LogDebug(L"Offset: " + std::to_wstring(offset));
+            std::wstringstream ss;
+            ss << std::hex << offset;
+            LogDebug(L"Offset: 0x" + ss.str());
         }
     }
     if (g_pointers.empty()) {
