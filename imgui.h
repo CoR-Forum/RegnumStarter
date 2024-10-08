@@ -316,7 +316,7 @@ IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 namespace ImGui
 {
-    void ShowColorWheel(ImVec4& textColor, float width = 200.0f);
+    void ShowColorWheel(ImVec4& textColor, float width = 100.0f);
 }
 
 namespace ImGui
