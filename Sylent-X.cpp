@@ -125,8 +125,10 @@ void ResetDevice() {
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 
 void ShowHelpMarker(const char* desc)
-{
+{   
+    ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0.098f, 0.098f, 0.902f, 1.0f)); // Color #1919e6
     ImGui::TextDisabled("(?)");
+    ImGui::PopStyleColor();
     if (ImGui::IsItemHovered())
     {
         ImGui::BeginTooltip();
