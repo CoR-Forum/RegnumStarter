@@ -65,17 +65,23 @@ bool Login(const std::string& login, const std::string& password) {
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
-        if (response.find("\"status\":\"success\"") != std::string::npos) {
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+
+        if (status == "success") {
             Log("User " + login + " logged in successfully");
 
-            featureZoom = response.find("\"zoom\"") != std::string::npos;
-            featureGravity = response.find("\"gravity\"") != std::string::npos;
-            featureMoonjump = response.find("\"moonjump\"") != std::string::npos;
+            featureZoom = jsonResponse.contains("zoom");
+            featureGravity = jsonResponse.contains("gravity");
+            featureMoonjump = jsonResponse.contains("moonjump");
 
-            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + std::string(featureGravity ? ", Gravity" : "") + std::string(featureMoonjump ? ", Moonjump" : ""));
+            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
+                std::string(featureGravity ? ", Gravity" : "") + 
+                std::string(featureMoonjump ? ", Moonjump" : ""));
             return true;
         } else {
-            Log("Failed to log in: " + response);
+            std::string message = jsonResponse["message"];
+            Log("Failed to log in: " + message);
             return false;
         }
     } catch (const std::exception& e) {
@@ -118,13 +124,9 @@ bool ResetPasswordRequest(const std::string& email) {
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
-        size_t statusPos = response.find("\"status\":\"") + 10;
-        size_t statusEnd = response.find("\"", statusPos);
-        std::string status = response.substr(statusPos, statusEnd - statusPos);
-
-        size_t messagePos = response.find("\"message\":\"") + 11;
-        size_t messageEnd = response.find("\"", messagePos);
-        std::string message = response.substr(messagePos, messageEnd - messagePos);
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
 
         if (status == "success") {
             MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
@@ -148,20 +150,15 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
-        size_t statusPos = response.find("\"status\":\"") + 10;
-        size_t statusEnd = response.find("\"", statusPos);
-        std::string status = response.substr(statusPos, statusEnd - statusPos);
-
-        size_t messagePos = response.find("\"message\":\"") + 11;
-        size_t messageEnd = response.find("\"", messagePos);
-        std::string message = response.substr(messagePos, messageEnd - messagePos);
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
 
         if (status == "success") {
-            // MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
             return true;
         } else {
-            // MessageBox(NULL, ("Failed to set new password: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-            MessageBox(NULL, "Failed to set new password. Please try again.", "Error", MB_ICONERROR | MB_TOPMOST);
+            MessageBox(NULL, ("Failed to set new password: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
             return false;
         }
     } catch (const std::exception& e) {
@@ -326,11 +323,11 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
 
-        size_t messagePos = response.find("\"message\":\"") + 11;
-        size_t messageEnd = response.find("\"", messagePos);
-        std::string message = response.substr(messagePos, messageEnd - messagePos);
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
 
-        if (response.find("\"status\":\"success\"") != std::string::npos) {
+        if (status == "success") {
             MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
             SendMessage(hRegistrationWindow, WM_CLOSE_REGISTRATION_WINDOW, 0, 0);
         } else {
