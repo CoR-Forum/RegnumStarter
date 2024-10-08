@@ -309,31 +309,41 @@ std::vector<Pointer> ParseJSONResponse(const std::string& jsonResponse) {
             continue;
         }
 
-        // Extract the offsets
-        size_t offsetsPos = jsonResponse.find("\"offsets\":\"", addressEnd) + 11;
-        size_t offsetsEnd = jsonResponse.find("\"", offsetsPos);
-        std::string offsetsStr = jsonResponse.substr(offsetsPos, offsetsEnd - offsetsPos);
+        // Extract the offsets if they exist
+        size_t offsetsPos = jsonResponse.find("\"offsets\":\"", addressEnd);
+        if (offsetsPos != std::string::npos) {
+            offsetsPos += 11;
+            size_t offsetsEnd = jsonResponse.find("\"", offsetsPos);
+            std::string offsetsStr = jsonResponse.substr(offsetsPos, offsetsEnd - offsetsPos);
 
-        size_t offsetPos = 0, offsetEnd;
-        while ((offsetEnd = offsetsStr.find(",", offsetPos)) != std::string::npos) {
-            std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
-            try {
-                pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
-            } catch (const std::invalid_argument& e) {
-                LogDebug("Invalid offset: " + offsetStr);
+            size_t offsetPos = 0, offsetEnd;
+            while ((offsetEnd = offsetsStr.find(",", offsetPos)) != std::string::npos) {
+                std::string offsetStr = offsetsStr.substr(offsetPos, offsetEnd - offsetPos);
+                try {
+                    pointer.offsets.push_back(std::stoul(offsetStr, nullptr, 16));
+                } catch (const std::invalid_argument& e) {
+                    LogDebug("Invalid or empty offset: " + offsetStr);
+                }
+                offsetPos = offsetEnd + 1;
             }
-            offsetPos = offsetEnd + 1;
-        }
-        try {
-            pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
-        } catch (const std::invalid_argument& e) {
-            LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
+            try {
+                pointer.offsets.push_back(std::stoul(offsetsStr.substr(offsetPos), nullptr, 16));
+            } catch (const std::invalid_argument& e) {
+                LogDebug("Invalid offset: " + offsetsStr.substr(offsetPos));
+            }
         }
 
-        LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address));
+        std::ostringstream offsetsStream;
+        for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+            offsetsStream << std::hex << pointer.offsets[i];
+            if (i < pointer.offsets.size() - 1) {
+            offsetsStream << ", ";
+            }
+        }
+        LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address) + ", Offsets = " + offsetsStream.str());
         pointers.push_back(pointer);
 
-        pos = jsonResponse.find("}", offsetsEnd) + 1;
+        pos = jsonResponse.find("}", addressEnd) + 1;
     }
 
     return pointers;
