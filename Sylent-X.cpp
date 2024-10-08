@@ -703,9 +703,12 @@ void MemoryManipulation(const std::string& option, float newValue) {
         LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
         CloseHandle(hProcess);
         return;
+    } else {
+        LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
     }
 
     // Initialize the Memory class
+    LogDebug(L"Initializing Memory class for " + std::wstring(option.begin(), option.end()) + L" option with new value: " + std::to_wstring(newValue) + L" and base address: " + std::to_wstring(baseAddress) + L" and process ID: " + std::to_wstring(pid));
     for (const auto& pointer : pointers) {
         LogDebug(L"Checking pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
         // Check if the pointer name matches the option
