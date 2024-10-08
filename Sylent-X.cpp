@@ -349,7 +349,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (ImGui::Button("Submit")) {
                 // Implement the logic to verify the token and update the password
                 if (SetNewPassword(token, newPassword)) {
-                    ImGui::MessageBox("Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
+                    MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
                     show_token_window = false;
                     show_login_window = true;
                 } else {
