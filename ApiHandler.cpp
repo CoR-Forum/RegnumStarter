@@ -446,3 +446,51 @@ void CheckChatMessages() {
         }
     }
 }
+
+// ADMIN FUNCTIONS
+// only available if isAdmin is true
+
+std::string GetAllUsersRawJson;
+
+void GetAllUsers() {
+    try {
+        std::string path = "/admin.php?action=getUsers&username=" + login + "&password=" + password;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        // Store the raw JSON response in the global variable
+        GetAllUsersRawJson = response;
+        LogDebug("Users fetched successfully: " + response);
+
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+    }
+}
+
+void ToggleUserBan(int userId) {
+    try {
+        std::string path = "/admin.php?action=toggleUserBan&username=" + login + "&password=" + password + "&userId=" + std::to_string(userId);
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("User ban toggled successfully: " + message);
+            GetAllUsers();
+        } else {
+            LogDebug("Failed to toggle user ban: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+        GetAllUsers();
+    }
+}
