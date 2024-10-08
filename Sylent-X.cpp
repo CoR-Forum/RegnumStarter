@@ -656,17 +656,23 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
 void MemoryManipulation(const std::string& option, float newValue) {
     Log("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
+
+    // Check if the game process is running
     if (pid == 0) {
         LogDebug("Failed to find ROClientGame.exe process: " + std::to_string(GetLastError()));
         return;
     }
 
+    // Open the game process
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (!hProcess) {
         LogDebug("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
         return;
+    } else {
+        LogDebug("Successfully opened ROClientGame.exe process: " + std::to_string(pid));
     }
 
+    // Get the base address of the game module
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
     if (baseAddress == 0) {
         LogDebug("Failed to get the base address of ROClientGame.exe: " + std::to_string(GetLastError()));
@@ -674,10 +680,13 @@ void MemoryManipulation(const std::string& option, float newValue) {
         return;
     }
 
+    // Initialize the Memory class
     for (const auto& pointer : pointers) {
         LogDebug("Checking pointer: " + pointer.name + " at address: " + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
+        // Check if the pointer name matches the option
         if (pointer.name == option) {
-            LogDebug("Found the " + option + " pointer at address: " + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
+            LogDebug("Found the " + option + " pointer at address: 0x" + std::stringstream() << std::hex << pointer.address + " with " + std::to_string(pointer.offsets.size()) + " offsets");
+            // Calculate the final address
             uintptr_t optionPointer = baseAddress + pointer.address;
             LogDebug(option + " pointer address: " + std::to_string(optionPointer));
             uintptr_t finalAddress = optionPointer;
