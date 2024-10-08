@@ -89,11 +89,6 @@ bool isGravityKeyPressed = false;
 // Seems to be the main window declaration?
 HWND hwnd = nullptr;
 
-// Functions for login and registration windows
-void CreateLoginWindow(HINSTANCE hInstance);
-void OpenLoginWindow();
-void CreateRegistrationWindow(HINSTANCE hInstance);
-
 // Convert wstring to string
 std::string WStringToString(const std::wstring& wstr) {
     std::string str(wstr.begin(), wstr.end());
