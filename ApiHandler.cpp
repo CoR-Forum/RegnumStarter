@@ -299,7 +299,7 @@ std::vector<Pointer> InitializePointers() {
                     }
                 }
 
-                LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address));
+                LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address) + ", Offsets = " + offsetsStr);
                 pointers.push_back(pointer);
             }
             Log("Pointers fetched and parsed successfully");
