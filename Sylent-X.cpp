@@ -483,13 +483,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Logout")) {
-                Logout(); // Use the logic from ApiHandler.cpp
+            if (ImGui::Button("Settings")) {
+                show_settings_window = true;
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Settings")) {
-                show_settings_window = true;
+            if (ImGui::Button("Logout")) {
+                Logout(); // Use the logic from ApiHandler.cpp
             }
 
             // checkbox to toggle debug logging
