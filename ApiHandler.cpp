@@ -349,7 +349,6 @@ void RegisterUser(const std::string& username, const std::string& email, const s
 }
 std::vector<std::string> g_chatMessages;
 
-
 void SendChatMessage(const std::string& message) {
     try {
         std::string path = "/shoutbox.php?action=add&username=" + login + "&password=" + password + "&message=" + message;
@@ -370,10 +369,11 @@ void SendChatMessage(const std::string& message) {
             auto messages = jsonResponse["messages"];
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
-                std::string msgText = msg["message"];
+                std::string id = std::to_string(msg["id"].get<int>());
                 std::string createdAt = msg["created_at"];
                 std::string user = msg["username"];
-                std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+                std::string msgText = msg["message"];
+                std::string fullMessage = "[" + id + "] [" + createdAt + "] " + user + ": " + msgText;
 
                 // Only store new messages
                 if (existingMessages.find(fullMessage) == existingMessages.end()) {
@@ -412,10 +412,11 @@ void CheckChatMessages() {
                 auto messages = jsonResponse["messages"];
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
-                    std::string msgText = msg["message"];
+                    std::string id = std::to_string(msg["id"].get<int>());
                     std::string createdAt = msg["created_at"];
                     std::string user = msg["username"];
-                    std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+                    std::string msgText = msg["message"];
+                    std::string fullMessage = "[" + id + "] [" + createdAt + "] " + user + ": " + msgText;
 
                     // Only store new messages
                     if (existingMessages.find(fullMessage) == existingMessages.end()) {
