@@ -344,13 +344,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
             ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
 
+            static std::string statusText = "";
+
             if (ImGui::Button("Submit")) {
                 // Implement the logic to verify the token and update the password
-                // For example, send the token and new password to the server
-                std::cout << "Token: " << token << ", New Password: " << newPassword << std::endl;
-                show_token_window = false;
-                show_login_window = true;
+                if (SetNewPassword(token, newPassword)) {
+                    statusText = "Password updated successfully.";
+                    show_token_window = false;
+                    show_login_window = true;
+                } else {
+                    statusText = "Failed to set new password. This is likely a server issue. Please try again later.";
+                }
             }
+            ImGui::SameLine();
+            ImGui::Text("%s", statusText.c_str());
 
             if (ImGui::Button("Back to Login")) {
                 show_token_window = false;
