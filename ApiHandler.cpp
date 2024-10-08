@@ -79,6 +79,8 @@ bool Login(const std::string& login, const std::string& password) {
             Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
+
+            InitializePointers();
             return true;
         } else {
             std::string message = jsonResponse["message"];

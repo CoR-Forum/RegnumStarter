@@ -121,9 +121,6 @@ void ResetDevice() {
 const std::string currentVersion = "0.1.63"; // Current version of the application
 const char* appName = "Sylent-X";
 
-HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
-DWORD pid; // Process ID of the target process
-
 // Declare the Register function
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 
@@ -144,7 +141,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         Log("Auto-login successful");
         show_login_window = false;
         show_Sylent_window = true;
-        InitializePointers(); // Initialize pointers after successful login
+        // InitializePointers(); // Initialize pointers after successful login
     } else {
         Log("Auto-login failed");
         show_login_window = true;
@@ -240,7 +237,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveLoginCredentials(username, password);
                     show_login_window = false;
                     show_Sylent_window = true;
-                    InitializePointers(); // Initialize pointers after successful login
+                    // InitializePointers(); // Initialize pointers after successful login
                 } else {
                     Log("Login failed");
                 }
@@ -586,6 +583,9 @@ bool CreateDeviceD3D(HWND hWnd)
 
     return true;
 }
+
+HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
+DWORD pid; // Process ID of the target process
 
 // Function to get the base address of a module
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
