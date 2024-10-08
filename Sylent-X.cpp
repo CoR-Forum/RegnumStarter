@@ -124,6 +124,21 @@ void ResetDevice() {
 // Declare the Register function
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 
+void ShowHelpMarker(const char* desc)
+{   
+    ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0.098f, 0.098f, 0.902f, 1.0f)); // Color #1919e6
+    ImGui::TextDisabled("(?)");
+    ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
     // Create a named mutex
@@ -569,6 +584,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             // Add admin-specific controls here
             ImGui::Text("Admin Controls");
+
+            ImGui::Spacing();
+            
+            ImGui::Text("Hover over the (?) Joshua ;)");
+            ImGui::SameLine();
+            ShowHelpMarker("Thats a Test for User Joshua");
 
             ImGui::Spacing();
 
