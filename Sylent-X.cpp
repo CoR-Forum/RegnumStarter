@@ -595,123 +595,154 @@ bool CreateDeviceD3D(HWND hWnd)
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 DWORD pid; // Process ID of the target process
-
 // Function to get the base address of a module
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
+    // Initialize the module base address to 0
     uintptr_t modBaseAddr = 0;
+    // Create a snapshot of the target process
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
+    // Check if the snapshot is valid
     if (hSnap != INVALID_HANDLE_VALUE) {
         MODULEENTRY32 modEntry;
         modEntry.dwSize = sizeof(modEntry);
+        // Iterate through the modules in the target process
         if (Module32First(hSnap, &modEntry)) {
             do {
+                // Convert the module name to wide char
                 wchar_t wModuleName[MAX_PATH];
                 MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
+                // Check if the module name matches the target module name
                 if (!_wcsicmp(wModuleName, modName)) {
                     modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
                     break;
                 }
+                // Continue to the next module
             } while (Module32Next(hSnap, &modEntry));
         }
     }
     CloseHandle(hSnap);
+    // Return the base address of the target module
+    LogDebug(L"Base address of " + std::wstring(modName) + L": " + std::to_wstring(modBaseAddr));
     return modBaseAddr;
 }
 
 // Function to get the process ID by name
 DWORD GetProcessIdByName(const std::wstring& processName) {
+    // Initialize the process ID to 0
     DWORD processId = 0;
+    // Create a snapshot of the running processes
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    // Check if the snapshot is valid
     if (hSnap != INVALID_HANDLE_VALUE) {
+        // Initialize the process entry structure
         PROCESSENTRY32 pe32;
         pe32.dwSize = sizeof(PROCESSENTRY32);
+        // Iterate through the running processes
         if (Process32First(hSnap, &pe32)) {
             do {
+                // Convert the process name to wide char
                 std::wstring exeFile(pe32.szExeFile, pe32.szExeFile + strlen(pe32.szExeFile));
+                // Check if the process name matches the target process name
                 if (!_wcsicmp(exeFile.c_str(), processName.c_str())) {
                     processId = pe32.th32ProcessID;
                     break;
                 }
+                // Continue to the next process
             } while (Process32Next(hSnap, &pe32));
         }
     }
     CloseHandle(hSnap);
+    LogDebug(L"Process ID of " + processName + L": " + std::to_wstring(processId));
     return processId;
 }
 
+// Memory class to handle memory operations
 class Memory {
 public:
     uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
     bool WriteFloat(uintptr_t address, float value);
 };
 
+// Function to get the base address of a memory address
 uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
+    LogDebug(L"Getting base address of " + std::wstring(memAddr.name.begin(), memAddr.name.end()) + L" at address: " + std::to_wstring(memAddr.address));
     return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
 }
 
+// Function to write a float value to the game process memory
 bool Memory::WriteFloat(uintptr_t address, float value) {
+    LogDebug(L"Writing " + std::to_wstring(value) + L" to address: " + std::to_wstring(address));
     return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
 }
 
+// Function to manipulate memory values in the game process
 void MemoryManipulation(const std::string& option, float newValue) {
     Log("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
 
     // Check if the game process is running
     if (pid == 0) {
-        LogDebug("Failed to find ROClientGame.exe process: " + std::to_string(GetLastError()));
+        LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
         return;
     }
 
     // Open the game process
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    // Check if the process is valid
     if (!hProcess) {
-        LogDebug("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
+        LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
         return;
     } else {
-        LogDebug("Successfully opened ROClientGame.exe process: " + std::to_string(pid));
+        LogDebug(L"Successfully opened ROClientGame.exe process: " + std::to_wstring(pid));
     }
 
     // Get the base address of the game module
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
+    // Check if the base address is valid
     if (baseAddress == 0) {
-        LogDebug("Failed to get the base address of ROClientGame.exe: " + std::to_string(GetLastError()));
+        LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
         CloseHandle(hProcess);
         return;
     }
 
     // Initialize the Memory class
     for (const auto& pointer : pointers) {
-        LogDebug("Checking pointer: " + pointer.name + " at address: 0x" + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
+        LogDebug(L"Checking pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
         // Check if the pointer name matches the option
         if (pointer.name == option) {
-            LogDebug("Found the " + option + " pointer at address: 0x" + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
+            LogDebug(L"Found the " + std::wstring(option.begin(), option.end()) + L" pointer at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
             // Calculate the final address
             uintptr_t optionPointer = baseAddress + pointer.address;
-            LogDebug(option + " pointer address: 0x" + std::to_string(optionPointer));
+            LogDebug(std::wstring(option.begin(), option.end()) + L" pointer address: " + std::to_wstring(optionPointer));
+            // Read the final address
             uintptr_t finalAddress = optionPointer;
-            LogDebug(option + " final address: 0x" + std::to_string(finalAddress));
+            LogDebug(std::wstring(option.begin(), option.end()) + L" final address: " + std::to_wstring(finalAddress));
             SIZE_T bytesRead;
-            LogDebug("Found the " + option + " pointer at address: 0x" + std::to_string(optionPointer));
+            LogDebug(L"Found the " + std::wstring(option.begin(), option.end()) + L" pointer at address: " + std::to_wstring(optionPointer));
 
+            // Iterate through the offsets
             for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                // Read the final address with the offsets applied
                 if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    // Check if the read was successful
                     if (bytesRead != sizeof(finalAddress)) {
-                        LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: 0x" + std::to_string(pointer.offsets[i]) + ")");
+                        LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
                         return;
                     }
+                    // Apply the offsets to the final address
                     finalAddress += pointer.offsets[i];
-                    LogDebug("Got " + std::to_string(i) + " offsets (to be specific: 0x" + std::to_string(pointer.offsets[i]) + "). Final address: 0x" + std::to_string(finalAddress));
+                    LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
                 } else {
-                    LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: 0x" + std::to_string(pointer.offsets[i]) + ")");
+                    LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
                     return;
                 }
             }
 
+            // Write the new value to the final address with the offsets applied (if needed)
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
+                LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
             } else {
-                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()).c_str());
+                LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()).c_str());
             }
         }
     }

@@ -2,6 +2,8 @@
 
 #include "Utils.h"
 #include "imgui.h" // Include ImGui header
+#include <locale>
+#include <codecvt>
 
 extern bool debugLog;
 extern const char* appDataPath;
@@ -53,4 +55,15 @@ void LogDebug(const std::string& message) {
     if (debugLog) {
         Log("DEBUG: " + message);
     }
+}
+
+// Converts std::wstring to std::string
+std::string WStringToStringForLog(const std::wstring& wstr) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    return converter.to_bytes(wstr);
+}
+
+// Overloaded LogDebug to handle std::wstring
+void LogDebug(const std::wstring& message) {
+    LogDebug(WStringToStringForLog(message));
 }
