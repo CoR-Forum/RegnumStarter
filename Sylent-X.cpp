@@ -463,6 +463,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 Logout(); // Use the logic from ApiHandler.cpp
             }
 
+            ImGui::SameLine();
+
+            // checkbox to toggle debug logging
+            ImGui::Checkbox("Debug Log", &debugLog);
+
             // Log display box at the bottom
             ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             for (const auto& msg : logMessages) {
