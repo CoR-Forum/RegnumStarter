@@ -11,6 +11,7 @@ extern HWND hwnd; // Declare the handle to the main window
 extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
+extern bool featureMoonwalk;
 
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
@@ -77,10 +78,12 @@ bool Login(const std::string& login, const std::string& password) {
             featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
             featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
             featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
+            featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
 
             Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
+                std::string(featureMoonwalk ? ", Moonwalk" : "");
 
             // Parse role and set isAdmin
             std::string role = jsonResponse["role"];
@@ -242,6 +245,7 @@ void SaveSettings() {
         file << "optionGravity=" << optionGravity << std::endl;
         file << "optionMoonjump=" << optionMoonjump << std::endl;
         file << "optionZoom=" << optionZoom << std::endl;
+        file << "optionMoonwalk=" << optionMoonwalk << std::endl;
         file.close();
     } else {
         Log("Failed to open settings file for writing");
@@ -261,6 +265,8 @@ void LoadSettings() {
                 optionMoonjump = (line.substr(line.find("=") + 1) == "1");
             if (line.find("optionZoom=") != std::string::npos)
                 optionZoom = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionMoonwalk=") != std::string::npos)
+                optionMoonwalk = (line.substr(line.find("=") + 1) == "1");
         }
         file.close();
     } else {
