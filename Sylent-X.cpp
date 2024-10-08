@@ -151,6 +151,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     LoadSettings();
     SelfUpdate();
 
+    // Define a static variable to hold the selected text color
+    static ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color
+
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
         Log("Auto-login successful");
@@ -209,6 +212,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
+
     while (!done) {
         MSG msg;
         while (::PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
@@ -390,6 +394,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionZoom = false;
             static bool optionMoonjump = false;
 
+
             if (ImGui::CollapsingHeader("POV")) {
                 static float zoomValue = 15.0f; // Default zoom value
                 ImGui::Checkbox("Enable Zoom", &optionZoom);
@@ -485,6 +490,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             ImGui::SameLine();
+            
 
             // checkbox to toggle debug logging
             ImGui::Checkbox("Debug Log", &debugLog);
@@ -515,7 +521,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SendChatMessage(chatInput);
                     chatInput[0] = '\0'; // Clear input field
                 }
-            }         
+            }
+
+            ImGui::ShowColorWheel(textColor); // Show the color wheel
 
             ImGui::End();
         }
