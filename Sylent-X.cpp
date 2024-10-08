@@ -33,6 +33,11 @@ static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS    g_d3dpp = {};
 static char feedbackSender[128] = ""; // Add this line
 
+// Define a static variable to hold the selected text color
+static ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color
+// Declare chatInput as a static variable
+static char chatInput[128] = "";
+
 bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
 void ResetDevice();
@@ -107,6 +112,18 @@ bool InitDirectX(HWND hwnd) {
     return true;
 }
 
+
+void RenderUI()
+{
+    static ImVec4 disabledTextColor = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
+    // Show the color wheel to allow the user to change the disabled text color
+    ImGui::ShowColorWheel(disabledTextColor);
+
+    // Render the InputTextWithHint with the updated disabled text color
+    static char chatInput[256] = "";
+    ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+}
+
 // Function to reset the Direct3D device
 void ResetDevice() {
     ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -149,9 +166,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     LoadSettings();
     SelfUpdate();
-
-    // Define a static variable to hold the selected text color
-    static ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
@@ -578,7 +592,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::EndChild();
 
-            // input field and button to send chat messages using sendChatMessage function
             ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
 
             ImGui::SameLine();
