@@ -445,7 +445,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Chat")) {
                 show_chat_window = true;
-                show_main_window = false;
             }
 
             ImGui::SameLine();
@@ -517,25 +516,33 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
         if (show_chat_window) {
             ImGui::Begin("Chat");
-            ImGui::SetWindowSize(ImVec2(500, 300));
+            ImGui::SetWindowSize(ImVec2(600, 320));
 
-            ImGui::BeginChild("ChatMessages", ImVec2(480, 200), true);
-            for (const auto& message : chatMessages) {
-                ImGui::TextWrapped("%s", message.c_str());
+            // Log display box at the bottom
+            ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            for (const auto& msg : g_chatMessages) {
+                ImGui::TextWrapped("%s", msg.c_str());
             }
+            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+            }
+
             ImGui::EndChild();
 
-            ImGui::InputText("Message", chatInput, IM_ARRAYSIZE(chatInput));
-            if (ImGui::Button("Send")) {
+            // input field and button to send chat messages using sendChatMessage function
+            ImGui::InputTextWithHint("Chat Message", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+
+            ImGui::SameLine();
+            
+            if (ImGui::Button("Send Message")) {
                 if (strlen(chatInput) > 0) {
-                    chatMessages.push_back(std::string(username) + ": " + chatInput);
+                    SendChatMessage(chatInput);
                     chatInput[0] = '\0'; // Clear input field
                 }
-            }
+            } 
 
             if (ImGui::Button("Close")) {
                 show_chat_window = false;
-                show_main_window = true;
             }
 
             ImGui::End();
