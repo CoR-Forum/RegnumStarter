@@ -696,7 +696,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
     // Check if the game process is running
     if (pid == 0) {
         LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
-        return;
+        // return;
     }
 
     // Open the game process
@@ -704,7 +704,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
     // Check if the process is valid
     if (!hProcess) {
         LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
-        return;
+        // return;
     } else {
         LogDebug(L"Successfully opened ROClientGame.exe process: " + std::to_wstring(pid));
     }
@@ -715,40 +715,37 @@ void MemoryManipulation(const std::string& option, float newValue) {
     if (baseAddress == 0) {
         LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
         CloseHandle(hProcess);
-        return;
+        // return;
     } else {
         LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
     }
 
-    // print all available pointers from g_pointers with all offsets
-    for (const auto& pointer : g_pointers) {
-        LogDebug(L"USING Pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
-        for (const auto& offset : pointer.offsets) {
-            std::wstringstream ss;
-            ss << std::hex << offset;
-            LogDebug(L"USING Offset: 0x" + ss.str());
-        }
-    }
-    if (g_pointers.empty()) {
-        LogDebug(L"No global pointers found");
-        return;
-    }
-
     // Initialize the Memory class
     LogDebug(L"Initializing Memory class for " + std::wstring(option.begin(), option.end()) + L" option with new value: " + std::to_wstring(newValue) + L" and base address: " + std::to_wstring(baseAddress) + L" and process ID: " + std::to_wstring(pid));
-    for (const auto& pointer : pointers) {
-        LogDebug(L"Checking pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
-        // Check if the pointer name matches the option
+    LogDebug(L"Global pointers: ");
+    for (const auto& pointer : g_pointers) {
+        std::stringstream ss;
+        ss << std::hex << pointer.address;
+        LogDebug("Pointer: " + pointer.name + " Address: 0x" + ss.str() + " Offsets: ");
+        for (const auto& offset : pointer.offsets) {
+            std::stringstream ss;
+            ss << std::hex << offset;
+            LogDebug("Offset: 0x" + ss.str());
+        }
+    }
+    // Iterate through all pointers and apply the memory manipulation for those that match the option
+    for (const auto& pointer : g_pointers) {
         if (pointer.name == option) {
             LogDebug(L"Found the " + std::wstring(option.begin(), option.end()) + L" pointer at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
+
             // Calculate the final address
             uintptr_t optionPointer = baseAddress + pointer.address;
             LogDebug(std::wstring(option.begin(), option.end()) + L" pointer address: " + std::to_wstring(optionPointer));
+
             // Read the final address
             uintptr_t finalAddress = optionPointer;
             LogDebug(std::wstring(option.begin(), option.end()) + L" final address: " + std::to_wstring(finalAddress));
             SIZE_T bytesRead;
-            LogDebug(L"Found the " + std::wstring(option.begin(), option.end()) + L" pointer at address: " + std::to_wstring(optionPointer));
 
             // Iterate through the offsets
             for (size_t i = 0; i < pointer.offsets.size(); ++i) {
