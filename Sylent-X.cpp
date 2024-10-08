@@ -695,7 +695,7 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
 
 // Function to manipulate memory values in the game process
 void MemoryManipulation(const std::string& option, float newValue) {
-    Log("MemoryManipulation called with option: " + option);
+    LogDebug("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
 
     // Check if the game process is running
