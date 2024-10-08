@@ -89,12 +89,6 @@ bool isGravityKeyPressed = false;
 // Seems to be the main window declaration?
 HWND hwnd = nullptr;
 
-HWND hLogDisplay = nullptr; // Handle to the log display control
-
-// Window handlers
-HWND hRegistrationWindow;
-HWND hLoginWindow;
-
 // Functions for login and registration windows
 void CreateLoginWindow(HINSTANCE hInstance);
 void OpenLoginWindow();

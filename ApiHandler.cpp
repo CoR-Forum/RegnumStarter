@@ -277,7 +277,7 @@ std::vector<Pointer> InitializePointers() {
     std::vector<Pointer> pointers;
     std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
     std::string jsonResponse = FetchDataFromAPI(url);
-    Log("Fetched pointers from API: " + jsonResponse);
+    LogDebug("Fetched pointers from API: " + jsonResponse);
     
     if (!jsonResponse.empty()) {
         try {
@@ -301,12 +301,12 @@ std::vector<Pointer> InitializePointers() {
                     }
                 }
 
-                LogDebug("Fetched pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address) + ", Offsets = " + offsetsStr);
+                LogDebug("Got pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address) + ", Offsets = " + offsetsStr);
                 pointers.push_back(pointer);
             }
             Log("Pointers fetched and parsed successfully");
         } catch (const nlohmann::json::exception& e) {
-            Log("JSON parsing error: " + std::string(e.what()));
+            LogDebug("JSON parsing error: " + std::string(e.what()));
         } catch (const std::invalid_argument& e) {
             Log("Invalid address or offset format");
         }
@@ -332,7 +332,6 @@ void RegisterUser(const std::string& username, const std::string& email, const s
 
         if (status == "success") {
             MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
-            SendMessage(hRegistrationWindow, WM_CLOSE_REGISTRATION_WINDOW, 0, 0);
         } else {
             MessageBox(NULL, ("Registration failed: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
         }

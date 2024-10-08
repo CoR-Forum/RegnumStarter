@@ -150,7 +150,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 800, 600, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1200, 1000, NULL, NULL, wc.hInstance, NULL);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
     if (!CreateDeviceD3D(hwnd)) {
@@ -369,7 +369,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         if (show_main_window) {
             std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
             ImGui::Begin(windowTitle.c_str());
-            ImGui::SetWindowSize(ImVec2(500, 300));
+            ImGui::SetWindowSize(ImVec2(600, 600));
 
             static bool optionGravity = false;
             static bool optionZoom = false;
@@ -450,6 +450,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
             }
+
+            // Log display box at the bottom
+            ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            for (const auto& msg : logMessages) {
+                ImGui::TextWrapped("%s", msg.c_str());
+            }
+            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+            }
+            ImGui::EndChild();
 
             ImGui::End();
         }

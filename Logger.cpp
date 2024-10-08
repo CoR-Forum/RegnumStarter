@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Utils.h"
+#include "imgui.h" // Include ImGui header
 
-extern HWND hLogDisplay;
 extern bool debugLog;
 extern const char* appDataPath;
 
@@ -32,17 +32,6 @@ std::string GetCurrentTimestamp() {
     return std::string(timestamp);
 }
 
-// Updates the log display window with the latest log messages
-void UpdateLogDisplay() {
-    if (hLogDisplay) {
-        SendMessage(hLogDisplay, LB_RESETCONTENT, 0, 0);
-        for (const auto& msg : logMessages) {
-            SendMessage(hLogDisplay, LB_ADDSTRING, 0, (LPARAM)msg.c_str());
-        }
-        SendMessage(hLogDisplay, LB_SETTOPINDEX, logMessages.size() - 1, 0);
-    }
-}
-
 // Logs a message with a timestamp, writes it to the file, and updates the display
 void Log(const std::string& message) {
     std::string logMessage = "[" + GetCurrentTimestamp() + "] " + message;
@@ -57,7 +46,6 @@ void Log(const std::string& message) {
 
     WriteLogToFile(logMessage);
     std::cout << logMessage << std::endl;
-    UpdateLogDisplay();
 }
 
 // Logs a debug message if debug logging is enabled
