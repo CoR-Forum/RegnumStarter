@@ -127,10 +127,22 @@ std::pair<std::string, std::string> FetchLatestVersion() {
             std::getline(versionFile, latestVersion);
             std::getline(versionFile, downloadURL);
             versionFile.close();
+            if (latestVersion.empty() || downloadURL.empty()) {
+                Log("Error: Version file is missing version number or download URL.");
+                return {"", ""};
+            }
 
-            // Check if the content is valid
-            if (latestVersion.find("<!DOCTYPE HTML") != std::string::npos || downloadURL.find("<html>") != std::string::npos) {
-                Log("Error: Received HTML content instead of version information.");
+            // Check version number format
+            std::regex versionRegex(R"(\d+[a-zA-Z]?\.\d+\.\d+(-[a-zA-Z]+)?)");
+            if (!std::regex_match(latestVersion, versionRegex)) {
+                Log("Error: Invalid version number format.");
+                return {"", ""};
+            }
+
+            // Check URL format
+            std::regex urlRegex(R"(https:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?)");
+            if (!std::regex_match(downloadURL, urlRegex)) {
+                Log("Error: Invalid download URL format.");
                 return {"", ""};
             }
         } else {

@@ -17,6 +17,7 @@
 #include <mutex>
 #include <utility>
 #include <unordered_set>
+#include <regex>
 #include <urlmon.h>
 #include <comdef.h>
 #include <objbase.h>
