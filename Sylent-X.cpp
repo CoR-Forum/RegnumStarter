@@ -628,21 +628,16 @@ void MemoryManipulation(const std::string& option, float newValue) {
             uintptr_t finalAddress = optionPointer;
             SIZE_T bytesRead;
 
-            if (pointer.offsets.empty()) {
-                // No offsets, write directly to optionPointer
-                finalAddress = optionPointer;
-            } else {
-                for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-                    if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
-                        if (bytesRead != sizeof(finalAddress)) {
-                            MessageBox(NULL, ("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead)).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-                            return;
-                        }
-                        finalAddress += pointer.offsets[i];
-                    } else {
-                        MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    if (bytesRead != sizeof(finalAddress)) {
+                        MessageBox(NULL, ("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead)).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
                         return;
                     }
+                    finalAddress += pointer.offsets[i];
+                } else {
+                    MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+                    return;
                 }
             }
 
@@ -656,14 +651,16 @@ void MemoryManipulation(const std::string& option, float newValue) {
 
     CloseHandle(hProcess);
 }
-
 void CleanupDeviceD3D()
 {
     if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = nullptr; }
     if (g_pD3D) { g_pD3D->Release(); g_pD3D = nullptr; }
 }
 
+
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
