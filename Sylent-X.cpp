@@ -687,7 +687,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
             }
 
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
+                LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
                 MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
             }
