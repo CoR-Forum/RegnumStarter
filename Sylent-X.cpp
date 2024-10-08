@@ -9,7 +9,7 @@
 #include "Updater.cpp"
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
-#include "Windows.cpp"
+#include "Keyboard.cpp"
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
@@ -43,6 +43,9 @@ extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern std::string login;
+
+std::vector<Pointer> pointers;
+
 
 void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
     HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -634,7 +637,7 @@ public:
 };
 
 uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
-    return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.baseOffset;
+    return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
 }
 
 bool Memory::WriteFloat(uintptr_t address, float value) {
