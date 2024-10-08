@@ -80,7 +80,12 @@ bool Login(const std::string& login, const std::string& password) {
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
 
-                g_pointers = InitializePointers();
+            g_pointers = InitializePointers();
+
+            // Start the CheckChatMessages process in a new thread
+            std::thread chatThread(CheckChatMessages);
+            chatThread.detach(); // Detach the thread to run independently
+
             return true;
         } else {
             std::string message = jsonResponse["message"];
@@ -342,8 +347,8 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
     }
 }
-
 std::vector<std::string> g_chatMessages;
+
 
 void SendChatMessage(const std::string& message) {
     try {
@@ -359,7 +364,7 @@ void SendChatMessage(const std::string& message) {
         std::string message = jsonResponse["message"];
 
         if (status == "success") {
-            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            LogDebug("Chat message sent successfully");
 
             // Process the messages array
             auto messages = jsonResponse["messages"];
@@ -373,12 +378,57 @@ void SendChatMessage(const std::string& message) {
                 // Only store new messages
                 if (existingMessages.find(fullMessage) == existingMessages.end()) {
                     g_chatMessages.push_back(fullMessage);
+                    logMessages.push_back(fullMessage); // Add to logMessages
+                    existingMessages.insert(fullMessage); // Update the set with the new message
                 }
             }
         } else {
-            MessageBox(NULL, message.c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            Log("Failed to send chat message.");
         }
     } catch (const std::exception& e) {
-        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+        Log("Exception: " + std::string(e.what()));
+    }
+}
+
+// Check for new chat messages every 2 seconds and store them in g_chatMessages
+void CheckChatMessages() {
+    bool keepRunning = true;
+    while (keepRunning) {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        try {
+            std::string path = "/shoutbox.php?action=get&username=" + login + "&password=" + password;
+            HINTERNET hInternet = OpenInternetConnection();
+            HINTERNET hConnect = ConnectToAPI(hInternet);
+            HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+            std::string response = ReadResponse(hRequest);
+            CloseInternetHandles(hRequest, hConnect, hInternet);
+
+            auto jsonResponse = nlohmann::json::parse(response);
+            std::string status = jsonResponse["status"];
+            if (status == "success") {
+                LogDebug("Chat messages fetched successfully");
+
+                // Process the messages array
+                auto messages = jsonResponse["messages"];
+                std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
+                for (const auto& msg : messages) {
+                    std::string msgText = msg["message"];
+                    std::string createdAt = msg["created_at"];
+                    std::string user = msg["username"];
+                    std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+
+                    // Only store new messages
+                    if (existingMessages.find(fullMessage) == existingMessages.end()) {
+                        g_chatMessages.push_back(fullMessage);
+                        logMessages.push_back(fullMessage); // Add to logMessages
+                        existingMessages.insert(fullMessage); // Update the set with the new message
+                    }
+                }
+            } else {
+                LogDebug("Failed to fetch chat messages.");
+            }
+        } catch (const std::exception& e) {
+            Log("Exception: " + std::string(e.what()));
+        }
     }
 }

@@ -52,6 +52,7 @@ uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
 void ContinuousMemoryWrite(const std::string& option);
 extern bool ResetPasswordRequest(const std::string& email);
+extern void CheckChatMessages();
 
 // Declare login and password globally
 std::string login;
