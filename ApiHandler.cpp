@@ -56,6 +56,8 @@ std::string ReadResponse(HINTERNET hRequest) {
     return response;
 }
 
+extern bool isAdmin;
+
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/login.php?username=" + login + "&password=" + password;
@@ -79,6 +81,11 @@ bool Login(const std::string& login, const std::string& password) {
             Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
+
+            // Parse role and set isAdmin
+            std::string role = jsonResponse["role"];
+            isAdmin = (role == "admin");
+            Log("Role: " + role);
 
             g_pointers = InitializePointers();
 

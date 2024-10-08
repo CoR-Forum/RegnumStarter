@@ -466,6 +466,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             // checkbox to toggle debug logging
             ImGui::Checkbox("Debug Log", &debugLog);
 
+            // button to call admin UI, only visible if isAdmin is true
+            if (isAdmin && ImGui::Button("Admin UI")) {
+                // Call the admin UI function here
+            }
+
             // Log display box at the bottom
             ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             for (const auto& msg : logMessages) {
