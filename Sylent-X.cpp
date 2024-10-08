@@ -538,7 +538,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
             }
 
-            ImGui::ShowColorWheel(textColor); // Show the color wheel
+            ImGui::ShowColorWheel(textColor); // Show the color wheel to allow the user to change the text color
 
             ImGui::End();
         }
