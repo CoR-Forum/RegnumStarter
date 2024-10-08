@@ -42,7 +42,7 @@ struct Pointer {
 // Pull some functions to the top
 void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 extern std::vector<Pointer> InitializePointers(); // Updated declaration
-extern const std::vector<Pointer> g_pointers;
+extern std::vector<Pointer> g_pointers;
 extern void LoadLoginCredentials(HINSTANCE hInstance);
 extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);

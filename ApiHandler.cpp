@@ -318,7 +318,7 @@ std::vector<Pointer> InitializePointers() {
     return pointers;
 }
 
-const std::vector<Pointer> g_pointers = InitializePointers();
+std::vector<Pointer> g_pointers;
 
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     try {
