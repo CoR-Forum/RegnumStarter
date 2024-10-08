@@ -118,8 +118,7 @@ void ResetDevice() {
 }
 
 // Constants
-const std::string currentVersion = "0.1.63"; // Current version of the application
-const char* appName = "Sylent-X";
+
 
 // Declare the Register function
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);

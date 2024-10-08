@@ -64,7 +64,8 @@ struct MemoryAddress {
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
-extern const std::string currentVersion;
+const std::string currentVersion = "0.1.63"; // Current version of the application
+const char* appName = "Sylent-X";
 
 // Global variables
 bool debugLog = true;
