@@ -406,7 +406,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_main_window) {
-            std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
+            std::string windowTitle = "Sylent-X " + currentVersion;
             ImGui::Begin(windowTitle.c_str());
             ImGui::SetWindowSize(ImVec2(600, 600));
 
@@ -465,33 +465,31 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (ImGui::Button("Exit")) {
                 done = true;
             }
-            ImGui::SameLine();
 
+            ImGui::SameLine();
             if (ImGui::Button("Chat")) {
                 show_chat_window = true;
             }
+
             ImGui::SameLine();
-            
             if (ImGui::Button("Feedback")) {
                 show_feedback_window = true;
                 show_main_window = false;
             }
-            ImGui::SameLine();
 
+            ImGui::SameLine();
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
             }
+
             ImGui::SameLine();
-            
             if (ImGui::Button("Settings")) {
                 show_settings_window = true;
             }
 
             // checkbox to toggle debug logging
             ImGui::Checkbox("Debug Log", &debugLog);
-
-                        ImGui::SameLine();
-
+            ImGui::SameLine();
 
             // button to call admin UI, only visible if isAdmin is true
             if (isAdmin && ImGui::Button("Admin UI")) {
@@ -510,10 +508,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::EndChild();
 
             // input field and button to send chat messages using sendChatMessage function
-            ImGui::InputTextWithHint("Chat Message", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
 
             ImGui::SameLine();
-            
             if (ImGui::Button("Send Chat")) {
                 if (strlen(chatInput) > 0) {
                     SendChatMessage(chatInput);
@@ -565,7 +562,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::EndChild();
 
             // input field and button to send chat messages using sendChatMessage function
-            ImGui::InputTextWithHint("Chat Message", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
 
             ImGui::SameLine();
             
