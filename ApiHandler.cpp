@@ -69,7 +69,7 @@ bool Login(const std::string& login, const std::string& password) {
         std::string status = jsonResponse["status"];
 
         if (status == "success") {
-            Log("User " + login + " logged in successfully");
+            LogDebug("User " + login + " logged in successfully");
 
             auto licensedFeatures = jsonResponse["licensed_features"];
             featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
@@ -310,11 +310,11 @@ std::vector<Pointer> InitializePointers() {
                 LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsetsStr);
                 pointers.push_back(pointer);
             }
-            Log("Pointers fetched and parsed successfully");
+            LogDebug("Pointers fetched and parsed successfully");
         } catch (const nlohmann::json::exception& e) {
             LogDebug("JSON parsing error: " + std::string(e.what()));
         } catch (const std::invalid_argument& e) {
-            Log("Invalid address or offset format");
+            LogDebug("Invalid address or offset format");
         }
     } else {
         Log("Failed to fetch or parse pointers");
