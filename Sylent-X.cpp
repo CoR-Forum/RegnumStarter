@@ -190,6 +190,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     bool show_chat_window = false;
     bool show_forgot_password_window = false;
     bool show_token_window = false;
+    bool show_admin_window = false; // Add this line
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -475,7 +476,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             // button to call admin UI, only visible if isAdmin is true
             if (isAdmin && ImGui::Button("Admin UI")) {
-                // Call the admin UI function here
+                show_admin_window = true; // Show the admin window
             }
 
             // Log display box at the bottom
@@ -556,6 +557,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Close")) {
                 show_chat_window = false;
+            }
+
+            ImGui::End();
+        }
+
+        if (show_admin_window) { // Add this block
+            ImGui::Begin("Admin Panel");
+            ImGui::SetWindowSize(ImVec2(600, 400));
+
+            // Add admin-specific controls here
+            ImGui::Text("Admin Controls");
+
+            if (ImGui::Button("Close Admin Panel")) {
+                show_admin_window = false;
             }
 
             ImGui::End();
