@@ -627,12 +627,10 @@ void MemoryManipulation(const std::string& option, float newValue) {
             uintptr_t optionPointer = baseAddress + pointer.address;
             uintptr_t finalAddress = optionPointer;
             SIZE_T bytesRead;
-            LogDebug("Found " + option + " pointer address: " + std::to_string(optionPointer));
 
             if (pointer.offsets.empty()) {
                 // No offsets, write directly to optionPointer
                 finalAddress = optionPointer;
-                LogDebug("Writing directly to " + option + " pointer address: " + std::to_string(finalAddress));
             } else {
                 for (size_t i = 0; i < pointer.offsets.size(); ++i) {
                     if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
@@ -649,7 +647,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
             }
 
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
+                // LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
                 MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
             }
