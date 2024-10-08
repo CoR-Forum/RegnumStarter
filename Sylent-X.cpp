@@ -688,33 +688,39 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
     return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
 }
 
-// Function to handle memory manipulation
+// Function to manipulate memory values in the game process
 void MemoryManipulation(const std::string& option, float newValue) {
     Log("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
 
+    // Check if the game process is running
     if (pid == 0) {
         LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
-        return;
+        // return;
     }
 
+    // Open the game process
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    // Check if the process is valid
     if (!hProcess) {
         LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
-        return;
+        // return;
     } else {
         LogDebug(L"Successfully opened ROClientGame.exe process: " + std::to_wstring(pid));
     }
 
+    // Get the base address of the game module
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
+    // Check if the base address is valid
     if (baseAddress == 0) {
         LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
         CloseHandle(hProcess);
-        return;
+        // return;
     } else {
         LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
     }
 
+    // Initialize the Memory class
     LogDebug(L"Initializing Memory class for " + std::wstring(option.begin(), option.end()) + L" option with new value: " + std::to_wstring(newValue) + L" and base address: " + std::to_wstring(baseAddress) + L" and process ID: " + std::to_wstring(pid));
     LogDebug(L"Global pointers: ");
     for (const auto& pointer : g_pointers) {
@@ -727,43 +733,43 @@ void MemoryManipulation(const std::string& option, float newValue) {
             LogDebug("Offset: 0x" + ss.str());
         }
     }
-
+    // Iterate through all pointers and apply the memory manipulation for those that match the option
     for (const auto& pointer : g_pointers) {
         if (pointer.name == option) {
             LogDebug(L"Found the " + std::wstring(option.begin(), option.end()) + L" pointer at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
 
+            // Calculate the final address
             uintptr_t optionPointer = baseAddress + pointer.address;
             LogDebug(std::wstring(option.begin(), option.end()) + L" pointer address: " + std::to_wstring(optionPointer));
 
-            if (pointer.offsets.empty()) {
-                if (WriteProcessMemory(hProcess, (LPVOID)optionPointer, &newValue, sizeof(newValue), NULL)) {
-                    LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
-                } else {
-                    LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()).c_str());
-                }
-            } else {
-                uintptr_t finalAddress = optionPointer;
-                SIZE_T bytesRead;
+            // Read the final address
+            uintptr_t finalAddress = optionPointer;
+            LogDebug(std::wstring(option.begin(), option.end()) + L" final address: " + std::to_wstring(finalAddress));
+            SIZE_T bytesRead;
 
-                for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-                    if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
-                        if (bytesRead != sizeof(finalAddress)) {
-                            LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
-                            return;
-                        }
-                        finalAddress += pointer.offsets[i];
-                        LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
-                    } else {
+            // Iterate through the offsets
+            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                // Read the final address with the offsets applied
+                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    // Check if the read was successful
+                    if (bytesRead != sizeof(finalAddress)) {
                         LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
                         return;
                     }
-                }
-
-                if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                    LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
+                    // Apply the offsets to the final address
+                    finalAddress += pointer.offsets[i];
+                    LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
                 } else {
-                    LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()).c_str());
+                    LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
+                    return;
                 }
+            }
+
+            // Write the new value to the final address with the offsets applied (if needed)
+            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+                LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
+            } else {
+                LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()).c_str());
             }
         }
     }
