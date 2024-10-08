@@ -236,7 +236,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveLoginCredentials(username, password);
                     show_login_window = false;
                     show_main_window = true;
-                    // InitializePointers(); // Initialize pointers after successful login
                 } else {
                     Log("Login failed");
                 }
@@ -390,7 +389,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Checkbox("Gravity", &optionGravity)) {
                     float newValue = optionGravity ? -8.0f : 8.0f;
                     // print all global pointers from g_pointers
-                    g_pointers = InitializePointers();
                     LogDebug("Printing all pointers: ");
                     for (const auto& pointer : g_pointers) {
                         std::stringstream ss;
@@ -473,10 +471,27 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             for (const auto& msg : logMessages) {
                 ImGui::TextWrapped("%s", msg.c_str());
             }
+            for (const auto& msg : g_chatMessages) {
+                ImGui::TextWrapped("%s", msg.c_str());
+            }
             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
                 ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
             }
+
             ImGui::EndChild();
+
+            // input field and button to send chat messages using sendChatMessage function
+            ImGui::InputTextWithHint("Chat Message", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+
+            ImGui::SameLine();
+            
+            if (ImGui::Button("Send Chat")) {
+                if (strlen(chatInput) > 0) {
+                    Log("Sending chat message: " + std::string(chatInput) + " from user: " + username + " with password: " + password);
+                    SendChatMessage(chatInput);
+                    chatInput[0] = '\0'; // Clear input field
+                }
+            }         
 
             ImGui::End();
         }

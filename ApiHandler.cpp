@@ -80,7 +80,7 @@ bool Login(const std::string& login, const std::string& password) {
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
 
-            InitializePointers();
+                g_pointers = InitializePointers();
             return true;
         } else {
             std::string message = jsonResponse["message"];
@@ -337,6 +337,46 @@ void RegisterUser(const std::string& username, const std::string& email, const s
             MessageBox(NULL, "Registration successful. Please activate your account by clicking the link in the e-mail.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
         } else {
             MessageBox(NULL, ("Registration failed: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+        }
+    } catch (const std::exception& e) {
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+    }
+}
+
+std::vector<std::string> g_chatMessages;
+
+void SendChatMessage(const std::string& message) {
+    try {
+        std::string path = "/shoutbox.php?action=add&username=" + login + "&password=" + password + "&message=" + message;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+
+            // Process the messages array
+            auto messages = jsonResponse["messages"];
+            std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
+            for (const auto& msg : messages) {
+                std::string msgText = msg["message"];
+                std::string createdAt = msg["created_at"];
+                std::string user = msg["username"];
+                std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+
+                // Only store new messages
+                if (existingMessages.find(fullMessage) == existingMessages.end()) {
+                    g_chatMessages.push_back(fullMessage);
+                }
+            }
+        } else {
+            MessageBox(NULL, message.c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
         }
     } catch (const std::exception& e) {
         MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);

@@ -16,6 +16,7 @@
 #include <sstream>
 #include <mutex>
 #include <utility>
+#include <unordered_set>
 #include <urlmon.h>
 #include <comdef.h>
 #include <objbase.h>
@@ -43,8 +44,10 @@ struct Pointer {
 void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 extern std::vector<Pointer> InitializePointers(); // Updated declaration
 extern std::vector<Pointer> g_pointers;
+extern std::vector<std::string> g_chatMessages;
 extern void LoadLoginCredentials(HINSTANCE hInstance);
 extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
+extern void SendChatMessage(const std::string& login, const std::string& password, const std::string& message);
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
 void ContinuousMemoryWrite(const std::string& option);
