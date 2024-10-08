@@ -54,6 +54,10 @@ DWORD GetProcessIdByName(const std::wstring& processName);
 void ContinuousMemoryWrite(const std::string& option);
 extern bool ResetPasswordRequest(const std::string& email);
 extern void CheckChatMessages();
+extern void GetAllUsers();
+extern std::string GetAllUsersRawJson;
+extern void DisplayUsersTable();
+extern void ToggleUserBan(int userId);
 
 // Declare login and password globally
 std::string login;
@@ -74,7 +78,7 @@ const std::string currentVersion = "0.1.63"; // Current version of the applicati
 const char* appName = "Sylent-X";
 
 // Global variables
-bool debugLog = true;
+bool debugLog = false;
 bool isAdmin = false;
 
 // Checkboxes states
