@@ -722,11 +722,11 @@ void MemoryManipulation(const std::string& option, float newValue) {
 
     // print all available pointers from g_pointers with all offsets
     for (const auto& pointer : g_pointers) {
-        LogDebug(L"Pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
+        LogDebug(L"USING Pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
         for (const auto& offset : pointer.offsets) {
             std::wstringstream ss;
             ss << std::hex << offset;
-            LogDebug(L"Offset: 0x" + ss.str());
+            LogDebug(L"USING Offset: 0x" + ss.str());
         }
     }
     if (g_pointers.empty()) {
