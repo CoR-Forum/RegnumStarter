@@ -657,40 +657,46 @@ void MemoryManipulation(const std::string& option, float newValue) {
     Log("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
     if (pid == 0) {
-        Log("Failed to find ROClientGame.exe process");
-        MessageBox(NULL, "Failed to find ROClientGame.exe process.", "Error", MB_ICONERROR | MB_TOPMOST);
+        LogDebug("Failed to find ROClientGame.exe process: " + std::to_string(GetLastError()));
         return;
     }
 
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (!hProcess) {
-        Log("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
-        MessageBox(NULL, "Failed to open ROClientGame.exe process.", "Error", MB_ICONERROR | MB_TOPMOST);
+        LogDebug("Failed to open ROClientGame.exe process. Error code: " + std::to_string(GetLastError()));
         return;
+    } else {
+        LogDebug("Successfully opened ROClientGame.exe process: " + std::to_string(pid));
     }
 
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
     if (baseAddress == 0) {
-        MessageBox(NULL, "Failed to get the base address of ROClientGame.exe.", "Error", MB_ICONERROR | MB_TOPMOST);
+        LogDebug("Failed to get the base address of ROClientGame.exe: " + std::to_string(GetLastError()));
         CloseHandle(hProcess);
         return;
     }
 
     for (const auto& pointer : pointers) {
+        LogDebug("Checking pointer: " + pointer.name + " at address: " + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
         if (pointer.name == option) {
+            LogDebug("Found the " + option + " pointer at address: " + std::to_string(pointer.address) + " with " + std::to_string(pointer.offsets.size()) + " offsets");
             uintptr_t optionPointer = baseAddress + pointer.address;
+            LogDebug(option + " pointer address: " + std::to_string(optionPointer));
             uintptr_t finalAddress = optionPointer;
+            LogDebug(option + " final address: " + std::to_string(finalAddress));
             SIZE_T bytesRead;
+            LogDebug("Found the " + option + " pointer at address: " + std::to_string(optionPointer));
 
             for (size_t i = 0; i < pointer.offsets.size(); ++i) {
                 if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
                     if (bytesRead != sizeof(finalAddress)) {
-                        MessageBox(NULL, ("Failed to read the " + option + " pointer address. Bytes read: " + std::to_string(bytesRead)).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+                        LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: " + std::to_string(pointer.offsets[i]) + ")");
                         return;
                     }
                     finalAddress += pointer.offsets[i];
+                    LogDebug("Got " + std::to_string(i) + " offsets (to be specific: " + std::to_string(pointer.offsets[i]) + "). Final address: " + std::to_string(finalAddress));
                 } else {
-                    MessageBox(NULL, ("Failed to read " + option + " pointer from memory. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+                    LogDebug("Failed to read the " + option + " pointer address. Error code: " + std::to_string(GetLastError()) + ". Got " + std::to_string(i) + " offsets (to be specific: " + std::to_string(pointer.offsets[i]) + ")");
                     return;
                 }
             }
@@ -698,7 +704,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
             if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
                 LogDebug("Successfully wrote new " + option + " value: " + std::to_string(newValue));
             } else {
-                MessageBox(NULL, ("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError())).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+                LogDebug("Failed to write new " + option + " value. Error code: " + std::to_string(GetLastError()).c_str());
             }
         }
     }
