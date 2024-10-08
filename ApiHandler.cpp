@@ -273,6 +273,8 @@ std::string FetchDataFromAPI(const std::string& url) {
     }
 }
 
+const std::vector<Pointer> g_pointers = InitializePointers();
+
 std::vector<Pointer> InitializePointers() {
     std::vector<Pointer> pointers;
     std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;

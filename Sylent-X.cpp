@@ -707,6 +707,14 @@ void MemoryManipulation(const std::string& option, float newValue) {
         LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
     }
 
+    // print all available pointers from g_pointers with all offsets
+    for (const auto& pointer : g_pointers) {
+        LogDebug(L"Pointer: " + std::wstring(pointer.name.begin(), pointer.name.end()) + L" at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
+        for (const auto& offset : pointer.offsets) {
+            LogDebug(L"Offset: " + std::to_wstring(offset));
+        }
+    }
+
     // Initialize the Memory class
     LogDebug(L"Initializing Memory class for " + std::wstring(option.begin(), option.end()) + L" option with new value: " + std::to_wstring(newValue) + L" and base address: " + std::to_wstring(baseAddress) + L" and process ID: " + std::to_wstring(pid));
     for (const auto& pointer : pointers) {
