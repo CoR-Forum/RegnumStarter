@@ -9076,10 +9076,23 @@ namespace ImGui
 
         // Apply the selected color to the ImGui style
         ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+        ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor; // Update disabled text color
 
         // Preview the selected color
         ImGui::PushStyleColor(ImGuiCol_Text, textColor);
         ImGui::PopStyleColor(); // Ensure this matches the PushStyleColor call
+    }
+}
+
+namespace ImGui
+{
+    void ShowColorWheelForDisabledText(ImVec4& disabledTextColor, float width = 200.0f)
+    {
+        ImGui::SetNextItemWidth(width);
+        ImGui::ColorPicker4("Disabled Text Color", (float*)&disabledTextColor);
+
+        // Apply the selected color to the ImGui style
+        ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = disabledTextColor;
     }
 }
 
