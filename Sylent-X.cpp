@@ -471,10 +471,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::Spacing();
             ImGui::Spacing();
 
-            if (ImGui::Button("Exit")) {
-                done = true;
-            }
-
             ImGui::SameLine();
             if (ImGui::Button("Chat")) {
                 show_chat_window = true;
