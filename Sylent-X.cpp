@@ -317,6 +317,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
             }
 
+            if (ImGui::Button("I already have a token")) {
+                show_forgot_password_window = false;
+                show_token_window = true;
+            }
+
             if (ImGui::Button("Back to Login")) {
                 show_forgot_password_window = false;
                 show_login_window = true;
