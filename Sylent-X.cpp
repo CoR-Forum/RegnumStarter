@@ -305,7 +305,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_login_window = true;
             }
 
-            if (ImGui::Button("Close Application")) {
+            if (ImGui::Button("Exit")) {
                 done = true;
             }
 
@@ -396,7 +396,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             // Dropdown for selecting the update channel
             static int updateChannel = 0;
             const char* updateChannels[] = { "Stable", "Beta", "Dev" };
-            ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));            
+            ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
+
+            ImGui::ShowColorWheel(textColor); // Show the color wheel        
 
             if (ImGui::Button("Save Settings")) {
                 SaveSettings();
@@ -407,8 +409,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
         if (show_main_window) {
             std::string windowTitle = "Sylent-X " + currentVersion;
-            ImGui::Begin(windowTitle.c_str());
+            static bool isOpen = true; // Add a boolean to control the window's open state
+            ImGui::Begin(windowTitle.c_str(), &isOpen); // Pass the boolean pointer to ImGui::Begin
             ImGui::SetWindowSize(ImVec2(600, 600));
+
+            // Check if the window is closed, pressing the close button will exit the application
+            if (!isOpen) {
+                done = true;
+            }
 
             static bool optionGravity = false;
             static bool optionZoom = false;
@@ -461,6 +469,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             ImGui::Spacing();
+            ImGui::Spacing();
 
             if (ImGui::Button("Exit")) {
                 done = true;
@@ -496,7 +505,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 GetAllUsers();
                 show_admin_window = true; // Show the admin window
             }
-            // Log display box at the bottom
+
+            // Log and chat display box at the bottom
             ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             for (const auto& msg : logMessages) {
                 ImGui::TextWrapped("%s", msg.c_str());
@@ -504,12 +514,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
                 ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
             }
-
             ImGui::EndChild();
 
             // input field and button to send chat messages using sendChatMessage function
             ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-
             ImGui::SameLine();
             if (ImGui::Button("Send Chat")) {
                 if (strlen(chatInput) > 0) {
@@ -517,8 +525,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     chatInput[0] = '\0'; // Clear input field
                 }
             }
-
-            ImGui::ShowColorWheel(textColor); // Show the color wheel
 
             ImGui::End();
         }
