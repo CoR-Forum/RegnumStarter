@@ -57,8 +57,6 @@ std::string ReadResponse(HINTERNET hRequest) {
     return response;
 }
 
-extern bool isAdmin;
-
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/login.php?username=" + login + "&password=" + password;
