@@ -47,7 +47,6 @@ extern std::string login;
 
 std::vector<Pointer> pointers;
 
-
 void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
     HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hSession) {
@@ -210,6 +209,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     bool show_token_window = false;
     bool show_admin_window = false;
     bool show_settings_window = false;
+    bool show_info_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -389,6 +389,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::End();
         }
 
+        if (show_info_window) {
+            ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            ImGui::Text("Sylent-X %s", currentVersion.c_str());
+            ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
+            ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
+            ImGui::End();
+        }
+
         if (show_settings_window) {
             ImGui::Begin("Settings");
             ImGui::SetWindowSize(ImVec2(500, 300));
@@ -490,6 +500,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::SameLine();
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Credits")) {
+                show_info_window = true;
             }
 
             // checkbox to toggle debug logging
