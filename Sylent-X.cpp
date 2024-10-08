@@ -37,7 +37,7 @@ bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
 void ResetDevice();
 bool show_login_window = true;
-bool show_Sylent_window = false;
+bool show_main_window = false;
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
 extern bool featureGravity;
@@ -140,7 +140,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     if (loginSuccess) {
         Log("Auto-login successful");
         show_login_window = false;
-        show_Sylent_window = true;
+        show_main_window = true;
         // InitializePointers(); // Initialize pointers after successful login
     } else {
         Log("Auto-login failed");
@@ -236,7 +236,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     Log("Login successful");
                     SaveLoginCredentials(username, password);
                     show_login_window = false;
-                    show_Sylent_window = true;
+                    show_main_window = true;
                     // InitializePointers(); // Initialize pointers after successful login
                 } else {
                     Log("Login failed");
@@ -366,7 +366,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::End();
         }
 
-        if (show_Sylent_window) {
+        if (show_main_window) {
             std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
             ImGui::Begin(windowTitle.c_str());
             ImGui::SetWindowSize(ImVec2(500, 300));
@@ -435,14 +435,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Chat")) {
                 show_chat_window = true;
-                show_Sylent_window = false;
+                show_main_window = false;
             }
 
             ImGui::SameLine();
             
             if (ImGui::Button("Feedback")) {
                 show_feedback_window = true;
-                show_Sylent_window = false;
+                show_main_window = false;
             }
 
             ImGui::SameLine();
@@ -471,7 +471,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Close")) {
                 show_feedback_window = false;
-                show_Sylent_window = true;
+                show_main_window = true;
             }
 
             ImGui::End();
@@ -497,7 +497,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::Button("Close")) {
                 show_chat_window = false;
-                show_Sylent_window = true;
+                show_main_window = true;
             }
 
             ImGui::End();
