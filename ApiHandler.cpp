@@ -71,9 +71,10 @@ bool Login(const std::string& login, const std::string& password) {
         if (status == "success") {
             Log("User " + login + " logged in successfully");
 
-            featureZoom = jsonResponse.contains("zoom");
-            featureGravity = jsonResponse.contains("gravity");
-            featureMoonjump = jsonResponse.contains("moonjump");
+            auto licensedFeatures = jsonResponse["licensed_features"];
+            featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
+            featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
+            featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
 
             Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                 std::string(featureGravity ? ", Gravity" : "") + 
