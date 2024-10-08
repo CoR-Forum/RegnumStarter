@@ -21,6 +21,9 @@
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
 
+// Discord webhook URL
+const std::string webhook_url = "https://discord.com/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6";
+
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
 
 static LPDIRECT3D9              g_pD3D = nullptr;
@@ -28,6 +31,7 @@ static LPDIRECT3DDEVICE9        g_pd3dDevice = nullptr;
 static bool                     g_DeviceLost = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS    g_d3dpp = {};
+static char feedbackSender[128] = ""; // Add this line
 
 bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
@@ -38,6 +42,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
+extern std::string login;
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
@@ -47,6 +52,43 @@ void ContinuousMemoryWrite(const std::string& option) {
         MemoryManipulation(option);
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
     }
+}
+
+void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
+    HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    if (!hSession) {
+        std::cerr << "InternetOpenA failed" << std::endl;
+        return;
+    }
+
+    HINTERNET hConnect = InternetConnectA(hSession, "discord.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) {
+        std::cerr << "InternetConnectA failed" << std::endl;
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6", NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
+    if (!hRequest) {
+        std::cerr << "HttpOpenRequestA failed" << std::endl;
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hSession);
+        return;
+    }
+
+    std::string headers = "Content-Type: application/json\r\n";
+    std::string payload = "{\"content\": \"Feedback from: " + login + " Type: " + feedbackType + " Input: " + feedback + "\"}";
+
+    BOOL result = HttpSendRequestA(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
+    if (!result) {
+        std::cerr << "HttpSendRequestA failed" << std::endl;
+    } else {
+        std::cout << "Feedback submitted successfully." << std::endl;
+    }
+
+    InternetCloseHandle(hRequest);
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hSession);
 }
 
 // Function to initialize DirectX
@@ -83,7 +125,7 @@ void ResetDevice() {
 }
 
 // Constants
-const std::string currentVersion = "0.1.40"; // Current version of the application
+const std::string currentVersion = "0.1.63"; // Current version of the application
 const char* appName = "Sylent-X";
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
@@ -91,6 +133,14 @@ DWORD pid; // Process ID of the target process
 
 // Declare the Register function
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
+void ForgotPassword(const std::string& email);
+
+void ForgotPassword(const std::string& email) {
+    // Implement the function logic here
+    // For example, send a password reset request to the server
+    std::cout << "ForgotPassword called with email: " << email << std::endl;
+}
+
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
@@ -148,8 +198,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     static char regUsername[128] = "";
     static char regPassword[128] = "";
     static char regEmail[128] = "";
+    static char feedbackText[1024] = "";
+    static char chatInput[256] = "";
+    static char forgotPasswordEmail[128] = "";
+    static std::vector<std::string> chatMessages;
 
     bool show_register_window = false;
+    bool show_feedback_window = false;
+    bool show_chat_window = false;
+    bool show_forgot_password_window = false;
+    bool show_token_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -214,6 +272,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_register_window = true;
             }
 
+            if (ImGui::Button("Forgot Password")) {
+                show_login_window = false;
+                show_forgot_password_window = true;
+            }
+
             if (ImGui::Button("Close Application")) {
                 done = true;
             }
@@ -247,6 +310,60 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::End();
         }
 
+        if (show_forgot_password_window) {
+            ImGui::Begin("Forgot Password");
+            ImGui::SetWindowSize(ImVec2(500, 200));
+
+            ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
+
+            if (ImGui::Button("Submit")) {
+                ForgotPassword(forgotPasswordEmail);
+                show_forgot_password_window = false;
+                show_token_window = true; // Open the token window
+            }
+
+            if (ImGui::Button("Back to Login")) {
+                show_forgot_password_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Close Application")) {
+                done = true;
+            }
+
+            ImGui::End();
+        }
+
+        if (show_token_window) {
+            ImGui::Begin("Enter Token and New Password");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            static char token[128] = "";
+            static char newPassword[128] = "";
+
+            ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
+            ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
+
+            if (ImGui::Button("Submit")) {
+                // Implement the logic to verify the token and update the password
+                // For example, send the token and new password to the server
+                std::cout << "Token: " << token << ", New Password: " << newPassword << std::endl;
+                show_token_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Back to Login")) {
+                show_token_window = false;
+                show_login_window = true;
+            }
+
+            if (ImGui::Button("Close Application")) {
+                done = true;
+            }
+
+            ImGui::End();
+        }
+
         if (show_Sylent_window) {
             std::string windowTitle = "Welcome, Sylent-X User! - Version " + currentVersion;
             ImGui::Begin(windowTitle.c_str());
@@ -257,9 +374,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionMoonjump = false;
 
             if (ImGui::CollapsingHeader("POV")) {
-                if (ImGui::Checkbox("Zoom", &optionZoom)) {
-                    float newValue = optionZoom ? 25.0f : 15.0f;
-                    MemoryManipulation("zoom", newValue);
+                static float zoomValue = 15.0f; // Default zoom value
+                ImGui::Checkbox("Enable Zoom", &optionZoom);
+                ImGui::SameLine();
+                if (optionZoom && ImGui::SliderFloat("Zoom", &zoomValue, 10.0f, 50.0f)) { // Adjust the range as needed
+                    MemoryManipulation("zoom", zoomValue);
                 }
             }
 
@@ -312,8 +431,71 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::SameLine();
 
+            if (ImGui::Button("Chat")) {
+                show_chat_window = true;
+                show_Sylent_window = false;
+            }
+
+            ImGui::SameLine();
+            
+            if (ImGui::Button("Feedback")) {
+                show_feedback_window = true;
+                show_Sylent_window = false;
+            }
+
+            ImGui::SameLine();
+
             if (ImGui::Button("Logout")) {
                 Logout(); // Use the logic from ApiHandler.cpp
+            }
+
+            ImGui::End();
+        }
+
+        if (show_feedback_window) {
+            ImGui::Begin("Feedback");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            static int feedbackType = 0;
+            const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
+
+            ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
+            ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
+
+            if (ImGui::Button("Submit")) {
+                // Handle feedback submission logic here
+                SendFeedbackToDiscord(feedbackText, feedbackTypes[feedbackType]); // Pass feedback text and type
+            }
+
+            if (ImGui::Button("Close")) {
+                show_feedback_window = false;
+                show_Sylent_window = true;
+            }
+
+            ImGui::End();
+        }
+
+        if (show_chat_window) {
+            ImGui::Begin("Chat");
+            ImGui::SetWindowSize(ImVec2(500, 300));
+
+            ImGui::BeginChild("ChatMessages", ImVec2(480, 200), true);
+            for (const auto& message : chatMessages) {
+                ImGui::TextWrapped("%s", message.c_str());
+            }
+            ImGui::EndChild();
+
+            ImGui::InputText("Message", chatInput, IM_ARRAYSIZE(chatInput));
+            if (ImGui::Button("Send")) {
+                if (strlen(chatInput) > 0) {
+                    chatMessages.push_back(std::string(username) + ": " + chatInput);
+                    chatInput[0] = '\0'; // Clear input field
+                }
+            }
+
+            if (ImGui::Button("Close")) {
+                show_chat_window = false;
+                show_Sylent_window = true;
             }
 
             ImGui::End();
