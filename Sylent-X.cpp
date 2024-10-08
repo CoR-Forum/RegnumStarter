@@ -42,6 +42,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
+extern bool featureMoonwalk;
 extern std::string login;
 
 std::vector<Pointer> pointers;
@@ -407,6 +408,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
                     float newValue = optionMoonjump ? 1.0f : 4.0f;
                     MemoryManipulation("moonjump", newValue);
+                }
+                ImGui::EndDisabled();
+
+                ImGui::BeginDisabled(!featureMoonwalk);
+                if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
+                    float newValue = optionMoonwalk ? 9.219422856E-41f : 0.0f;
+                    MemoryManipulation("moonwalk", newValue);
                 }
                 ImGui::EndDisabled();
             }
