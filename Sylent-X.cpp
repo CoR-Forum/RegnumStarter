@@ -349,15 +349,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (ImGui::Button("Submit")) {
                 // Implement the logic to verify the token and update the password
                 if (SetNewPassword(token, newPassword)) {
-                    statusText = "Password updated successfully.";
+                    ImGui::MessageBox("Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
                     show_token_window = false;
                     show_login_window = true;
                 } else {
-                    statusText = "Failed to set new password. This is likely a server issue. Please try again later.";
+                    statusText = "Failed to set new password. Please try again.";
                 }
             }
             ImGui::SameLine();
             ImGui::Text("%s", statusText.c_str());
+
+            if (ImGui::Button("Request new token")) {
+                show_token_window = false;
+                show_forgot_password_window = true;
+            }
 
             if (ImGui::Button("Back to Login")) {
                 show_token_window = false;

@@ -168,6 +168,7 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
             return true;
         } else {
             // MessageBox(NULL, ("Failed to set new password: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            MessageBox(NULL, "Failed to set new password. Please try again.", "Error", MB_ICONERROR | MB_TOPMOST);
             return false;
         }
     } catch (const std::exception& e) {
