@@ -116,7 +116,7 @@ void Logout() {
     PostQuitMessage(0);
 }
 
-void ResetPasswordRequest(const std::string& email) {
+bool ResetPasswordRequest(const std::string& email) {
     try {
         std::string path = "/reset.php?action=init&email=" + email;
         HINTERNET hInternet = OpenInternetConnection();
@@ -135,11 +135,14 @@ void ResetPasswordRequest(const std::string& email) {
 
         if (status == "success") {
             MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            return true;
         } else {
             MessageBox(NULL, ("Failed to send password reset e-mail: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            return false;
         }
     } catch (const std::exception& e) {
         MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+        return false;
     }
 }
 

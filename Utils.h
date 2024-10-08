@@ -39,6 +39,7 @@ extern void SaveLoginCredentials(const std::string& login, const std::string& en
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
 void ContinuousMemoryWrite(const std::string& option);
+extern bool ResetPasswordRequest(const std::string& email);
 
 
 // Declare login and password globally

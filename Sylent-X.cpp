@@ -309,9 +309,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
 
             if (ImGui::Button("Submit")) {
-                ResetPasswordRequest(forgotPasswordEmail);
-                show_forgot_password_window = false;
-                show_token_window = true; // Open the token window
+                if (ResetPasswordRequest(forgotPasswordEmail)) {
+                    show_forgot_password_window = false;
+                    show_token_window = true;
+                } else {
+                    ImGui::Text("Failed to send reset password request. Please try again.");
+                }
             }
 
             if (ImGui::Button("Back to Login")) {
