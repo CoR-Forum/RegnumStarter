@@ -301,7 +301,9 @@ std::vector<Pointer> InitializePointers() {
                     }
                 }
 
-                LogDebug("Got pointer: Name = " + pointer.name + ", Address = " + std::to_string(pointer.address) + ", Offsets = " + offsetsStr);
+                std::stringstream addressHex;
+                addressHex << std::hex << pointer.address;
+                LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsetsStr);
                 pointers.push_back(pointer);
             }
             Log("Pointers fetched and parsed successfully");
