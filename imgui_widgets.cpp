@@ -9069,6 +9069,22 @@ struct ImGuiTabBarSection
 
 namespace ImGui
 {
+    void ShowColorWheel(ImVec4& textColor, float width)
+    {
+        ImGui::SetNextItemWidth(width);
+        ImGui::ColorPicker4("Text Color", (float*)&textColor);
+
+        // Apply the selected color to the ImGui style
+        ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+
+        // Preview the selected color
+        ImGui::PushStyleColor(ImGuiCol_Text, textColor);
+        ImGui::PopStyleColor(); // Ensure this matches the PushStyleColor call
+    }
+}
+
+namespace ImGui
+{
     static void             TabBarLayout(ImGuiTabBar* tab_bar);
     static ImU32            TabBarCalcTabID(ImGuiTabBar* tab_bar, const char* label, ImGuiWindow* docked_window);
     static float            TabBarCalcMaxTabWidth();
@@ -9076,6 +9092,7 @@ namespace ImGui
     static void             TabBarScrollToTab(ImGuiTabBar* tab_bar, ImGuiID tab_id, ImGuiTabBarSection* sections);
     static ImGuiTabItem*    TabBarScrollingButtons(ImGuiTabBar* tab_bar);
     static ImGuiTabItem*    TabBarTabListPopupButton(ImGuiTabBar* tab_bar);
+
 }
 
 ImGuiTabBar::ImGuiTabBar()
