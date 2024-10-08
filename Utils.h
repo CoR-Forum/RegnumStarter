@@ -75,6 +75,7 @@ const char* appName = "Sylent-X";
 
 // Global variables
 bool debugLog = true;
+bool isAdmin = false;
 
 // Checkboxes states
 bool optionGravity = false;

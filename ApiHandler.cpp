@@ -57,6 +57,8 @@ std::string ReadResponse(HINTERNET hRequest) {
     return response;
 }
 
+extern bool isAdmin;
+
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/login.php?username=" + login + "&password=" + password;
@@ -70,7 +72,7 @@ bool Login(const std::string& login, const std::string& password) {
         std::string status = jsonResponse["status"];
 
         if (status == "success") {
-            Log("User " + login + " logged in successfully");
+            LogDebug("User " + login + " logged in successfully");
 
             auto licensedFeatures = jsonResponse["licensed_features"];
             featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
@@ -82,6 +84,11 @@ bool Login(const std::string& login, const std::string& password) {
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
                 std::string(featureMoonwalk ? ", Moonwalk" : "");
+
+            // Parse role and set isAdmin
+            std::string role = jsonResponse["role"];
+            isAdmin = (role == "admin");
+            Log("Role: " + role);
 
             g_pointers = InitializePointers();
 
@@ -316,11 +323,11 @@ std::vector<Pointer> InitializePointers() {
                 LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsetsStr);
                 pointers.push_back(pointer);
             }
-            Log("Pointers fetched and parsed successfully");
+            LogDebug("Pointers fetched and parsed successfully");
         } catch (const nlohmann::json::exception& e) {
             LogDebug("JSON parsing error: " + std::string(e.what()));
         } catch (const std::invalid_argument& e) {
-            Log("Invalid address or offset format");
+            LogDebug("Invalid address or offset format");
         }
     } else {
         Log("Failed to fetch or parse pointers");
@@ -355,7 +362,6 @@ void RegisterUser(const std::string& username, const std::string& email, const s
 }
 std::vector<std::string> g_chatMessages;
 
-
 void SendChatMessage(const std::string& message) {
     try {
         std::string path = "/shoutbox.php?action=add&username=" + login + "&password=" + password + "&message=" + message;
@@ -376,10 +382,11 @@ void SendChatMessage(const std::string& message) {
             auto messages = jsonResponse["messages"];
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
-                std::string msgText = msg["message"];
+                std::string id = std::to_string(msg["id"].get<int>());
                 std::string createdAt = msg["created_at"];
                 std::string user = msg["username"];
-                std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+                std::string msgText = msg["message"];
+                std::string fullMessage = "[" + id + "] [" + createdAt + "] " + user + ": " + msgText;
 
                 // Only store new messages
                 if (existingMessages.find(fullMessage) == existingMessages.end()) {
@@ -418,10 +425,11 @@ void CheckChatMessages() {
                 auto messages = jsonResponse["messages"];
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
-                    std::string msgText = msg["message"];
+                    std::string id = std::to_string(msg["id"].get<int>());
                     std::string createdAt = msg["created_at"];
                     std::string user = msg["username"];
-                    std::string fullMessage = "User: " + user + ", Message: " + msgText + ", Created At: " + createdAt;
+                    std::string msgText = msg["message"];
+                    std::string fullMessage = "[" + id + "] [" + createdAt + "] " + user + ": " + msgText;
 
                     // Only store new messages
                     if (existingMessages.find(fullMessage) == existingMessages.end()) {
