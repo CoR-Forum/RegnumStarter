@@ -479,12 +479,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     MemoryManipulation("gravity", newValue);
                 }
                 ImGui::EndDisabled();
+                if (!featureGravity) {
+                    ImGui::SameLine();
+                    ShowHelpMarker("This feature is not available in your current license.");
+                }
                 ImGui::BeginDisabled(!featureMoonjump);
                 if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
                     float newValue = optionMoonjump ? 1.0f : 4.0f;
                     MemoryManipulation("moonjump", newValue);
                 }
                 ImGui::EndDisabled();
+                if (!featureMoonjump) {
+                    ImGui::SameLine();
+                    ShowHelpMarker("This feature is not available in your current license.");
+                }
 
                 ImGui::BeginDisabled(!featureMoonwalk);
                 if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
@@ -492,6 +500,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     MemoryManipulation("moonwalk", newValue);
                 }
                 ImGui::EndDisabled();
+                if (!featureMoonwalk) {
+                    ImGui::SameLine();
+                    ShowHelpMarker("This feature is not available in your current license.");
+                }
             }
 
             ImGui::Spacing();
