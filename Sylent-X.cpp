@@ -537,6 +537,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
                             MemoryManipulation("moonjump", moonjumpValue);
                         }
+                        ImGui::SameLine();
+                        ShowHelpMarker("We recommend value 1.00");
                     }
                     ImGui::EndDisabled();
                     if (!featureMoonjump) {
