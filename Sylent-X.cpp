@@ -469,12 +469,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Separator();
 
-            static char licenseKey[128] = "";
-
-            if (ImGui::Button("Activate License")) {
-                show_license_window = true;
-            }
-
             if (ImGui::Button("Save Settings")) {
                 SaveSettings();
                 show_settings_window = false;
@@ -625,6 +619,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 if (ImGui::Button("Chat")) {
                     show_chat_window = true;
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Activate License")) {
+                    show_license_window = true;
                 }
 
                 ImGui::SameLine();
