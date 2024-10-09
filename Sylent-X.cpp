@@ -45,6 +45,7 @@ void CleanupDeviceD3D();
 void ResetDevice();
 bool show_login_window = true;
 bool show_main_window = false;
+bool g_ShowUI = true;
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
 extern bool featureGravity;
@@ -126,6 +127,7 @@ bool InitDirectX(HWND hwnd) {
 
 void RenderUI()
 {
+
     static ImVec4 disabledTextColor = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
     // Show the color wheel to allow the user to change the disabled text color
     ImGui::ShowColorWheel(disabledTextColor);
@@ -266,368 +268,383 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             g_ResizeWidth = g_ResizeHeight = 0;
             ResetDevice();
         }
+
+        // Check for the "Insert" key press
+        if (GetAsyncKeyState(VK_INSERT) & 0x8000)
+        {
+            g_ShowUI = !g_ShowUI;
+            // Add a small delay to prevent rapid toggling
+            Sleep(200);
+        }
+
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
-        if (show_login_window) {
-            ImGui::Begin("Login", &show_login_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+        
+        if (g_ShowUI)
+        {
 
-            ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
-            ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
-            
-            if (ImGui::Button("Login")) {
-                loginSuccess = Login(username, password);
-                if (loginSuccess) {
-                    Log("Login successful");
-                    SaveLoginCredentials(username, password);
-                    show_login_window = false;
-                    show_main_window = true;
-                } else {
-                    Log("Login failed");
+            if (show_login_window) {
+                ImGui::Begin("Login", &show_login_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
+                ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
+                
+                if (ImGui::Button("Login")) {
+                    loginSuccess = Login(username, password);
+                    if (loginSuccess) {
+                        Log("Login successful");
+                        SaveLoginCredentials(username, password);
+                        show_login_window = false;
+                        show_main_window = true;
+                    } else {
+                        Log("Login failed");
+                    }
                 }
+
+                if (loginSuccess) {
+                    ImGui::Text("Login successful");
+                } else {
+                    ImGui::Text("Login failed");
+                }
+
+                if (ImGui::Button("Register")) {
+                    show_login_window = false;
+                    show_register_window = true;
+                }
+
+                if (ImGui::Button("Forgot Password")) {
+                    show_login_window = false;
+                    show_forgot_password_window = true;
+                }
+
+                ImGui::End();
             }
 
-            if (loginSuccess) {
-                ImGui::Text("Login successful");
-            } else {
-                ImGui::Text("Login failed");
+            if (show_register_window) {
+                ImGui::Begin("Register", &show_register_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
+                ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
+                ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
+
+                if (ImGui::Button("Register")) {
+                    RegisterUser(regUsername, regEmail, regPassword);
+                    show_register_window = false;
+                    show_login_window = true;
+                }
+
+                if (ImGui::Button("Back to Login")) {
+                    show_register_window = false;
+                    show_login_window = true;
+                }
+
+                if (ImGui::Button("Exit")) {
+                    done = true;
+                }
+
+                ImGui::End();
             }
 
-            if (ImGui::Button("Register")) {
-                show_login_window = false;
-                show_register_window = true;
-            }
+            if (show_forgot_password_window) {
+                ImGui::Begin("Forgot Password", &show_forgot_password_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-            if (ImGui::Button("Forgot Password")) {
-                show_login_window = false;
-                show_forgot_password_window = true;
-            }
+                ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
 
-            ImGui::End();
-        }
+                if (ImGui::Button("Submit")) {
+                    if (ResetPasswordRequest(forgotPasswordEmail)) {
+                        show_forgot_password_window = false;
+                        show_token_window = true;
+                    } else {
+                        ImGui::Text("Failed to send reset password request. Please try again.");
+                    }
+                }
 
-        if (show_register_window) {
-            ImGui::Begin("Register", &show_register_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
-            ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
-            ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
-
-            if (ImGui::Button("Register")) {
-                RegisterUser(regUsername, regEmail, regPassword);
-                show_register_window = false;
-                show_login_window = true;
-            }
-
-            if (ImGui::Button("Back to Login")) {
-                show_register_window = false;
-                show_login_window = true;
-            }
-
-            if (ImGui::Button("Exit")) {
-                done = true;
-            }
-
-            ImGui::End();
-        }
-
-        if (show_forgot_password_window) {
-            ImGui::Begin("Forgot Password", &show_forgot_password_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
-
-            if (ImGui::Button("Submit")) {
-                if (ResetPasswordRequest(forgotPasswordEmail)) {
+                if (ImGui::Button("I already have a token")) {
                     show_forgot_password_window = false;
                     show_token_window = true;
-                } else {
-                    ImGui::Text("Failed to send reset password request. Please try again.");
                 }
+
+                if (ImGui::Button("Back to Login")) {
+                    show_forgot_password_window = false;
+                    show_login_window = true;
+                }
+
+                ImGui::End();
             }
 
-            if (ImGui::Button("I already have a token")) {
-                show_forgot_password_window = false;
-                show_token_window = true;
-            }
+            if (show_token_window) {
+                ImGui::Begin("Enter Token and New Password", &show_token_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-            if (ImGui::Button("Back to Login")) {
-                show_forgot_password_window = false;
-                show_login_window = true;
-            }
+                static char token[128] = "";
+                static char newPassword[128] = "";
 
-            ImGui::End();
-        }
+                ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
+                ImGui::SameLine();
+                ShowHelpMarker("Sent to you by e-mail");
 
-        if (show_token_window) {
-            ImGui::Begin("Enter Token and New Password", &show_token_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
 
-            static char token[128] = "";
-            static char newPassword[128] = "";
+                static std::string statusText = "";
 
-            ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
-            ImGui::SameLine();
-            ShowHelpMarker("Sent to you by e-mail");
+                if (ImGui::Button("Submit")) {
+                    // Implement the logic to verify the token and update the password
+                    if (SetNewPassword(token, newPassword)) {
+                        MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
+                        show_token_window = false;
+                        show_login_window = true;
+                    } else {
+                        statusText = "Failed to set new password. Please try again.";
+                    }
+                }
+                ImGui::SameLine();
+                ImGui::Text("%s", statusText.c_str());
 
-            ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
+                if (ImGui::Button("Request new token")) {
+                    show_token_window = false;
+                    show_forgot_password_window = true;
+                }
 
-            static std::string statusText = "";
-
-            if (ImGui::Button("Submit")) {
-                // Implement the logic to verify the token and update the password
-                if (SetNewPassword(token, newPassword)) {
-                    MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
+                if (ImGui::Button("Back to Login")) {
                     show_token_window = false;
                     show_login_window = true;
-                } else {
-                    statusText = "Failed to set new password. Please try again.";
                 }
-            }
-            ImGui::SameLine();
-            ImGui::Text("%s", statusText.c_str());
 
-            if (ImGui::Button("Request new token")) {
-                show_token_window = false;
-                show_forgot_password_window = true;
+                ImGui::End();
             }
 
-            if (ImGui::Button("Back to Login")) {
-                show_token_window = false;
-                show_login_window = true;
+            if (show_info_window) {
+                ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                ImGui::Text("Sylent-X %s", currentVersion.c_str());
+                ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
+                ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
+                ImGui::End();
             }
 
-            ImGui::End();
-        }
+            if (show_settings_window) {
+                ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                if (enableRainbow) {
+                    UpdateRainbowColor(rainbowSpeed);
+                }
+                // Dropdown for selecting the update channel
+                static int updateChannel = 0;
+                const char* updateChannels[] = { "Stable", "Beta", "Dev" };
+                
 
-        if (show_info_window) {
-            ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                // Checkbox to enable/disable rainbow effect
+                ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
 
-            ImGui::Text("Sylent-X %s", currentVersion.c_str());
-            ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
-            ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-            ImGui::End();
-        }
+                // Slider to control the speed of the rainbow effect
+                ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
+                ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
 
-        if (show_settings_window) {
-            ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-            if (enableRainbow) {
-                UpdateRainbowColor(rainbowSpeed);
-            }
-            // Dropdown for selecting the update channel
-            static int updateChannel = 0;
-            const char* updateChannels[] = { "Stable", "Beta", "Dev" };
-            
+                // Show the color wheel
+                ImGui::ShowColorWheel(textColor);  
+                
 
-            // Checkbox to enable/disable rainbow effect
-            ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
+                if (ImGui::Button("Save Settings")) {
+                    SaveSettings();
+                }
 
-            // Slider to control the speed of the rainbow effect
-            ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
-            ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
-
-            // Show the color wheel
-            ImGui::ShowColorWheel(textColor);  
-               
-
-            if (ImGui::Button("Save Settings")) {
-                SaveSettings();
+                ImGui::End();
             }
 
-            ImGui::End();
-        }
 
+            if (show_main_window) {
+                std::string windowTitle = "Sylent-X " + currentVersion;
+                static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
+                ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-        if (show_main_window) {
-            std::string windowTitle = "Sylent-X " + currentVersion;
-            static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
-            ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                // close the window if the user clicks the close button
+                if (!mainWindowIsOpen) {
+                    PostQuitMessage(0);
+                }
 
-            // close the window if the user clicks the close button
-            if (!mainWindowIsOpen) {
-                PostQuitMessage(0);
-            }
+                static bool optionGravity = false;
+                static bool optionZoom = false;
+                static bool optionMoonjump = false;
 
-            static bool optionGravity = false;
-            static bool optionZoom = false;
-            static bool optionMoonjump = false;
+                if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    static float zoomValue = 15.0f; // Default zoom value
+                    static bool prevZoomState = false; // Track previous state of the checkbox
 
-            if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
-                static float zoomValue = 15.0f; // Default zoom value
-                static bool prevZoomState = false; // Track previous state of the checkbox
+                    ImGui::Checkbox("Enable Zoom", &optionZoom);
+                    ImGui::SameLine();
 
-                ImGui::Checkbox("Enable Zoom", &optionZoom);
-                ImGui::SameLine();
-
-                if (optionZoom) {
-                    if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                    if (optionZoom) {
+                        if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                            MemoryManipulation("zoom", zoomValue);
+                        }
+                    } else if (prevZoomState) {
+                        // Reset zoom value to 15.0f when checkbox is unchecked
+                        zoomValue = 15.0f;
                         MemoryManipulation("zoom", zoomValue);
                     }
-                } else if (prevZoomState) {
-                    // Reset zoom value to 15.0f when checkbox is unchecked
-                    zoomValue = 15.0f;
-                    MemoryManipulation("zoom", zoomValue);
+
+                    prevZoomState = optionZoom; // Update previous state
                 }
 
-                prevZoomState = optionZoom; // Update previous state
-            }
+                ImGui::Spacing();
 
-            ImGui::Spacing();
+                if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    ImGui::BeginDisabled(!featureGravity);
+                    if (ImGui::Checkbox("Gravity", &optionGravity)) {
+                        float newValue = optionGravity ? -8.0f : 8.0f;
+                        MemoryManipulation("gravity", newValue);
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureGravity) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
+                    ImGui::BeginDisabled(!featureMoonjump);
+                    if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
+                        float newValue = optionMoonjump ? 1.0f : 4.0f;
+                        MemoryManipulation("moonjump", newValue);
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureMoonjump) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
 
-            if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
-                ImGui::BeginDisabled(!featureGravity);
-                if (ImGui::Checkbox("Gravity", &optionGravity)) {
-                    float newValue = optionGravity ? -8.0f : 8.0f;
-                    MemoryManipulation("gravity", newValue);
+                    ImGui::BeginDisabled(!featureMoonwalk);
+                    if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
+                        float newValue = optionMoonwalk ? 9.219422856E-41f : 0.0f;
+                        MemoryManipulation("moonwalk", newValue);
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureMoonwalk) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
                 }
-                ImGui::EndDisabled();
-                if (!featureGravity) {
-                    ImGui::SameLine();
-                    ShowHelpMarker("This feature is not available in your current license.");
-                }
-                ImGui::BeginDisabled(!featureMoonjump);
-                if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
-                    float newValue = optionMoonjump ? 1.0f : 4.0f;
-                    MemoryManipulation("moonjump", newValue);
-                }
-                ImGui::EndDisabled();
-                if (!featureMoonjump) {
-                    ImGui::SameLine();
-                    ShowHelpMarker("This feature is not available in your current license.");
-                }
 
-                ImGui::BeginDisabled(!featureMoonwalk);
-                if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                    float newValue = optionMoonwalk ? 9.219422856E-41f : 0.0f;
-                    MemoryManipulation("moonwalk", newValue);
-                }
-                ImGui::EndDisabled();
-                if (!featureMoonwalk) {
-                    ImGui::SameLine();
-                    ShowHelpMarker("This feature is not available in your current license.");
-                }
-            }
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
 
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            ImGui::SameLine();
-            if (ImGui::Button("Chat")) {
-                show_chat_window = true;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Settings")) {
-                show_settings_window = true;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Credits")) {
-                show_info_window = true;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Feedback")) {
-                show_feedback_window = true;
-            }
-
-            if (isAdmin) {
                 ImGui::SameLine();
-                if (ImGui::Button("Admin")) {
-                    GetAllUsers();
-                    show_admin_window = true; // Show the admin window
+                if (ImGui::Button("Chat")) {
+                    show_chat_window = true;
                 }
 
                 ImGui::SameLine();
-                ImGui::Checkbox("Debug", &debugLog);
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Logout")) {
-                Logout(); // Use the logic from ApiHandler.cpp
-            }
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            // Log and chat display box at the bottom
-            ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (const auto& msg : logMessages) {
-                ImGui::TextWrapped("%s", msg.c_str());
-            }
-            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-            }
-            ImGui::EndChild();
-
-            // input field and button to send chat messages using sendChatMessage function
-            ImGui::PushItemWidth(360); // Set the width of the input field
-            ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput));
-            ImGui::PopItemWidth(); // Reset the item width to default
-            ImGui::SameLine();
-            if (ImGui::Button("Send")) {
-                if (strlen(chatInput) > 0) {
-                    SendChatMessage(chatInput);
-                    chatInput[0] = '\0'; // Clear input field
+                if (ImGui::Button("Settings")) {
+                    show_settings_window = true;
                 }
-            }
 
-            ImGui::End();
-        }
-
-        if (show_feedback_window) {
-            ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-
-            static int feedbackType = 0;
-            const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
-
-            ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
-            ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
-
-            if (ImGui::Button("Submit")) {
-                // Handle feedback submission logic here
-                SendFeedbackToDiscord(feedbackText, feedbackTypes[feedbackType]); // Pass feedback text and type
-            }
-
-            ImGui::End();
-        }
-
-        if (show_chat_window) {
-            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            // Log display box at the bottom
-            ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (const auto& msg : g_chatMessages) {
-                ImGui::TextWrapped("%s", msg.c_str());
-            }
-            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-            }
-
-            ImGui::EndChild();
-
-            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-
-            ImGui::SameLine();
-            
-            if (ImGui::Button("Send Message")) {
-                if (strlen(chatInput) > 0) {
-                    SendChatMessage(chatInput);
-                    chatInput[0] = '\0'; // Clear input field
+                ImGui::SameLine();
+                if (ImGui::Button("Credits")) {
+                    show_info_window = true;
                 }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Feedback")) {
+                    show_feedback_window = true;
+                }
+
+                if (isAdmin) {
+                    ImGui::SameLine();
+                    if (ImGui::Button("Admin")) {
+                        GetAllUsers();
+                        show_admin_window = true; // Show the admin window
+                    }
+
+                    ImGui::SameLine();
+                    ImGui::Checkbox("Debug", &debugLog);
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Logout")) {
+                    Logout(); // Use the logic from ApiHandler.cpp
+                }
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                // Log and chat display box at the bottom
+                ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                for (const auto& msg : logMessages) {
+                    ImGui::TextWrapped("%s", msg.c_str());
+                }
+                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                }
+                ImGui::EndChild();
+
+                // input field and button to send chat messages using sendChatMessage function
+                ImGui::PushItemWidth(360); // Set the width of the input field
+                ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput));
+                ImGui::PopItemWidth(); // Reset the item width to default
+                ImGui::SameLine();
+                if (ImGui::Button("Send")) {
+                    if (strlen(chatInput) > 0) {
+                        SendChatMessage(chatInput);
+                        chatInput[0] = '\0'; // Clear input field
+                    }
+                }
+
+                ImGui::End();
+            }
+        
+            if (show_feedback_window) {
+                ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+
+                static int feedbackType = 0;
+                const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
+
+                ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
+                ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
+
+                if (ImGui::Button("Submit")) {
+                    // Handle feedback submission logic here
+                    SendFeedbackToDiscord(feedbackText, feedbackTypes[feedbackType]); // Pass feedback text and type
+                }
+
+                ImGui::End();
+            }
+        
+        
+            if (show_chat_window) {
+                ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                // Log display box at the bottom
+                ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                for (const auto& msg : g_chatMessages) {
+                    ImGui::TextWrapped("%s", msg.c_str());
+                }
+                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                }
+
+                ImGui::EndChild();
+
+                ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+
+                ImGui::SameLine();
+                
+                if (ImGui::Button("Send Message")) {
+                    if (strlen(chatInput) > 0) {
+                        SendChatMessage(chatInput);
+                        chatInput[0] = '\0'; // Clear input field
+                    }
+                }
+
+                ImGui::End();
             }
 
-            ImGui::End();
-        }
+            if (show_admin_window) { // Add this block
+                ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-        if (show_admin_window) { // Add this block
-            ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                ImGui::Text("All Users");
 
-            ImGui::Text("All Users");
-
-            DisplayUsersTable();
-                        
-            ImGui::End();
+                DisplayUsersTable();
+                            
+                ImGui::End();
+            }
         }
 
         // Rendering
@@ -760,6 +777,13 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         ::PostQuitMessage(0);
         return 0;
+    case WM_KEYDOWN:
+        if (wParam == VK_INSERT)
+        {
+            g_ShowUI = !g_ShowUI;
+            return 0;
+        }
+        break;
     }
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
