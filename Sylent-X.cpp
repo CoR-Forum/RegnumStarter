@@ -399,29 +399,29 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Text("Sylent-X %s", currentVersion.c_str());
             ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
-            ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
+            ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
             ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-            ImGui::Text("Big shoutout to Adrian Lastres.");
+            ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
             ImGui::End();
         }
 
         if (show_settings_window) {
             ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-            // if (enableRainbow) {
-            //     UpdateRainbowColor(rainbowSpeed);
-            // }
+            if (enableRainbow) {
+                UpdateRainbowColor(rainbowSpeed);
+            }
             // Dropdown for selecting the update channel
             static int updateChannel = 0;
             const char* updateChannels[] = { "Stable", "Beta", "Dev" };
             
 
             // Checkbox to enable/disable rainbow effect
-            // ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
-
-            // Slider to control the speed of the rainbow effect
-            // ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
+            ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
+            ImGui::SameLine();
+            //Slider to control the speed of the rainbow effect
+            ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
             
-            // ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
+            ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
 
             // Show the color wheel
             ImGui::ShowColorWheel(textColor);  
@@ -482,7 +482,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::BeginDisabled(!featureGravity);
-                    if (ImGui::Checkbox("Gravity", &optionGravity)) {
+                    if (ImGui::Checkbox("Flyhack", &optionGravity)) {
                         float newValue = optionGravity ? -8.0f : 8.0f;
                         MemoryManipulation("gravity", newValue);
                     }
