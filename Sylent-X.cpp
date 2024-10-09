@@ -482,7 +482,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::BeginDisabled(!featureGravity);
-                    if (ImGui::Checkbox("Gravity", &optionGravity)) {
+                    if (ImGui::Checkbox("Flyhack", &optionGravity)) {
                         float newValue = optionGravity ? -8.0f : 8.0f;
                         MemoryManipulation("gravity", newValue);
                     }
