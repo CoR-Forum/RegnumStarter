@@ -380,11 +380,10 @@ void SendChatMessage(const std::string& message) {
             auto messages = jsonResponse["messages"];
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
-                std::string id = std::to_string(msg["id"].get<int>());
                 std::string createdAt = msg["created_at"];
                 std::string user = msg["username"];
                 std::string msgText = msg["message"];
-                std::string fullMessage = "[" + id + "] [" + createdAt + "] " + user + ": " + msgText;
+                std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
                 // Only store new messages
                 if (existingMessages.find(fullMessage) == existingMessages.end()) {
@@ -423,11 +422,10 @@ void CheckChatMessages() {
                 auto messages = jsonResponse["messages"];
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
-                    std::string id = std::to_string(msg["id"].get<int>());
                     std::string createdAt = msg["created_at"];
                     std::string user = msg["username"];
                     std::string msgText = msg["message"];
-                    std::string fullMessage = "[" + id + "] [" + createdAt + "] " + user + ": " + msgText;
+                    std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
                     // Only store new messages
                     if (existingMessages.find(fullMessage) == existingMessages.end()) {
