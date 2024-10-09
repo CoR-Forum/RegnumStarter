@@ -577,40 +577,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         if (show_admin_window) { // Add this block
             ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-            // Add admin-specific controls here
-            ImGui::Text("Admin Controls");
-
-            ImGui::Spacing();
-
-            // Add UI for generating license keys
-            static char licenseKey[128] = "";
-            if (ImGui::Button("Generate License Key")) {
-                // Logic to generate license key will be implemented later
-                strcpy(licenseKey, "GeneratedLicenseKey123"); // Placeholder
-            }
-            ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_ReadOnly);
-
-            ImGui::Spacing();
-
-            // Add UI for banning users
-            static char banUsername[128] = "";
-            ImGui::InputText("Username to Ban", banUsername, IM_ARRAYSIZE(banUsername));
-            if (ImGui::Button("Ban User")) {
-                // Logic to ban user will be implemented later
-                // Placeholder for ban logic
-                std::cout << "User " << banUsername << " banned." << std::endl;
-            }
-
-            // table from GetAllUsersRawJson
-
-            ImGui::Spacing();
-
             ImGui::Text("All Users");
 
             DisplayUsersTable();
                         
-            ImGui::Spacing();
-
             ImGui::End();
         }
 
