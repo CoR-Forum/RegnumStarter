@@ -489,14 +489,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_info_window = true;
             }
 
-            // checkbox to toggle debug logging
-            ImGui::Checkbox("Debug Log", &debugLog);
-            ImGui::SameLine();
+            if (isAdmin) {
+                ImGui::SameLine();
+                if (ImGui::Button("Admin")) {
+                    GetAllUsers();
+                    show_admin_window = true; // Show the admin window
+                }
 
-            // button to call admin UI, only visible if isAdmin is true
-            if (isAdmin && ImGui::Button("Admin UI")) {
-                GetAllUsers();
-                show_admin_window = true; // Show the admin window
+                ImGui::SameLine();
+                ImGui::Checkbox("Debug", &debugLog);
             }
 
             ImGui::Spacing();
@@ -514,9 +515,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::EndChild();
 
             // input field and button to send chat messages using sendChatMessage function
-            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+            ImGui::PushItemWidth(360); // Set the width of the input field
+            ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput));
+            ImGui::PopItemWidth(); // Reset the item width to default
             ImGui::SameLine();
-            if (ImGui::Button("Send Chat")) {
+            if (ImGui::Button("Send")) {
                 if (strlen(chatInput) > 0) {
                     SendChatMessage(chatInput);
                     chatInput[0] = '\0'; // Clear input field
