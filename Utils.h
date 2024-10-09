@@ -78,7 +78,7 @@ const std::string currentVersion = "0.1.63"; // Current version of the applicati
 const char* appName = "Sylent-X";
 
 // Global variables
-bool debugLog = false;
+bool debugLog = true;
 bool isAdmin = false;
 
 // Checkboxes states
