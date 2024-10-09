@@ -908,10 +908,25 @@ public:
     bool WriteFloat(uintptr_t address, float value);
 };
 
+// function to get process path
+std::wstring GetProcessPath(DWORD pid) {
+    std::wstring path;
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (hProcess) {
+        wchar_t buffer[MAX_PATH];
+        DWORD size = MAX_PATH;
+        if (QueryFullProcessImageNameW(hProcess, 0, buffer, &size)) {
+            path = buffer;
+        }
+        CloseHandle(hProcess);
+    }
+    return path;
+}
+
 // Function to get the base address of a memory address
 uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
     LogDebug(L"Getting base address of " + std::wstring(memAddr.name.begin(), memAddr.name.end()) + L" at address: " + std::to_wstring(memAddr.address));
-    LogDebug(L"ROClientGame.exe path: " + GetProcessPath(pid));
+    LogDebug(L"ROClientGame.exe path:  " + GetProcessPath(pid));
     return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
 }
 
