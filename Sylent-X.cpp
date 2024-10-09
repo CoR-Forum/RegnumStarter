@@ -461,6 +461,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             ImGui::Spacing();
+            ImGui::Separator();
             ImGui::Spacing();
 
             ImGui::SameLine();
@@ -497,6 +498,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 GetAllUsers();
                 show_admin_window = true; // Show the admin window
             }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
 
             // Log and chat display box at the bottom
             ImGui::BeginChild("LogMessages", ImVec2(400, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
