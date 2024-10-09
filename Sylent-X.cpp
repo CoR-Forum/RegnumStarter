@@ -463,12 +463,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     MemoryManipulation("gravity", newValue);
                 }
                 ImGui::EndDisabled();
+                if (!featureGravity) {
+                    ImGui::SameLine();
+                    ShowHelpMarker("This feature is not available in your current license.");
+                }
                 ImGui::BeginDisabled(!featureMoonjump);
                 if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
                     float newValue = optionMoonjump ? 1.0f : 4.0f;
                     MemoryManipulation("moonjump", newValue);
                 }
                 ImGui::EndDisabled();
+                if (!featureMoonjump) {
+                    ImGui::SameLine();
+                    ShowHelpMarker("This feature is not available in your current license.");
+                }
 
                 ImGui::BeginDisabled(!featureMoonwalk);
                 if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
@@ -476,6 +484,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     MemoryManipulation("moonwalk", newValue);
                 }
                 ImGui::EndDisabled();
+                if (!featureMoonwalk) {
+                    ImGui::SameLine();
+                    ShowHelpMarker("This feature is not available in your current license.");
+                }
             }
 
             ImGui::Spacing();
@@ -488,23 +500,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Feedback")) {
-                show_feedback_window = true;
-            }
-
-            ImGui::SameLine();
             if (ImGui::Button("Settings")) {
                 show_settings_window = true;
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Logout")) {
-                Logout(); // Use the logic from ApiHandler.cpp
+            if (ImGui::Button("Credits")) {
+                show_info_window = true;
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Credits")) {
-                show_info_window = true;
+            if (ImGui::Button("Feedback")) {
+                show_feedback_window = true;
             }
 
             if (isAdmin) {
@@ -516,6 +523,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 ImGui::Checkbox("Debug", &debugLog);
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Logout")) {
+                Logout(); // Use the logic from ApiHandler.cpp
             }
 
             ImGui::Spacing();
