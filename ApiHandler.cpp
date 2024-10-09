@@ -80,12 +80,14 @@ bool Login(const std::string& login, const std::string& password) {
             featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
             featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
             featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
+            featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
 
             Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
                 std::string(featureMoonwalk ? ", Moonwalk" : "");
-
+                std::string(featureFov ? ", Field of View" : "");
+                
             // Parse role and set isAdmin
             std::string role = jsonResponse["role"];
             isAdmin = (role == "admin");
