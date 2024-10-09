@@ -1,8 +1,7 @@
 ## Build on macOS
 
 ```
-i686-w64-mingw32-windres resource.rc -O coff -o resource.o && \
-i686-w64-mingw32-g++ -o Sylent-X-0.1.50.exe Sylent-X.cpp imgui/imgui_impl_dx9.cpp imgui/imgui_impl_win32.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
+i686-w64-mingw32-windres resource.rc resource.o && i686-w64-mingw32-g++ -o bin/Sylent-X-0.1.50.exe Sylent-X.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static && wine ./Sylent-X-0.1.50.exe
 ```
 
 The first part of the command will compile the resource file which will then be included in the program file.
@@ -23,8 +22,7 @@ Now
 2. Navigate to the project directory
 3. Run the build command:
 ```
-windres resource.rc -O coff -o resource.o && \
-g++ -o Sylent-X-0.1.50.exe Sylent-X.cpp imgui/imgui_impl_dx9.cpp imgui/imgui_impl_win32.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
+windres resource.rc resource.o && g++ -o bin/Sylent-X-0.1.50.exe Sylent-X.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
 ```
 
 

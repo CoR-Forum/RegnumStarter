@@ -5,17 +5,17 @@
 #include <tlhelp32.h>
 #include <wininet.h>
 #include <tchar.h> // Add this header for TEXT macro
-#include "Utils.h"
+#include "includes/Utils.h"
 #include "Updater.cpp"
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
 #include "Keyboard.cpp"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_dx9.h"
-#include "imgui/imgui_impl_win32.h"
+#include "libs/imgui/imgui.h"
 #include <d3d9.h>
 #include "Style.cpp"
 #include "ApiHandler.cpp"
+
+#include "ui/windows/admin/AdminWindow.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -675,16 +675,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::End();
             }
-
-            if (show_admin_window) { // Add this block
-                ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                ImGui::Text("All Users");
-
-                DisplayUsersTable();
-                            
-                ImGui::End();
-            }
         }
 
         // Rendering
@@ -714,79 +704,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     Log("Sylent-X exiting");
     return 0;
-}
-
-void DisplayUsersTable() {
-    // Parse the JSON data
-    nlohmann::json jsonData;
-    try {
-        jsonData = nlohmann::json::parse(GetAllUsersRawJson);
-    } catch (const nlohmann::json::parse_error& e) {
-        std::cerr << "Failed to parse JSON: " << e.what() << std::endl;
-        return;
-    }
-
-    // Check if jsonData contains the "users" array
-    if (!jsonData.contains("users") || !jsonData["users"].is_array()) {
-        std::cerr << "Expected JSON array 'users' but got: " << jsonData.type_name() << std::endl;
-        return;
-    }
-
-    // Begin the ImGui table with a maximum height
-    ImGui::BeginChild("UsersTableChild", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-    ImGui::BeginTable("AllUsersTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable);
-        ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 20.0f);
-        ImGui::TableSetupColumn("Username", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Email", ImGuiTableColumnFlags_WidthFixed, 150.0f);
-        ImGui::TableSetupColumn("Role", ImGuiTableColumnFlags_WidthFixed, 30.0f);
-        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-        ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_WidthFixed, 120.0f);
-        ImGui::TableHeadersRow();
-
-        // Iterate over the user data and populate the table rows
-        for (const auto& user : jsonData["users"]) {
-            if (!user.is_object()) {
-                std::cerr << "Expected JSON object but got: " << user.type_name() << std::endl;
-                continue;
-            }
-
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::Text("%d", user.value("id", 0));
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", user.value("username", "N/A").c_str());
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", user.value("email", "N/A").c_str());
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", user.value("is_admin", 0) ? "Admin" : "User");
-            ImGui::TableNextColumn();
-            // if is_active, show disable button, else show enable button
-            if (user.value("is_active", 0)) {
-                if (ImGui::Button(("Enabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                    // Placeholder for disable logic
-                    std::cout << "User " << user.value("username", "N/A") << " disabled." << std::endl;
-                }
-            } else {
-                if (ImGui::Button(("Disabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                    // Placeholder for enable logic
-                    std::cout << "User " << user.value("username", "N/A") << " enabled." << std::endl;
-                }
-            }
-            ImGui::TableNextColumn();
-            // button to call ToggleUserBan with user["id"]
-            if (user.value("is_banned", 0)) {
-                if (ImGui::Button(("Unban##" + std::to_string(user.value("id", 0))).c_str())) {
-                    ToggleUserBan(user.value("id", 0));
-                }
-            } else {
-                if (ImGui::Button(("Ban##" + std::to_string(user.value("id", 0))).c_str())) {
-                    ToggleUserBan(user.value("id", 0));
-                }
-            }
-        }
-    
-    ImGui::EndTable();
-    ImGui::EndChild();
 }
 
 void CleanupDeviceD3D()
@@ -910,6 +827,13 @@ DWORD GetProcessIdByName(const std::wstring& processName) {
     return processId;
 }
 
+// Define MemoryAddress struct
+struct MemoryAddress {
+    std::string name;
+    uintptr_t address;
+    std::vector<unsigned long> offsets;
+};
+
 // Memory class to handle memory operations
 class Memory {
 public:
@@ -935,7 +859,7 @@ std::wstring GetProcessPath(DWORD pid) {
 // Function to get the base address of a memory address
 uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
     LogDebug(L"Getting base address of " + std::wstring(memAddr.name.begin(), memAddr.name.end()) + L" at address: " + std::to_wstring(memAddr.address));
-    LogDebug("ROClientGame.exe path:  " + GetProcessPath(pid));
+    LogDebug("ROClientGame.exe path:  " + WStringToString(GetProcessPath(pid)));
     return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
 }
 
