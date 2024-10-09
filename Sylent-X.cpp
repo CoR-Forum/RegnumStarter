@@ -35,6 +35,8 @@ static char feedbackSender[128] = ""; // Add this line
 
 // Define a static variable to hold the selected text color
 static ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color
+static bool enableRainbow = false;
+static float rainbowSpeed = 0.1f;
 // Declare chatInput as a static variable
 static char chatInput[128] = "";
 
@@ -51,6 +53,15 @@ extern bool featureMoonwalk;
 extern std::string login;
 
 std::vector<Pointer> pointers;
+
+
+
+void UpdateRainbowColor(float speed) {
+    float time = ImGui::GetTime() * speed;
+    textColor.x = (sin(time) * 0.5f) + 0.5f;
+    textColor.y = (sin(time + 2.0f) * 0.5f) + 0.5f;
+    textColor.z = (sin(time + 4.0f) * 0.5f) + 0.5f;
+}
 
 void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
     HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -398,13 +409,24 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
         if (show_settings_window) {
             ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
+            if (enableRainbow) {
+                UpdateRainbowColor(rainbowSpeed);
+            }
             // Dropdown for selecting the update channel
             static int updateChannel = 0;
             const char* updateChannels[] = { "Stable", "Beta", "Dev" };
+            
+
+            // Checkbox to enable/disable rainbow effect
+            ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
+
+            // Slider to control the speed of the rainbow effect
+            ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
             ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
 
-            ImGui::ShowColorWheel(textColor); // Show the color wheel        
+            // Show the color wheel
+            ImGui::ShowColorWheel(textColor);  
+               
 
             if (ImGui::Button("Save Settings")) {
                 SaveSettings();
@@ -412,6 +434,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::End();
         }
+
 
         if (show_main_window) {
             std::string windowTitle = "Sylent-X " + currentVersion;
@@ -516,7 +539,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::Spacing();
 
             // Log and chat display box at the bottom
-            ImGui::BeginChild("LogMessages", ImVec2(400, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             for (const auto& msg : logMessages) {
                 ImGui::TextWrapped("%s", msg.c_str());
             }
@@ -641,7 +664,7 @@ void DisplayUsersTable() {
     }
 
     // Begin the ImGui table with a maximum height
-    ImGui::BeginChild("UsersTableChild", ImVec2(600, 400), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+    ImGui::BeginChild("UsersTableChild", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     ImGui::BeginTable("AllUsersTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable);
         ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 20.0f);
         ImGui::TableSetupColumn("Username", ImGuiTableColumnFlags_WidthFixed, 80.0f);
