@@ -32,6 +32,8 @@ static bool                     g_DeviceLost = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS    g_d3dpp = {};
 static char feedbackSender[128] = ""; // Add this line
+static bool show_license_window = false;
+static char licenseKey[128] = "";
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 static bool enableRainbow = false;
@@ -169,6 +171,12 @@ void ShowHelpMarker(const char* desc)
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
+}
+bool ActivateLicense(const char* licenseKey) {
+    // Implement the function logic here
+    // For example, you can check the license key against a predefined value
+    const std::string validLicenseKey = "YOUR_VALID_LICENSE_KEY";
+    return validLicenseKey == licenseKey;
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -458,7 +466,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_forgot_password_window = true;
                 show_settings_window = false;
             }
-      
+
+            ImGui::Separator();
+
+            static char licenseKey[128] = "";
+
+            if (ImGui::Button("Activate License")) {
+                show_license_window = true;
+            }
+
             if (ImGui::Button("Save Settings")) {
                 SaveSettings();
                 show_settings_window = false;
@@ -713,6 +729,26 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (strlen(chatInput) > 0) {
                         SendChatMessage(chatInput);
                         chatInput[0] = '\0'; // Clear input field
+                    }
+                }
+
+                ImGui::End();
+            }
+
+            if (show_license_window) {
+                ImGui::Begin("Activate License", &show_license_window, ImGuiWindowFlags_AlwaysAutoResize);
+                
+                // Display the input text field for the license key
+                ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
+
+                // Display the submit button
+                if (ImGui::Button("Submit")) {
+                    // Check the license key when the submit button is clicked
+                    if (ActivateLicense(licenseKey)) {
+                        MessageBox(NULL, "License activated successfully.", "Success", MB_ICONINFORMATION);
+                        show_license_window = false; // Close the window on success
+                    } else {
+                        MessageBox(NULL, "Failed to activate license. Please try again.", "Error", MB_ICONERROR);
                     }
                 }
 
