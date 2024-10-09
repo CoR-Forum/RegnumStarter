@@ -415,8 +415,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
         if (show_main_window) {
             std::string windowTitle = "Sylent-X " + currentVersion;
-            static bool isOpen = true; // Add a boolean to control the window's open state
-            ImGui::Begin(windowTitle.c_str(), &show_main_window, ImGuiWindowFlags_AlwaysAutoResize); // Pass the boolean pointer to ImGui::Begin
+            static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
+            ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+            // close the window if the user clicks the close button
+            if (!mainWindowIsOpen) {
+                PostQuitMessage(0);
+            }
 
             static bool optionGravity = false;
             static bool optionZoom = false;
