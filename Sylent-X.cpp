@@ -675,16 +675,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::End();
             }
-
-            if (show_admin_window) { // Add this block
-                ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                ImGui::Text("All Users");
-
-                DisplayUsersTable();
-                            
-                ImGui::End();
-            }
         }
 
         // Rendering
