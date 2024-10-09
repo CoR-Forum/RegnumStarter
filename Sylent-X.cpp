@@ -448,13 +448,21 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
 
             // Show the color wheel
-            ImGui::ShowColorWheel(textColor);  
-               
+            ImGui::ShowColorWheel(textColor);
+            ImGui::SameLine();
+            if (ImGui::Button("Create Ticket")) {
+                ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Password Reset")) {
+                show_forgot_password_window = true;
+                show_settings_window = false;
+            }
+      
             if (ImGui::Button("Save Settings")) {
                 SaveSettings();
                 show_settings_window = false;
             }
-
                 ImGui::End();
             }
 
