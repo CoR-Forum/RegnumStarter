@@ -427,7 +427,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionZoom = false;
             static bool optionMoonjump = false;
 
-            if (ImGui::CollapsingHeader("POV", ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
                 static float zoomValue = 15.0f; // Default zoom value
                 ImGui::Checkbox("Enable Zoom", &optionZoom);
                 ImGui::SameLine();
