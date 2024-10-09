@@ -23,7 +23,8 @@
 
 // Discord webhook URL
 const std::string webhook_url = "https://discord.com/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6";
-
+static bool spaceKeyPressed = false;
+static bool ctrlKeyPressed = false;
 #define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
 
 static LPDIRECT3D9              g_pD3D = nullptr;
@@ -506,8 +507,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::BeginDisabled(!featureGravity);
                     if (ImGui::Checkbox("Flyhack", &optionGravity)) {
-                        float newValue = optionGravity ? -8.0f : 8.0f;
-                        MemoryManipulation("gravity", newValue);
+                        MemoryManipulation("gravity");
                     }
                     ImGui::EndDisabled();
                     if (!featureGravity) {
@@ -534,6 +534,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (!featureMoonwalk) {
                         ImGui::SameLine();
                         ShowHelpMarker("This feature is not available in your current license.");
+                    }
+
+                    // Check for global key press and release events using Windows API
+                    if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
+                        MemoryManipulation("gravity", -8.0f);
+
+                    }
+
+                    if (GetAsyncKeyState(VK_LCONTROL) & 0x8000) {
+                        MemoryManipulation("gravity", 8.0f);
+
                     }
                 }
 
