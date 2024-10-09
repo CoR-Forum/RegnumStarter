@@ -55,6 +55,19 @@ extern std::string login;
 
 std::vector<Pointer> pointers;
 
+void runRoClientGame(std::string regnumUser, std::string regnumPass) {
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    std::string path = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer\\ROClientGame.exe";
+    std::string command = "\"" + path + "\" " + regnumUser + " " + regnumPass;
+    if (!CreateProcess(path.c_str(), (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+        Log("Failed to start the Regnum Online client");
+    }
+}
+
 void UpdateRainbowColor(float speed) {
     float time = ImGui::GetTime() * speed;
     textColor.x = (sin(time) * 0.5f) + 0.5f;
@@ -512,6 +525,21 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::SameLine();
                         ShowHelpMarker("This feature is not available in your current license.");
                     }
+                }
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                // regnumUser and regnumPass are the username and password for the Regnum Online client, respectively
+                static char regnumUser[128] = "";
+                static char regnumPass[128] = "";
+
+                ImGui::InputText("Regnum User", regnumUser, IM_ARRAYSIZE(regnumUser));
+                ImGui::InputText("Regnum Pass", regnumPass, IM_ARRAYSIZE(regnumPass), ImGuiInputTextFlags_Password);
+
+                if (ImGui::Button("Run Regnum Online")) {
+                    runRoClientGame(regnumUser, regnumPass);
                 }
 
                 ImGui::Spacing();
