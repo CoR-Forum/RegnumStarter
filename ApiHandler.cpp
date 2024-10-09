@@ -62,7 +62,7 @@ std::string ReadResponse(HINTERNET hRequest) {
 
 bool Login(const std::string& login, const std::string& password) {
     try {
-        std::string path = "/login.php?username=" + login + "&password=" + password;
+        std::string path = "/user.php?action=login&username=" + login + "&password=" + password;
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
@@ -136,7 +136,7 @@ void Logout() {
 
 bool ResetPasswordRequest(const std::string& email) {
     try {
-        std::string path = "/reset.php?action=init&email=" + email;
+        std::string path = "/user.php?action=reset&resetAction=init&email=" + email;
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
@@ -162,7 +162,7 @@ bool ResetPasswordRequest(const std::string& email) {
 
 bool SetNewPassword(const std::string& token, const std::string& password) {
     try {
-        std::string path = "/reset.php?action=reset&token=" + token + "&password=" + password;
+        std::string path = "/user.php?action=reset&resetAction=reset&token=" + token + "&password=" + password;
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
@@ -353,7 +353,7 @@ void RegisterUser(const std::string& username, const std::string& email, const s
     try {
         HINTERNET hSession = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hSession);
-        std::string path = "/register.php?username=" + username + "&email=" + email + "&password=" + password;
+        std::string path = "/user.php?action=register&username=" + username + "&email=" + email + "&password=" + password;
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
