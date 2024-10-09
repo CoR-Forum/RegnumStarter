@@ -259,7 +259,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
         if (show_login_window) {
-            ImGui::Begin("Login", &show_login_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImGui::Begin("Login", &show_login_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
@@ -293,15 +293,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_forgot_password_window = true;
             }
 
-            if (ImGui::Button("Close Application")) {
-                done = true;
-            }
-
             ImGui::End();
         }
 
         if (show_register_window) {
-            ImGui::Begin("Register", &show_register_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImGui::Begin("Register", &show_register_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
@@ -327,7 +323,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_forgot_password_window) {
-            ImGui::Begin("Forgot Password", &show_forgot_password_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImGui::Begin("Forgot Password", &show_forgot_password_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(500, 200));
 
             ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
@@ -351,15 +347,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_login_window = true;
             }
 
-            if (ImGui::Button("Close Application")) {
-                done = true;
-            }
-
             ImGui::End();
         }
 
         if (show_token_window) {
-            ImGui::Begin("Enter Token and New Password", &show_token_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImGui::Begin("Enter Token and New Password", &show_token_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             static char token[128] = "";
@@ -396,15 +388,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 show_login_window = true;
             }
 
-            if (ImGui::Button("Close Application")) {
-                done = true;
-            }
-
             ImGui::End();
         }
 
         if (show_info_window) {
-            ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             ImGui::Text("Sylent-X %s", currentVersion.c_str());
@@ -414,7 +402,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_settings_window) {
-            ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse);
+            ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             // Dropdown for selecting the update channel
@@ -434,7 +422,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         if (show_main_window) {
             std::string windowTitle = "Sylent-X " + currentVersion;
             static bool isOpen = true; // Add a boolean to control the window's open state
-            ImGui::Begin(windowTitle.c_str(), &show_main_window); // Pass the boolean pointer to ImGui::Begin
+            ImGui::Begin(windowTitle.c_str(), &show_main_window, ImGuiWindowFlags_AlwaysAutoResize); // Pass the boolean pointer to ImGui::Begin
             ImGui::SetWindowSize(ImVec2(600, 600));
 
             static bool optionGravity = false;
@@ -497,7 +485,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::SameLine();
             if (ImGui::Button("Feedback")) {
                 show_feedback_window = true;
-                show_main_window = false;
             }
 
             ImGui::SameLine();
@@ -549,7 +536,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_feedback_window) {
-            ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse);
+            ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             static int feedbackType = 0;
@@ -563,16 +550,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 SendFeedbackToDiscord(feedbackText, feedbackTypes[feedbackType]); // Pass feedback text and type
             }
 
-            if (ImGui::Button("Close")) {
-                show_feedback_window = false;
-                show_main_window = true;
-            }
-
             ImGui::End();
         }
 
         if (show_chat_window) {
-            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse);
+            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(600, 320));
 
             // Log display box at the bottom
@@ -595,17 +577,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SendChatMessage(chatInput);
                     chatInput[0] = '\0'; // Clear input field
                 }
-            } 
-
-            if (ImGui::Button("Close")) {
-                show_chat_window = false;
             }
 
             ImGui::End();
         }
 
         if (show_admin_window) { // Add this block
-            ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse);
+            ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::SetWindowSize(ImVec2(600, 400));
 
             // Add admin-specific controls here
@@ -640,12 +618,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             DisplayUsersTable();
                         
-
             ImGui::Spacing();
-
-            if (ImGui::Button("Close Admin Panel")) {
-                show_admin_window = false;
-            }
 
             ImGui::End();
         }
@@ -695,7 +668,8 @@ void DisplayUsersTable() {
         return;
     }
 
-    // Begin the ImGui table
+    // Begin the ImGui table with a maximum height
+    ImGui::BeginChild("UsersTableChild", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     ImGui::BeginTable("AllUsersTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable);
         ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 20.0f);
         ImGui::TableSetupColumn("Username", ImGuiTableColumnFlags_WidthFixed, 80.0f);
@@ -708,8 +682,8 @@ void DisplayUsersTable() {
         // Iterate over the user data and populate the table rows
         for (const auto& user : jsonData["users"]) {
             if (!user.is_object()) {
-            std::cerr << "Expected JSON object but got: " << user.type_name() << std::endl;
-            continue;
+                std::cerr << "Expected JSON object but got: " << user.type_name() << std::endl;
+                continue;
             }
 
             ImGui::TableNextRow();
@@ -724,30 +698,31 @@ void DisplayUsersTable() {
             ImGui::TableNextColumn();
             // if is_active, show disable button, else show enable button
             if (user.value("is_active", 0)) {
-            if (ImGui::Button(("Enabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                // Placeholder for disable logic
-                std::cout << "User " << user.value("username", "N/A") << " disabled." << std::endl;
-            }
+                if (ImGui::Button(("Enabled##" + std::to_string(user.value("id", 0))).c_str())) {
+                    // Placeholder for disable logic
+                    std::cout << "User " << user.value("username", "N/A") << " disabled." << std::endl;
+                }
             } else {
-            if (ImGui::Button(("Disabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                // Placeholder for enable logic
-                std::cout << "User " << user.value("username", "N/A") << " enabled." << std::endl;
-            }
+                if (ImGui::Button(("Disabled##" + std::to_string(user.value("id", 0))).c_str())) {
+                    // Placeholder for enable logic
+                    std::cout << "User " << user.value("username", "N/A") << " enabled." << std::endl;
+                }
             }
             ImGui::TableNextColumn();
             // button to call ToggleUserBan with user["id"]
             if (user.value("is_banned", 0)) {
-            if (ImGui::Button(("Unban##" + std::to_string(user.value("id", 0))).c_str())) {
-                ToggleUserBan(user.value("id", 0));
-            }
+                if (ImGui::Button(("Unban##" + std::to_string(user.value("id", 0))).c_str())) {
+                    ToggleUserBan(user.value("id", 0));
+                }
             } else {
-            if (ImGui::Button(("Ban##" + std::to_string(user.value("id", 0))).c_str())) {
-                ToggleUserBan(user.value("id", 0));
-            }
+                if (ImGui::Button(("Ban##" + std::to_string(user.value("id", 0))).c_str())) {
+                    ToggleUserBan(user.value("id", 0));
+                }
             }
         }
     
     ImGui::EndTable();
+    ImGui::EndChild();
 }
 
 void CleanupDeviceD3D()
