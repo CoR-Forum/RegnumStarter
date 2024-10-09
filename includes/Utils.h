@@ -66,6 +66,7 @@ extern void GetAllUsers();
 extern std::string GetAllUsersRawJson;
 extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
+extern bool ActivateLicense(const char* licenseKey);
 
 // User settings
 extern std::string login;
