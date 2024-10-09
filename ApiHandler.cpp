@@ -246,6 +246,7 @@ void SaveSettings() {
         file << "optionMoonwalk=" << optionMoonwalk << std::endl;
         file << "debugLog=" << debugLog << std::endl;
         file.close();
+        Log("Settings saved successfully");
     } else {
         Log("Failed to open settings file for writing");
     }
@@ -270,7 +271,7 @@ void LoadSettings() {
                 debugLog = (line.substr(line.find("=") + 1) == "1");
         }
         file.close();
-        LogDebug("Settings loaded successfully: Gravity = " + std::to_string(optionGravity) + ", Moonjump = " + std::to_string(optionMoonjump) + ", Zoom = " + std::to_string(optionZoom) + ", Moonwalk = " + std::to_string(optionMoonwalk) + ", DebugLog = " + std::to_string(debugLog));
+        LogDebug("Settings loaded successfully");
     } else {
         Log("Settings file not found");
     }
