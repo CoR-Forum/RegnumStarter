@@ -511,7 +511,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             // Log and chat display box at the bottom
-            ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            ImGui::BeginChild("LogMessages", ImVec2(400, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             for (const auto& msg : logMessages) {
                 ImGui::TextWrapped("%s", msg.c_str());
             }
@@ -664,7 +664,7 @@ void DisplayUsersTable() {
     }
 
     // Begin the ImGui table with a maximum height
-    ImGui::BeginChild("UsersTableChild", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+    ImGui::BeginChild("UsersTableChild", ImVec2(600, 400), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     ImGui::BeginTable("AllUsersTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable);
         ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 20.0f);
         ImGui::TableSetupColumn("Username", ImGuiTableColumnFlags_WidthFixed, 80.0f);
