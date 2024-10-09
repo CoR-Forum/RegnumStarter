@@ -259,7 +259,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
         if (show_login_window) {
-            ImGui::Begin("Login");
+            ImGui::Begin("Login", &show_login_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
@@ -301,7 +301,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_register_window) {
-            ImGui::Begin("Register");
+            ImGui::Begin("Register", &show_register_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
@@ -327,7 +327,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_forgot_password_window) {
-            ImGui::Begin("Forgot Password");
+            ImGui::Begin("Forgot Password", &show_forgot_password_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize(ImVec2(500, 200));
 
             ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
@@ -359,7 +359,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_token_window) {
-            ImGui::Begin("Enter Token and New Password");
+            ImGui::Begin("Enter Token and New Password", &show_token_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             static char token[128] = "";
@@ -414,7 +414,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_settings_window) {
-            ImGui::Begin("Settings");
+            ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             // Dropdown for selecting the update channel
@@ -434,18 +434,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         if (show_main_window) {
             std::string windowTitle = "Sylent-X " + currentVersion;
             static bool isOpen = true; // Add a boolean to control the window's open state
-            ImGui::Begin(windowTitle.c_str(), &isOpen); // Pass the boolean pointer to ImGui::Begin
+            ImGui::Begin(windowTitle.c_str(), &show_main_window); // Pass the boolean pointer to ImGui::Begin
             ImGui::SetWindowSize(ImVec2(600, 600));
-
-            // Check if the window is closed, pressing the close button will exit the application
-            if (!isOpen) {
-                done = true;
-            }
 
             static bool optionGravity = false;
             static bool optionZoom = false;
             static bool optionMoonjump = false;
-
 
             if (ImGui::CollapsingHeader("POV", ImGuiTreeNodeFlags_DefaultOpen)) {
                 static float zoomValue = 15.0f; // Default zoom value
@@ -555,7 +549,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_feedback_window) {
-            ImGui::Begin("Feedback");
+            ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse);
             ImGui::SetWindowSize(ImVec2(500, 300));
 
             static int feedbackType = 0;
@@ -578,7 +572,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_chat_window) {
-            ImGui::Begin("Chat");
+            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse);
             ImGui::SetWindowSize(ImVec2(600, 320));
 
             // Log display box at the bottom
@@ -611,7 +605,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
 
         if (show_admin_window) { // Add this block
-            ImGui::Begin("Admin Panel");
+            ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse);
             ImGui::SetWindowSize(ImVec2(600, 400));
 
             // Add admin-specific controls here
