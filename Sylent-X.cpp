@@ -14,6 +14,7 @@
 #include <d3d9.h>
 #include "Style.cpp"
 #include "ApiHandler.cpp"
+#include "admin/AdminPanel.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -590,6 +591,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         show_admin_window = true; // Show the admin window
                     }
 
+                    ShowAdminPanel(&show_admin_window);
                     ImGui::SameLine();
                     ImGui::Checkbox("Debug", &debugLog);
                 }
