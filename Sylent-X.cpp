@@ -592,6 +592,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
 
                     ShowAdminPanel(&show_admin_window);
+                    
                     ImGui::SameLine();
                     ImGui::Checkbox("Debug", &debugLog);
                 }
