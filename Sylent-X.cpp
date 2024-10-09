@@ -399,9 +399,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::Text("Sylent-X %s", currentVersion.c_str());
             ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
-            ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
+            ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
             ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-            ImGui::Text("Big shoutout to Adrian Lastres.");
+            ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
             ImGui::End();
         }
 
