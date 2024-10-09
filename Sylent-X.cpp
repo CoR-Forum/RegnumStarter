@@ -442,18 +442,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::BeginDisabled(!featureGravity);
                 if (ImGui::Checkbox("Gravity", &optionGravity)) {
                     float newValue = optionGravity ? -8.0f : 8.0f;
-                    // print all global pointers from g_pointers
-                    LogDebug("Printing all pointers: ");
-                    for (const auto& pointer : g_pointers) {
-                        std::stringstream ss;
-                        ss << std::hex << pointer.address;
-                        LogDebug("Pointer: " + pointer.name + " Address: 0x" + ss.str() + " Offsets: ");
-                        for (const auto& offset : pointer.offsets) {
-                            ss.str(""); // Clear the stringstream
-                            ss << std::hex << offset;
-                            LogDebug("Offset: 0x" + ss.str());
-                        }
-                    }
                     MemoryManipulation("gravity", newValue);
                 }
                 ImGui::EndDisabled();
