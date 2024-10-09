@@ -455,10 +455,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
 
-                ImGui::Checkbox("Enable Zoom", &optionZoom);
-                
-
+                ImGui::Checkbox("Enable Zoom", &optionZoom);               
                     if (optionZoom) {
+                        ImGui::SameLine();
                         if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
                             MemoryManipulation("zoom", zoomValue);
                         }
