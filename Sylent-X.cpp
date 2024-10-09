@@ -63,7 +63,8 @@ void runRoClientGame(std::string regnumUser, std::string regnumPass) {
     ZeroMemory(&pi, sizeof(pi));
     std::string path = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer\\ROClientGame.exe";
     std::string command = "\"" + path + "\" " + regnumUser + " " + regnumPass;
-    if (!CreateProcess(path.c_str(), (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    std::string workingDirectory = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer";
+    if (!CreateProcess(path.c_str(), (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, workingDirectory.c_str(), &si, &pi)) {
         Log("Failed to start the Regnum Online client");
     }
 }
