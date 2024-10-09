@@ -33,8 +33,7 @@ static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS    g_d3dpp = {};
 static char feedbackSender[128] = ""; // Add this line
 
-// Define a static variable to hold the selected text color
-static ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color
+ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 static bool enableRainbow = false;
 static float rainbowSpeed = 0.1f;
 // Declare chatInput as a static variable
@@ -53,8 +52,6 @@ extern bool featureMoonwalk;
 extern std::string login;
 
 std::vector<Pointer> pointers;
-
-
 
 void UpdateRainbowColor(float speed) {
     float time = ImGui::GetTime() * speed;
@@ -175,8 +172,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         return 1;
     }
 
-    LoadSettings();
     SelfUpdate();
+    LoadLoginCredentials(hInstanceGlobal);
+
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {

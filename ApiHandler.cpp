@@ -245,6 +245,7 @@ void SaveSettings() {
         file << "optionZoom=" << optionZoom << std::endl;
         file << "optionMoonwalk=" << optionMoonwalk << std::endl;
         file << "debugLog=" << debugLog << std::endl;
+        file << "textColor=" << textColor.x << "," << textColor.y << "," << textColor.z << "," << textColor.w << std::endl;
         file.close();
         Log("Settings saved successfully");
     } else {
@@ -269,6 +270,10 @@ void LoadSettings() {
                 optionMoonwalk = (line.substr(line.find("=") + 1) == "1");
             if (line.find("debugLog=") != std::string::npos)
                 debugLog = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("textColor=") != std::string::npos) {
+                std::string colorValues = line.substr(line.find("=") + 1);
+                sscanf(colorValues.c_str(), "%f,%f,%f,%f", &textColor.x, &textColor.y, &textColor.z, &textColor.w);
+            }
         }
         file.close();
         LogDebug("Settings loaded successfully");

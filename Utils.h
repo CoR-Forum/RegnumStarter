@@ -24,6 +24,7 @@
 #include <wininet.h>
 #include <shlobj.h>
 #include "json.hpp"
+#include "imgui.h"
 using json = nlohmann::json;
 
 HINSTANCE hInstanceGlobal;
@@ -76,6 +77,8 @@ struct MemoryAddress {
 const char* appDataPath = getenv("APPDATA");
 const std::string currentVersion = "0.1.63"; // Current version of the application
 const char* appName = "Sylent-X";
+
+extern ImVec4 textColor;
 
 // Global variables
 bool debugLog = true;
