@@ -429,11 +429,22 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (ImGui::CollapsingHeader("POV", ImGuiTreeNodeFlags_DefaultOpen)) {
                 static float zoomValue = 15.0f; // Default zoom value
+                static bool prevZoomState = false; // Track previous state of the checkbox
+
                 ImGui::Checkbox("Enable Zoom", &optionZoom);
                 ImGui::SameLine();
-                if (optionZoom && ImGui::SliderFloat("Zoom", &zoomValue, 10.0f, 50.0f)) { // Adjust the range as needed
+
+                if (optionZoom) {
+                    if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                        MemoryManipulation("zoom", zoomValue);
+                    }
+                } else if (prevZoomState) {
+                    // Reset zoom value to 15.0f when checkbox is unchecked
+                    zoomValue = 15.0f;
                     MemoryManipulation("zoom", zoomValue);
                 }
+
+                prevZoomState = optionZoom; // Update previous state
             }
 
             ImGui::Spacing();
