@@ -912,6 +912,13 @@ DWORD GetProcessIdByName(const std::wstring& processName) {
     return processId;
 }
 
+// Define MemoryAddress struct
+struct MemoryAddress {
+    std::string name;
+    uintptr_t address;
+    std::vector<unsigned long> offsets;
+};
+
 // Memory class to handle memory operations
 class Memory {
 public:
@@ -937,7 +944,7 @@ std::wstring GetProcessPath(DWORD pid) {
 // Function to get the base address of a memory address
 uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
     LogDebug(L"Getting base address of " + std::wstring(memAddr.name.begin(), memAddr.name.end()) + L" at address: " + std::to_wstring(memAddr.address));
-    LogDebug("ROClientGame.exe path:  " + GetProcessPath(pid));
+    LogDebug("ROClientGame.exe path:  " + WStringToString(GetProcessPath(pid)));
     return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
 }
 

@@ -62,18 +62,9 @@ extern std::string GetAllUsersRawJson;
 extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
 
-// Declare login and password globally
+// User settings
 extern std::string login;
 extern std::string password;
-
-// extern std::vector<Pointer> pointers; // Declare pointers as an external global variable
-
-// Define MemoryAddress struct
-struct MemoryAddress {
-    std::string name;
-    uintptr_t address;
-    std::vector<unsigned long> offsets;
-};
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
