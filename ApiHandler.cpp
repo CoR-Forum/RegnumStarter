@@ -13,6 +13,9 @@ extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
 
+std::string login;
+std::string password;
+
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
     if (hConnect) InternetCloseHandle(hConnect);

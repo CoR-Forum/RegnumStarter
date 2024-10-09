@@ -120,18 +120,6 @@ bool InitDirectX(HWND hwnd) {
     return true;
 }
 
-
-void RenderUI()
-{
-    static ImVec4 disabledTextColor = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
-    // Show the color wheel to allow the user to change the disabled text color
-    ImGui::ShowColorWheel(disabledTextColor);
-
-    // Render the InputTextWithHint with the updated disabled text color
-    static char chatInput[256] = "";
-    ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-}
-
 // Function to reset the Direct3D device
 void ResetDevice() {
     ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -141,12 +129,6 @@ void ResetDevice() {
     }
     ImGui_ImplDX9_CreateDeviceObjects();
 }
-
-// Constants
-
-
-// Declare the Register function
-void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 
 void ShowHelpMarker(const char* desc)
 {   

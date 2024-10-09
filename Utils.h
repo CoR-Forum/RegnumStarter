@@ -43,16 +43,17 @@ struct Pointer {
 };
 
 // Pull some functions to the top
-void MemoryManipulation(const std::string& option, float newValue = 0.0f);
+extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 extern std::vector<Pointer> InitializePointers(); // Updated declaration
 extern std::vector<Pointer> g_pointers;
 extern std::vector<std::string> g_chatMessages;
+extern void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 extern void LoadLoginCredentials(HINSTANCE hInstance);
 extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 extern void SendChatMessage(const std::string& login, const std::string& password, const std::string& message);
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
-void ContinuousMemoryWrite(const std::string& option);
+extern void ContinuousMemoryWrite(const std::string& option);
 extern bool ResetPasswordRequest(const std::string& email);
 extern void CheckChatMessages();
 extern void GetAllUsers();
@@ -61,8 +62,8 @@ extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
 
 // Declare login and password globally
-std::string login;
-std::string password;
+extern std::string login;
+extern std::string password;
 
 // extern std::vector<Pointer> pointers; // Declare pointers as an external global variable
 
