@@ -157,7 +157,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     SelfUpdate();
-    LoadLoginCredentials(hInstanceGlobal);
+    LoadSettings();
 
 
     bool loginSuccess = Login(login, password);
