@@ -25,6 +25,7 @@
 #include <shlobj.h>
 #include "json.hpp"
 #include "imgui/imgui.h"
+#include "resource.h"
 using json = nlohmann::json;
 
 HINSTANCE hInstanceGlobal;

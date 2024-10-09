@@ -5,9 +5,32 @@
 // Assuming textColor is defined globally or passed to this function
 extern ImVec4 textColor;
 
+// Function to load font from resource
+void LoadFontFromResource()
+{
+    HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(IDR_FONT_RUDA_BOLD), RT_FONT);
+    if (hRes)
+    {
+        HGLOBAL hMem = LoadResource(NULL, hRes);
+        if (hMem)
+        {
+            void* pFontData = LockResource(hMem);
+            DWORD fontSize = SizeofResource(NULL, hRes);
+            if (pFontData && fontSize > 0)
+            {
+                ImGuiIO& io = ImGui::GetIO();
+                io.Fonts->AddFontFromMemoryTTF(pFontData, fontSize, 14);
+                io.Fonts->AddFontFromMemoryTTF(pFontData, fontSize, 18);
+            }
+        }
+    }
+}
+
 void ApplyCustomStyle()
 {
     ImGuiStyle& style = ImGui::GetStyle();
+
+    LoadFontFromResource();
 
     // Apply the loaded text color
     style.Colors[ImGuiCol_Text] = textColor;
@@ -58,10 +81,4 @@ void ApplyCustomStyle()
     style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
     style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
     style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 12);
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 10);
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 14);
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 18);
 }

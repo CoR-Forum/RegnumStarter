@@ -1,0 +1,1 @@
+#define IDR_FONT_RUDA_BOLD 101
