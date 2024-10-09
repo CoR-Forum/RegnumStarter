@@ -1,10 +1,5 @@
-﻿#include "Utils.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include "resource.h"
-#include <windows.h>
+﻿#include "includes/Utils.h"
 
-// Assuming textColor is defined globally or passed to this function
 extern ImVec4 textColor;
 
 void ApplyCustomStyle()

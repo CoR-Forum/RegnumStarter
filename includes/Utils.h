@@ -23,9 +23,14 @@
 #include <objbase.h>
 #include <wininet.h>
 #include <shlobj.h>
-#include "json.hpp"
-#include "imgui/imgui.h"
-#include "resource.h"
+#include "../libs/json.hpp"
+#include "../libs/imgui/imgui.h"
+#include "./resource.h"
+#include <locale>
+#include <codecvt>
+#include "../libs/imgui/imgui_impl_dx9.h"
+#include "../libs/imgui/imgui_impl_win32.h"
+#include "../libs/imgui/imgui_internal.h"
 using json = nlohmann::json;
 
 HINSTANCE hInstanceGlobal;

@@ -5,14 +5,12 @@
 #include <tlhelp32.h>
 #include <wininet.h>
 #include <tchar.h> // Add this header for TEXT macro
-#include "Utils.h"
+#include "includes/Utils.h"
 #include "Updater.cpp"
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
 #include "Keyboard.cpp"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_dx9.h"
-#include "imgui/imgui_impl_win32.h"
+#include "libs/imgui/imgui.h"
 #include <d3d9.h>
 #include "Style.cpp"
 #include "ApiHandler.cpp"
