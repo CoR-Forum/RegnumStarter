@@ -500,6 +500,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         MemoryManipulation("fov", newValue);
                     }
                     ImGui::EndDisabled();
+                    if (!featureFov) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
 
                 }
 
