@@ -33,8 +33,7 @@ static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS    g_d3dpp = {};
 static char feedbackSender[128] = ""; // Add this line
 
-// Define a static variable to hold the selected text color
-static ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color
+ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 static bool enableRainbow = false;
 static float rainbowSpeed = 0.1f;
 // Declare chatInput as a static variable
@@ -48,14 +47,13 @@ bool show_main_window = false;
 bool g_ShowUI = true;
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
+extern bool featureFov;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
 extern std::string login;
 
 std::vector<Pointer> pointers;
-
-
 
 void UpdateRainbowColor(float speed) {
     float time = ImGui::GetTime() * speed;
@@ -124,19 +122,6 @@ bool InitDirectX(HWND hwnd) {
     return true;
 }
 
-
-void RenderUI()
-{
-
-    static ImVec4 disabledTextColor = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
-    // Show the color wheel to allow the user to change the disabled text color
-    ImGui::ShowColorWheel(disabledTextColor);
-
-    // Render the InputTextWithHint with the updated disabled text color
-    static char chatInput[256] = "";
-    ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-}
-
 // Function to reset the Direct3D device
 void ResetDevice() {
     ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -146,12 +131,6 @@ void ResetDevice() {
     }
     ImGui_ImplDX9_CreateDeviceObjects();
 }
-
-// Constants
-
-
-// Declare the Register function
-void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 
 void ShowHelpMarker(const char* desc)
 {   
@@ -177,8 +156,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         return 1;
     }
 
-    LoadSettings();
     SelfUpdate();
+    LoadLoginCredentials(hInstanceGlobal);
+
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
@@ -416,36 +396,39 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (show_info_window) {
                 ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-                ImGui::Text("Sylent-X %s", currentVersion.c_str());
-                ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
-                ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-                ImGui::End();
+            ImGui::Text("Sylent-X %s", currentVersion.c_str());
+            ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
+            ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
+            ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
+            ImGui::Text("Big shoutout to Adrian Lastres.");
+            ImGui::End();
+        }
+
+        if (show_settings_window) {
+            ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+            // if (enableRainbow) {
+            //     UpdateRainbowColor(rainbowSpeed);
+            // }
+            // Dropdown for selecting the update channel
+            static int updateChannel = 0;
+            const char* updateChannels[] = { "Stable", "Beta", "Dev" };
+            
+
+            // Checkbox to enable/disable rainbow effect
+            // ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
+
+            // Slider to control the speed of the rainbow effect
+            // ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
+            
+            // ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
+
+            // Show the color wheel
+            ImGui::ShowColorWheel(textColor);  
+               
+            if (ImGui::Button("Save Settings")) {
+                SaveSettings();
+                show_settings_window = false;
             }
-
-            if (show_settings_window) {
-                ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-                if (enableRainbow) {
-                    UpdateRainbowColor(rainbowSpeed);
-                }
-                // Dropdown for selecting the update channel
-                static int updateChannel = 0;
-                const char* updateChannels[] = { "Stable", "Beta", "Dev" };
-                
-
-                // Checkbox to enable/disable rainbow effect
-                ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
-
-                // Slider to control the speed of the rainbow effect
-                ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
-                ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
-
-                // Show the color wheel
-                ImGui::ShowColorWheel(textColor);  
-                
-
-                if (ImGui::Button("Save Settings")) {
-                    SaveSettings();
-                }
 
                 ImGui::End();
             }
@@ -456,21 +439,23 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-                // close the window if the user clicks the close button
-                if (!mainWindowIsOpen) {
-                    PostQuitMessage(0);
-                }
+            // close the window if the user clicks the close button
+            if (!mainWindowIsOpen) {
+                SaveSettings();
+                PostQuitMessage(0);
+            }
 
-                static bool optionGravity = false;
-                static bool optionZoom = false;
-                static bool optionMoonjump = false;
+            static bool optionGravity = false;
+            static bool optionZoom = false;
+            static bool optionFov = false;
+            static bool optionMoonjump = false;
 
                 if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
 
-                    ImGui::Checkbox("Enable Zoom", &optionZoom);
-                    ImGui::SameLine();
+                ImGui::Checkbox("Enable Zoom", &optionZoom);
+                
 
                     if (optionZoom) {
                         if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
@@ -482,8 +467,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         MemoryManipulation("zoom", zoomValue);
                     }
 
-                    prevZoomState = optionZoom; // Update previous state
+                prevZoomState = optionZoom; // Update previous state
+
+                ImGui::BeginDisabled(!featureFov);
+                if (ImGui::Checkbox("Field of View", &optionFov)) {
+                    float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
+                    MemoryManipulation("fov", newValue);
                 }
+                ImGui::EndDisabled();
+
+            }
 
                 ImGui::Spacing();
 

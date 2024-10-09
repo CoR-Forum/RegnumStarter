@@ -9,9 +9,13 @@
 extern HWND hwnd; // Declare the handle to the main window
 
 extern bool featureZoom;
+extern bool featureFov;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
+
+std::string login;
+std::string password;
 
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
@@ -59,7 +63,7 @@ std::string ReadResponse(HINTERNET hRequest) {
 
 bool Login(const std::string& login, const std::string& password) {
     try {
-        std::string path = "/login.php?username=" + login + "&password=" + password;
+        std::string path = "/user.php?action=login&username=" + login + "&password=" + password;
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
@@ -75,6 +79,7 @@ bool Login(const std::string& login, const std::string& password) {
             auto licensedFeatures = jsonResponse["licensed_features"];
             featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
             featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
+            featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
             featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
             featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
 
@@ -82,6 +87,7 @@ bool Login(const std::string& login, const std::string& password) {
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
                 std::string(featureMoonwalk ? ", Moonwalk" : "");
+                std::string(featureFov ? ", Fov" : "");
 
             // Parse role and set isAdmin
             std::string role = jsonResponse["role"];
@@ -133,7 +139,7 @@ void Logout() {
 
 bool ResetPasswordRequest(const std::string& email) {
     try {
-        std::string path = "/reset.php?action=init&email=" + email;
+        std::string path = "/user.php?action=reset&resetAction=init&email=" + email;
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
@@ -159,7 +165,7 @@ bool ResetPasswordRequest(const std::string& email) {
 
 bool SetNewPassword(const std::string& token, const std::string& password) {
     try {
-        std::string path = "/reset.php?action=reset&token=" + token + "&password=" + password;
+        std::string path = "/user.php?action=reset&resetAction=reset&token=" + token + "&password=" + password;
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
@@ -243,8 +249,12 @@ void SaveSettings() {
         file << "optionGravity=" << optionGravity << std::endl;
         file << "optionMoonjump=" << optionMoonjump << std::endl;
         file << "optionZoom=" << optionZoom << std::endl;
+        file << "optionFov=" << optionFov << std::endl;
         file << "optionMoonwalk=" << optionMoonwalk << std::endl;
+        file << "debugLog=" << debugLog << std::endl;
+        file << "textColor=" << textColor.x << "," << textColor.y << "," << textColor.z << "," << textColor.w << std::endl;
         file.close();
+        Log("Settings saved successfully");
     } else {
         Log("Failed to open settings file for writing");
     }
@@ -265,8 +275,15 @@ void LoadSettings() {
                 optionZoom = (line.substr(line.find("=") + 1) == "1");
             if (line.find("optionMoonwalk=") != std::string::npos)
                 optionMoonwalk = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("debugLog=") != std::string::npos)
+                debugLog = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("textColor=") != std::string::npos) {
+                std::string colorValues = line.substr(line.find("=") + 1);
+                sscanf(colorValues.c_str(), "%f,%f,%f,%f", &textColor.x, &textColor.y, &textColor.z, &textColor.w);
+            }
         }
         file.close();
+        LogDebug("Settings loaded successfully");
     } else {
         Log("Settings file not found");
     }
@@ -340,7 +357,7 @@ void RegisterUser(const std::string& username, const std::string& email, const s
     try {
         HINTERNET hSession = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hSession);
-        std::string path = "/register.php?username=" + username + "&email=" + email + "&password=" + password;
+        std::string path = "/user.php?action=register&username=" + username + "&email=" + email + "&password=" + password;
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
@@ -416,7 +433,6 @@ void CheckChatMessages() {
             auto jsonResponse = nlohmann::json::parse(response);
             std::string status = jsonResponse["status"];
             if (status == "success") {
-                LogDebug("Chat messages fetched successfully");
 
                 // Process the messages array
                 auto messages = jsonResponse["messages"];
