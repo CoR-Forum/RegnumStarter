@@ -14,6 +14,7 @@
 #include <d3d9.h>
 #include "Style.cpp"
 #include "ApiHandler.cpp"
+#include "admin/AdminPanel.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -602,6 +603,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         show_admin_window = true; // Show the admin window
                     }
 
+                    ShowAdminPanel(&show_admin_window);
+                    
                     ImGui::SameLine();
                     ImGui::Checkbox("Debug", &debugLog);
                 }
@@ -718,16 +721,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 }
 
-                ImGui::End();
-            }
-
-            if (show_admin_window) { // Add this block
-                ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                ImGui::Text("All Users");
-
-                DisplayUsersTable();
-                            
                 ImGui::End();
             }
         }
