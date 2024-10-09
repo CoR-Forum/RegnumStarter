@@ -94,6 +94,7 @@ bool Login(const std::string& login, const std::string& password) {
             Log("Role: " + role);
 
             g_pointers = InitializePointers();
+            GetMagnatCurrency();
 
             // Start the CheckChatMessages process in a new thread
             std::thread chatThread(CheckChatMessages);
@@ -533,5 +534,30 @@ void ToggleUserBan(int userId) {
     } catch (const std::exception& e) {
         Log("Exception: " + std::string(e.what()));
         GetAllUsers();
+    }
+}
+
+// function to fetch amount of Magnat currency for the user
+void GetMagnatCurrency() {
+    try {
+        std::string path = "/magnat.php?action=getWallet&username=" + login + "&password=" + password;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            magnatCurrency = jsonResponse["wallet"]["amount"];
+            LogDebug("Magnat currency fetched successfully: " + std::to_string(magnatCurrency));
+        } else {
+            LogDebug("Failed to fetch Magnat currency: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
     }
 }

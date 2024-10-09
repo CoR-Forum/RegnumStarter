@@ -66,6 +66,10 @@ extern void GetAllUsers();
 extern std::string GetAllUsersRawJson;
 extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
+extern void GetMagnatCurrency();
+
+// variable to store current amount of Magnat currency for the user
+int magnatCurrency;
 
 // User settings
 extern std::string login;

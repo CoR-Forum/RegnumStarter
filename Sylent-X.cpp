@@ -465,6 +465,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
+                // GetMagnatCurrency();
+
+                // in the right upper corner, show current magnat currency
+                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 100);
+                ImGui::Text("Magnat: %d", magnatCurrency);
+
             // close the window if the user clicks the close button
             if (!mainWindowIsOpen) {
                 SaveSettings();
