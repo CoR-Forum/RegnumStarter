@@ -515,10 +515,24 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::SameLine();
                         ShowHelpMarker("This feature is not available in your current license.");
                     }
+                    static float moonjumpValue = 4.0f; // Default zoom value
+                    static bool prevjumpState = false; // Track previous state of the checkbox
                     ImGui::BeginDisabled(!featureMoonjump);
                     if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
-                        float newValue = optionMoonjump ? 1.0f : 4.0f;
-                        MemoryManipulation("moonjump", newValue);
+                        if (optionMoonjump) {
+                            prevjumpState = true;
+                        } else if (prevjumpState) {
+                            // Reset zoom value to 4.0f when checkbox is unchecked
+                            moonjumpValue = 4.0f;
+                            MemoryManipulation("moonjump", moonjumpValue);
+                            prevjumpState = false;
+                        }
+                    }
+                    if (optionMoonjump) {
+                        ImGui::SameLine();
+                        if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
+                            MemoryManipulation("moonjump", moonjumpValue);
+                        }
                     }
                     ImGui::EndDisabled();
                     if (!featureMoonjump) {
