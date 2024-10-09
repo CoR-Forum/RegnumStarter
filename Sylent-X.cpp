@@ -451,6 +451,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionFov = false;
             static bool optionMoonjump = false;
 
+            if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_S))
+                // Ctrl+S hotkey detected
+                SaveSettings();
+            }
+
                 if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
