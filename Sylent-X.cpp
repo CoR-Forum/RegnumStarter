@@ -537,14 +537,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
 
                     // Check for global key press and release events using Windows API
-                    if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
+                    if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
                         MemoryManipulation("gravity", -8.0f);
-
                     }
 
-                    if (GetAsyncKeyState(VK_LCONTROL) & 0x8000) {
+                    if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
                         MemoryManipulation("gravity", 8.0f);
-
                     }
                 }
 
