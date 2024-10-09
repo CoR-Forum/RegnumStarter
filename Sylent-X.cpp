@@ -54,6 +54,7 @@ extern bool featureMoonwalk;
 extern std::string login;
 
 std::vector<Pointer> pointers;
+std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 void runRoClientGame(std::string regnumUser, std::string regnumPass) {
     STARTUPINFO si;
@@ -473,33 +474,34 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             static bool optionZoom = false;
             static bool optionFov = false;
             static bool optionMoonjump = false;
+            
 
                 if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
 
-                ImGui::Checkbox("Enable Zoom", &optionZoom);               
-                    if (optionZoom) {
-                        ImGui::SameLine();
-                        if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                    ImGui::Checkbox("Enable Zoom", &optionZoom);               
+                        if (optionZoom) {
+                            ImGui::SameLine();
+                            if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                                MemoryManipulation("zoom", zoomValue);
+                            }
+                        } else if (prevZoomState) {
+                            // Reset zoom value to 15.0f when checkbox is unchecked
+                            zoomValue = 15.0f;
                             MemoryManipulation("zoom", zoomValue);
                         }
-                    } else if (prevZoomState) {
-                        // Reset zoom value to 15.0f when checkbox is unchecked
-                        zoomValue = 15.0f;
-                        MemoryManipulation("zoom", zoomValue);
+
+                    prevZoomState = optionZoom; // Update previous state
+
+                    ImGui::BeginDisabled(!featureFov);
+                    if (ImGui::Checkbox("Field of View", &optionFov)) {
+                        float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
+                        MemoryManipulation("fov", newValue);
                     }
+                    ImGui::EndDisabled();
 
-                prevZoomState = optionZoom; // Update previous state
-
-                ImGui::BeginDisabled(!featureFov);
-                if (ImGui::Checkbox("Field of View", &optionFov)) {
-                    float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
-                    MemoryManipulation("fov", newValue);
                 }
-                ImGui::EndDisabled();
-
-            }
 
                 ImGui::Spacing();
 
@@ -544,6 +546,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         MemoryManipulation("gravity", 8.0f);
                     }
                 }
+
+                ImGui::Spacing();
+
+                if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
+                    if (values.size() == 3) {
+                        ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
+                    } else {
+                        ImGui::Text("Failed to read position values.");
+                    }
+                }
+
 
                 ImGui::Spacing();
                 ImGui::Separator();
@@ -1045,4 +1059,69 @@ void ContinuousMemoryWrite(const std::string& option) {
         MemoryManipulation(option, 0.0f); // Adjust the value as needed
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
     }
+}
+
+std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
+    std::vector<float> values;
+    pid = GetProcessIdByName(L"ROClientGame.exe");
+    if (pid == 0) {
+        LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
+        return values;
+    }
+
+    HANDLE hProcess = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (!hProcess) {
+        LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
+        return values;
+    }
+
+    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
+    if (baseAddress == 0) {
+        LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
+        CloseHandle(hProcess);
+        return values;
+    }
+
+    for (const auto& option : options) {
+        auto it = std::find_if(g_pointers.begin(), g_pointers.end(), [&option](const Pointer& ptr) {
+            return ptr.name == option;
+        });
+        if (it == g_pointers.end()) {
+            LogDebug(L"Pointer not found for option: " + std::wstring(option.begin(), option.end()));
+            continue;
+        }
+
+        const Pointer& pointer = *it;
+        uintptr_t finalAddress = baseAddress + pointer.address;
+        LogDebug(L"Base address for " + std::wstring(option.begin(), option.end()) + L": 0x" + std::to_wstring(baseAddress));
+        LogDebug(L"Initial final address for " + std::wstring(option.begin(), option.end()) + L": 0x" + std::to_wstring(finalAddress));
+
+        if (!pointer.offsets.empty()) {
+            SIZE_T bytesRead;
+            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    if (bytesRead != sizeof(finalAddress)) {
+                        LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
+                        break;
+                    }
+                    finalAddress += pointer.offsets[i];
+                    LogDebug(L"Updated final address for " + std::wstring(option.begin(), option.end()) + L" after offset " + std::to_wstring(i) + L": 0x" + std::to_wstring(finalAddress));
+                } else {
+                    LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()));
+                    break;
+                }
+            }
+        }
+
+        float value = 0.0f;
+        if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &value, sizeof(value), NULL)) {
+            LogDebug(L"Successfully read " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(value));
+            values.push_back(value);
+        } else {
+            LogDebug(L"Failed to read " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()));
+        }
+    }
+
+    CloseHandle(hProcess);
+    return values;
 }
