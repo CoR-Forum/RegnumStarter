@@ -429,7 +429,6 @@ void CheckChatMessages() {
             auto jsonResponse = nlohmann::json::parse(response);
             std::string status = jsonResponse["status"];
             if (status == "success") {
-                LogDebug("Chat messages fetched successfully");
 
                 // Process the messages array
                 auto messages = jsonResponse["messages"];
