@@ -240,6 +240,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     bool show_admin_window = false;
     bool show_settings_window = false;
     bool show_info_window = false;
+    bool show_regnum_settings_window = false;
+    bool show_regnum_accounts_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -548,6 +550,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Separator();
                 ImGui::Spacing();
 
+                // button to open the regnum settings window
+                if (ImGui::Button("Regnum Settings")) {
+                    show_regnum_settings_window = true;
+                }
+
+                // button to configure the Regnum Online accounts
+                if (ImGui::Button("Regnum Accounts")) {
+                    show_regnum_accounts_window = true;
+                }
+
                 // regnumUser and regnumPass are the username and password for the Regnum Online client, respectively
                 static char regnumUser[128] = "";
                 static char regnumPass[128] = "";
@@ -626,6 +638,41 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::End();
+            }
+
+            if (show_regnum_accounts_window) {
+                ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                ImGui::Text("Regnum Accounts");
+
+                ImGui::End();
+            }
+
+            if (show_regnum_settings_window) {
+                ImGui::Begin("Regnum Settings", &show_regnum_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                // large info that indiciates that those settings are not working yet
+                ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
+
+                // slider to set sound volume
+                static float soundVolume = 0.5f;
+                ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 1.0f);
+
+                // checkbox to enable/disable music
+                static bool enableMusic = true;
+                ImGui::Checkbox("Enable Music", &enableMusic);
+
+                // checkbox to enable/disable sound effects
+                static bool enableSoundEffects = true;
+                ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
+
+                // button to save the settings
+                if (ImGui::Button("Save Settings")) {
+                    // Implement the logic to save the settings
+                }
+
+                ImGui::End();
+
             }
         
             if (show_feedback_window) {
