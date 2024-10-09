@@ -238,55 +238,86 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
 }
 
 void SaveSettings() {
-    std::string settingsDir = std::string(appDataPath) + "\\Sylent-X";
-    std::string settingsFilePath = settingsDir + "\\settings.txt";
+    try {
+        nlohmann::json settingsJson;
+        settingsJson["optionGravity"] = optionGravity;
+        settingsJson["optionMoonjump"] = optionMoonjump;
+        settingsJson["optionZoom"] = optionZoom;
+        settingsJson["optionMoonwalk"] = optionMoonwalk;
+        settingsJson["debugLog"] = debugLog;
+        settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
 
-    CreateDirectory(settingsDir.c_str(), NULL);
+        std::string settingsStr = settingsJson.dump();
+        std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
 
-    std::ofstream file(settingsFilePath);
-    if (file.is_open()) {
-        file << "optionGravity=" << optionGravity << std::endl;
-        file << "optionMoonjump=" << optionMoonjump << std::endl;
-        file << "optionZoom=" << optionZoom << std::endl;
-        file << "optionMoonwalk=" << optionMoonwalk << std::endl;
-        file << "debugLog=" << debugLog << std::endl;
-        file << "textColor=" << textColor.x << "," << textColor.y << "," << textColor.z << "," << textColor.w << std::endl;
-        file.close();
-        Log("Settings saved successfully");
-    } else {
-        Log("Failed to open settings file for writing");
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            Log("Settings saved successfully");
+        } else {
+            Log("Failed to save settings: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
     }
 }
 
 void LoadSettings() {
-    std::string settingsFilePath = std::string(appDataPath) + "\\Sylent-X\\settings.txt";
+    try {
+        std::string path = "/user.php?action=loadSettings&username=" + login + "&password=" + password;
 
-    std::ifstream file(settingsFilePath);
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.find("optionGravity=") != std::string::npos)
-                optionGravity = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionMoonjump=") != std::string::npos)
-                optionMoonjump = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionZoom=") != std::string::npos)
-                optionZoom = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("optionMoonwalk=") != std::string::npos)
-                optionMoonwalk = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("debugLog=") != std::string::npos)
-                debugLog = (line.substr(line.find("=") + 1) == "1");
-            if (line.find("textColor=") != std::string::npos) {
-                std::string colorValues = line.substr(line.find("=") + 1);
-                sscanf(colorValues.c_str(), "%f,%f,%f,%f", &textColor.x, &textColor.y, &textColor.z, &textColor.w);
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        
+        if (jsonResponse.contains("status") && jsonResponse["status"].is_string()) {
+            std::string status = jsonResponse["status"];
+            std::string message = jsonResponse.value("message", "");
+
+            if (status == "success") {
+                if (jsonResponse.contains("settings") && jsonResponse["settings"].is_object()) {
+                    auto settingsJson = jsonResponse["settings"];
+                    
+                    optionGravity = settingsJson.value("optionGravity", false);
+                    optionMoonjump = settingsJson.value("optionMoonjump", false);
+                    optionZoom = settingsJson.value("optionZoom", false);
+                    optionMoonwalk = settingsJson.value("optionMoonwalk", false);
+                    debugLog = settingsJson.value("debugLog", false);
+
+                    if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
+                        textColor.x = settingsJson["textColor"][0];
+                        textColor.y = settingsJson["textColor"][1];
+                        textColor.z = settingsJson["textColor"][2];
+                        textColor.w = settingsJson["textColor"][3];
+                    } else {
+                        Log("Invalid or missing textColor settings");
+                    }
+
+                    Log("Settings loaded successfully");
+                } else {
+                    Log("Invalid or missing settings object");
+                }
+            } else {
+                Log("Failed to load settings: " + message);
             }
+        } else {
+            Log("Invalid or missing status in response");
         }
-        file.close();
-        LogDebug("Settings loaded successfully");
-    } else {
-        Log("Settings file not found");
+    } catch (const std::exception& e) {
+        Log("Settings load failed with Exception: " + std::string(e.what()));
     }
-
-    LoadLoginCredentials(hInstanceGlobal);
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
