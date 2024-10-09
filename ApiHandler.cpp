@@ -9,6 +9,7 @@
 extern HWND hwnd; // Declare the handle to the main window
 
 extern bool featureZoom;
+extern bool featureFov;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
@@ -75,6 +76,7 @@ bool Login(const std::string& login, const std::string& password) {
             auto licensedFeatures = jsonResponse["licensed_features"];
             featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
             featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
+            featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
             featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
             featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
 
@@ -82,6 +84,7 @@ bool Login(const std::string& login, const std::string& password) {
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
                 std::string(featureMoonwalk ? ", Moonwalk" : "");
+                std::string(featureFov ? ", Fov" : "");
 
             // Parse role and set isAdmin
             std::string role = jsonResponse["role"];
@@ -243,6 +246,7 @@ void SaveSettings() {
         file << "optionGravity=" << optionGravity << std::endl;
         file << "optionMoonjump=" << optionMoonjump << std::endl;
         file << "optionZoom=" << optionZoom << std::endl;
+        file << "optionFov=" << optionFov << std::endl;
         file << "optionMoonwalk=" << optionMoonwalk << std::endl;
         file.close();
     } else {
@@ -265,6 +269,8 @@ void LoadSettings() {
                 optionZoom = (line.substr(line.find("=") + 1) == "1");
             if (line.find("optionMoonwalk=") != std::string::npos)
                 optionMoonwalk = (line.substr(line.find("=") + 1) == "1");
+            if (line.find("optionFov=") != std::string::npos)
+                optionFov = std::stof(line.substr(line.find("=") + 1));
         }
         file.close();
     } else {

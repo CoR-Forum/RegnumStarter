@@ -87,9 +87,11 @@ bool optionMoonjump = false;
 bool optionZoom = true;
 bool optionFreecam = false;
 bool optionMoonwalk = false;
+bool optionFov = false;
 
 // Feature states
 bool featureZoom = true;
+bool featureFov = false;
 bool featureGravity = false;
 bool featureFreecam = false;
 bool featureMoonwalk = false;

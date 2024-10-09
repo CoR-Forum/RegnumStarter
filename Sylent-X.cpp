@@ -47,6 +47,7 @@ bool show_login_window = true;
 bool show_main_window = false;
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern bool featureZoom;
+extern bool featureFov;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
@@ -448,6 +449,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             static bool optionGravity = false;
             static bool optionZoom = false;
+            static bool optionFov = false;
             static bool optionMoonjump = false;
 
             if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -455,10 +457,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 static bool prevZoomState = false; // Track previous state of the checkbox
 
                 ImGui::Checkbox("Enable Zoom", &optionZoom);
-                ImGui::SameLine();
+                
 
                 if (optionZoom) {
-                    if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                    if (ImGui::SliderFloat("Max Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
                         MemoryManipulation("zoom", zoomValue);
                     }
                 } else if (prevZoomState) {
@@ -468,6 +470,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 prevZoomState = optionZoom; // Update previous state
+
+                ImGui::BeginDisabled(!featureFov);
+                if (ImGui::Checkbox("Field of View", &optionFov)) {
+                    float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
+                    MemoryManipulation("fov", newValue);
+                }
+                ImGui::EndDisabled();
+
             }
 
             ImGui::Spacing();

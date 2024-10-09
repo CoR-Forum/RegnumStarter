@@ -8,8 +8,10 @@ extern bool optionGravity;
 extern bool optionMoonjump;
 extern bool optionZoom;
 extern bool optionMoonwalk;
+extern bool optionFov;
 extern bool featureGravity;
 extern bool featureZoom;
+extern bool featureFov;
 extern bool featureMoonwalk;
 
 // Global hook handle
