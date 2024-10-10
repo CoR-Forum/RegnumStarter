@@ -298,7 +298,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         {
 
             if (show_login_window) {
-                ImGui::Begin("Login", &show_login_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                static bool settingsWindowIsOpen = true;
+                ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                
+                if (!settingsWindowIsOpen) {
+                SaveSettings();
+                PostQuitMessage(0);
+                }
+
 
                 ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
                 ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
