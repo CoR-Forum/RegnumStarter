@@ -46,6 +46,15 @@ void ShowAdminPanel(bool* show_admin_window) {
 
         // Dropdown menu with checkable items
         if (ImGui::BeginCombo("Features", "Select License")) {
+            // Checkbox to check/uncheck all items
+            static bool check_all = true;
+            if (ImGui::Checkbox("Check/Uncheck All", &check_all)) {
+                for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
+                    item_checked[i] = check_all;
+                }
+            }
+            ImGui::Separator();
+
             for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
                 ImGui::Checkbox(items[i], &item_checked[i]);
             }
@@ -59,6 +68,11 @@ void ShowAdminPanel(bool* show_admin_window) {
                 any_feature_selected = true;
                 break;
             }
+        }
+
+        // Display a message if no feature is selected
+        if (!any_feature_selected) {
+            ImGui::TextColored(ImVec4(1, 0, 0, 1), "Please select at least one feature.");
         }
 
         // Disable the button if no key type is selected or no features are selected
