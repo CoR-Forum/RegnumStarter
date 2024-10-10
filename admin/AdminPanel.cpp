@@ -24,6 +24,11 @@ std::string GenerateRandomKey() {
 void ShowAdminPanel(bool* show_admin_window) {
     static std::string generated_key; // Static variable to store the generated key
     static int selected_key_type = 0; // 0 for Lifetime, 1 for 1 Month
+    static std::string selected_key_type_str; // Static variable to store the selected key type as string
+
+    // Define items for the dropdown menu and their checked state
+    static const char* items[] = { "Option 1", "Option 2", "Option 3" };
+    static bool item_checked[IM_ARRAYSIZE(items)] = { false, false, false };
 
     if (*show_admin_window) {
         ImGui::Begin("Admin Panel", show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
@@ -33,7 +38,19 @@ void ShowAdminPanel(bool* show_admin_window) {
 
         // Dropdown menu for key type selection
         const char* key_types[] = { "Lifetime Key", "1 Month License Key" };
-        ImGui::Combo("Key Type", &selected_key_type, key_types, IM_ARRAYSIZE(key_types));
+        if (ImGui::Combo("Key Type", &selected_key_type, key_types, IM_ARRAYSIZE(key_types))) {
+            selected_key_type_str = key_types[selected_key_type]; // Update the selected key type string
+        }
+
+        ImGui::SameLine(); // Place the next item on the same line
+
+        // Dropdown menu with checkable items
+        if (ImGui::BeginCombo("Checkable Items", "Select Items")) {
+            for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
+                ImGui::Checkbox(items[i], &item_checked[i]);
+            }
+            ImGui::EndCombo();
+        }
 
         if (ImGui::Button("Generate Random Key")) {
             generated_key = GenerateRandomKey();
