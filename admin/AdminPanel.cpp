@@ -23,14 +23,23 @@ std::string GenerateRandomKey() {
 
 void ShowAdminPanel(bool* show_admin_window) {
     static std::string generated_key; // Static variable to store the generated key
+    static int selected_key_type = 0; // 0 for Lifetime, 1 for 1 Month
 
     if (*show_admin_window) {
         ImGui::Begin("Admin Panel", show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("All Users");
         DisplayUsersTable();
         ImGui::Separator();
+
+        // Dropdown menu for key type selection
+        const char* key_types[] = { "Lifetime Key", "1 Month License Key" };
+        ImGui::Combo("Key Type", &selected_key_type, key_types, IM_ARRAYSIZE(key_types));
+
         if (ImGui::Button("Generate Random Key")) {
             generated_key = GenerateRandomKey();
+            if (selected_key_type == 1) {
+                generated_key += "-1M"; // Append "-1M" for 1 Month License Key
+            }
         }
         ImGui::SameLine(); // Display the text on the same line as the button
         if (!generated_key.empty()) {
