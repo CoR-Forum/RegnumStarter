@@ -43,7 +43,7 @@ void ShowAdminPanel(bool* show_admin_window) {
         }
         ImGui::SameLine(); // Display the text on the same line as the button
         if (!generated_key.empty()) {
-            ImGui::Text("Generated Key: %s", generated_key.c_str());
+            ImGui::InputText("Generated Key", &generated_key[0], generated_key.size() + 1, ImGuiInputTextFlags_ReadOnly);
         }
         ImGui::End();
     }
