@@ -456,46 +456,46 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
             ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
             ImGui::End();
-        }
-
-        if (show_settings_window) {
-            ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-            if (enableRainbow) {
-                UpdateRainbowColor(rainbowSpeed);
-            }
-            // Dropdown for selecting the update channel
-            static int updateChannel = 0;
-            const char* updateChannels[] = { "Stable", "Beta", "Dev" };
-            
-
-            // Checkbox to enable/disable rainbow effect
-            ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
-            ImGui::SameLine();
-            //Slider to control the speed of the rainbow effect
-            ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
-            
-            ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
-
-            // Show the color wheel
-            ImGui::ShowColorWheel(textColor);
-            ImGui::SameLine();
-            if (ImGui::Button("Create Ticket")) {
-                ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Password Reset")) {
-                show_forgot_password_window = true;
-                show_settings_window = false;
             }
 
-            ImGui::Separator();
+            if (show_settings_window) {
+                ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                if (enableRainbow) {
+                    UpdateRainbowColor(rainbowSpeed);
+                }
+                // Dropdown for selecting the update channel
+                static int updateChannel = 0;
+                const char* updateChannels[] = { "Stable", "Beta", "Dev" };
+                
 
-            if (ImGui::Button("Save Settings")) {
-                SaveSettings();
-                show_settings_window = false;
-            }
-                ImGui::End();
-            }
+                // Checkbox to enable/disable rainbow effect
+                ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
+                ImGui::SameLine();
+                //Slider to control the speed of the rainbow effect
+                ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
+                
+                ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
+
+                // Show the color wheel
+                ImGui::ShowColorWheel(textColor);
+                ImGui::SameLine();
+                if (ImGui::Button("Create Ticket")) {
+                    ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Password Reset")) {
+                    show_forgot_password_window = true;
+                    show_settings_window = false;
+                }
+
+                ImGui::Separator();
+
+                if (ImGui::Button("Save Settings")) {
+                    SaveSettings();
+                    show_settings_window = false;
+                }
+                    ImGui::End();
+                }
 
 
             if (show_main_window) {
