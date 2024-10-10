@@ -503,16 +503,34 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-            // close the window if the user clicks the close button
-            if (!mainWindowIsOpen) {
-                SaveSettings();
-                PostQuitMessage(0);
-            }
+                // Ensure the window is not skipping items
+                if (ImGui::GetCurrentWindow()->SkipItems) {
+                    ImGui::End();
+                    return 0; // Return an integer value
+                }
 
-            static bool optionGravity = false;
-            static bool optionZoom = false;
-            static bool optionFov = false;
-            static bool optionMoonjump = false;
+                // Get the window's width
+                float windowWidth = ImGui::GetWindowSize().x;
+
+                // Calculate the text's width
+                std::string statusText = "We are currently: " + currentStatus;
+
+                float textWidth = ImGui::CalcTextSize(statusText.c_str()).x;
+
+                // Set the cursor position to center the text
+                ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+                ImGui::Text("%s", statusText.c_str());
+
+                // close the window if the user clicks the close button
+                if (!mainWindowIsOpen) {
+                    SaveSettings();
+                    PostQuitMessage(0);
+                }
+
+                static bool optionGravity = false;
+                static bool optionZoom = false;
+                static bool optionFov = false;
+                static bool optionMoonjump = false;
             
 
                 if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
