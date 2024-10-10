@@ -408,7 +408,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             if (show_token_window) {
-                ImGui::Begin("Enter Token and New Password", &show_token_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                static bool tokenWindowIsOpen = true;
+
+                ImGui::Begin("Enter Token and New Password", &tokenWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                if (!tokenWindowIsOpen) {
+                SaveSettings();
+                PostQuitMessage(0);
+                }
 
                 static char token[128] = "";
                 static char newPassword[128] = "";
