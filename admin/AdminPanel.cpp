@@ -52,12 +52,27 @@ void ShowAdminPanel(bool* show_admin_window) {
             ImGui::EndCombo();
         }
 
-        if (ImGui::Button("Generate License Key")) {
-            generated_key = GenerateRandomKey();
-            if (selected_key_type == 1) {
-                generated_key += "-1M"; // Append "-1M" for 1 Month License Key
+        // Check if at least one feature is selected
+        bool any_feature_selected = false;
+        for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
+            if (item_checked[i]) {
+                any_feature_selected = true;
+                break;
             }
         }
+
+        // Disable the button if no key type is selected or no features are selected
+        if (!selected_key_type_str.empty() && any_feature_selected) {
+            if (ImGui::Button("Generate License Key")) {
+                generated_key = GenerateRandomKey();
+                if (selected_key_type == 1) {
+                    generated_key += "-1M"; // Append "-1M" for 1 Month License Key
+                }
+            }
+        } else {
+            ImGui::Button("Generate License Key"); // Render the button in a disabled state
+        }
+
         ImGui::SameLine(); // Display the text on the same line as the button
         if (!generated_key.empty()) {
             ImGui::InputText("Generated Key", &generated_key[0], generated_key.size() + 1, ImGuiInputTextFlags_ReadOnly);
