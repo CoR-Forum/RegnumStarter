@@ -27,8 +27,8 @@ void ShowAdminPanel(bool* show_admin_window) {
     static std::string selected_key_type_str; // Static variable to store the selected key type as string
 
     // Define items for the dropdown menu and their checked state
-    static const char* items[] = { "Option 1", "Option 2", "Option 3" };
-    static bool item_checked[IM_ARRAYSIZE(items)] = { false, false, false };
+    static const char* items[] = { "Fov", "Flyhack", "Moonjump", "Moonwalk", "Fakelag", "Freecam" };
+    static bool item_checked[IM_ARRAYSIZE(items)] = { true, true, true, true, true, true }; // All items checked by default
 
     if (*show_admin_window) {
         ImGui::Begin("Admin Panel", show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
@@ -45,14 +45,14 @@ void ShowAdminPanel(bool* show_admin_window) {
         ImGui::SameLine(); // Place the next item on the same line
 
         // Dropdown menu with checkable items
-        if (ImGui::BeginCombo("Checkable Items", "Select Items")) {
+        if (ImGui::BeginCombo("Features", "Select License")) {
             for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
                 ImGui::Checkbox(items[i], &item_checked[i]);
             }
             ImGui::EndCombo();
         }
 
-        if (ImGui::Button("Generate Random Key")) {
+        if (ImGui::Button("Generate License Key")) {
             generated_key = GenerateRandomKey();
             if (selected_key_type == 1) {
                 generated_key += "-1M"; // Append "-1M" for 1 Month License Key
