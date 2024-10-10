@@ -4,8 +4,6 @@
 
 #pragma once //added for register in sylent-x.cpp maybe check it 
 
-#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
-
 extern HWND hwnd; // Declare the handle to the main window
 
 extern bool featureZoom;
