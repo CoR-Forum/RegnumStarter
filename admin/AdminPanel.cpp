@@ -64,6 +64,13 @@ void ShowAdminPanel(bool* show_admin_window) {
             ImGui::EndCombo();
         }
 
+        ImGui::SameLine();
+
+        // Dropdown menu for status selection
+        if (ImGui::Combo("Current Status", &selected_status, statuses, IM_ARRAYSIZE(statuses))) {
+            currentStatus = statuses[selected_status];
+        }
+
         bool any_feature_selected = false;
         for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
             if (item_checked[i]) {
@@ -90,11 +97,6 @@ void ShowAdminPanel(bool* show_admin_window) {
         ImGui::SameLine();
         if (!generated_key.empty()) {
             ImGui::InputText("Generated Key", &generated_key[0], generated_key.size() + 1, ImGuiInputTextFlags_ReadOnly);
-        }
-
-        // Dropdown menu for status selection
-        if (ImGui::Combo("Current Status", &selected_status, statuses, IM_ARRAYSIZE(statuses))) {
-            currentStatus = statuses[selected_status];
         }
 
         ImGui::End();
