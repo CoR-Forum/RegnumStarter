@@ -342,7 +342,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
 
             if (show_register_window) {
-                ImGui::Begin("Register", &show_register_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                static bool registerWindowIsOpen = true;
+
+                ImGui::Begin("Register", &registerWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                if (!registerWindowIsOpen) {
+                SaveSettings();
+                PostQuitMessage(0);
+                }
 
                 ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
                 ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
