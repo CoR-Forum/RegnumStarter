@@ -1,17 +1,7 @@
-#include <windows.h>
-#include <urlmon.h>
-#include <comdef.h>
-#include <objbase.h>
-#include <tlhelp32.h>
-#include <wininet.h>
-#include <tchar.h> // Add this header for TEXT macro
 #include "includes/Utils.h"
 #include "Updater.cpp"
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
-#include "Keyboard.cpp"
-#include "libs/imgui/imgui.h"
-#include <d3d9.h>
 #include "Style.cpp"
 #include "ApiHandler.cpp"
 #include "admin/AdminPanel.h"
@@ -19,8 +9,6 @@
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
-
-#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
 
 // Discord webhook URL
 const std::string webhook_url = "https://discord.com/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6";
@@ -1146,13 +1134,6 @@ void MemoryManipulation(const std::string& option, float newValue) {
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
-
-void ContinuousMemoryWrite(const std::string& option) {
-    while (isWriting) {
-        MemoryManipulation(option, 0.0f); // Adjust the value as needed
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
-    }
-}
 
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
     std::vector<float> values;
