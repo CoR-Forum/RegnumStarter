@@ -20,11 +20,13 @@
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
 
+#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
+
 // Discord webhook URL
 const std::string webhook_url = "https://discord.com/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6";
-static bool spaceKeyPressed = false;
-static bool ctrlKeyPressed = false;
-#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
+
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 
 static LPDIRECT3D9              g_pD3D = nullptr;
 static LPDIRECT3DDEVICE9        g_pd3dDevice = nullptr;
@@ -34,20 +36,22 @@ static D3DPRESENT_PARAMETERS    g_d3dpp = {};
 static char feedbackSender[128] = ""; // Add this line
 static bool show_license_window = false;
 static char licenseKey[128] = "";
-
-ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 static bool enableRainbow = false;
 static float rainbowSpeed = 0.1f;
-// Declare chatInput as a static variable
-static char chatInput[128] = "";
+static char chatInput[128] = ""; // Declare chatInput as a static variable
+static bool spaceKeyPressed = false;
+static bool ctrlKeyPressed = false;
+
+ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 bool CreateDeviceD3D(HWND hWnd);
-void CleanupDeviceD3D();
-void ResetDevice();
 bool show_login_window = true;
 bool show_main_window = false;
 bool g_ShowUI = true;
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+void CleanupDeviceD3D();
+void ResetDevice();
+
 extern bool featureZoom;
 extern bool featureFov;
 extern bool featureGravity;
@@ -125,29 +129,6 @@ void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedb
     InternetCloseHandle(hSession);
 }
 
-// Function to initialize DirectX
-bool InitDirectX(HWND hwnd) {
-    if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) {
-        return false;
-    }
-
-    ZeroMemory(&g_d3dpp, sizeof(g_d3dpp));
-    g_d3dpp.Windowed = TRUE;
-    g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    g_d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-    g_d3dpp.EnableAutoDepthStencil = TRUE;
-    g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-    g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-
-    if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, 
-                             D3DCREATE_HARDWARE_VERTEXPROCESSING, 
-                             &g_d3dpp, &g_pd3dDevice) < 0) {
-        return false;
-    }
-
-    return true;
-}
-
 // Function to reset the Direct3D device
 void ResetDevice() {
     ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -172,6 +153,30 @@ void ShowHelpMarker(const char* desc)
         ImGui::EndTooltip();
     }
 }
+
+// Function to initialize DirectX
+bool InitDirectX(HWND hwnd) {
+    if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) {
+        return false;
+    }
+
+    ZeroMemory(&g_d3dpp, sizeof(g_d3dpp));
+    g_d3dpp.Windowed = TRUE;
+    g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    g_d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+    g_d3dpp.EnableAutoDepthStencil = TRUE;
+    g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+    g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+
+    if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, 
+                             D3DCREATE_HARDWARE_VERTEXPROCESSING, 
+                             &g_d3dpp, &g_pd3dDevice) < 0) {
+        return false;
+    }
+
+    return true;
+}
+
 bool ActivateLicense(const char* licenseKey) {
     // Implement the function logic here
     // For example, you can check the license key against a predefined value
