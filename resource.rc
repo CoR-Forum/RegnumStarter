@@ -1,1 +1,5 @@
+#include "includes/resource.h"
+
+IDI_APP_ICON ICON "assets/icons/app_icon.ico"
+
 IDR_FONT_RUDA_BOLD FONT "assets/fonts/Ruda-Bold.ttf"
