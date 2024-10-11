@@ -61,7 +61,7 @@ void ApplyCustomStyle()
             DWORD size = SizeofResource(NULL, hResource);
             if (pData && size > 0)
             {
-                io.Fonts->AddFontFromMemoryTTF(pData, size, 10.0f);
+                io.Fonts->AddFontFromMemoryTTF(pData, size, 12.5f);
                 io.FontDefault = io.Fonts->Fonts.back();
             }
         }
