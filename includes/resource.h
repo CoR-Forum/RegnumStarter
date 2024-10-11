@@ -1,1 +1,2 @@
 #define IDR_FONT_RUDA_BOLD 101
+#define IDI_APP_ICON 101
