@@ -480,6 +480,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 // Show the color wheel
                 ImGui::ShowColorWheel(textColor);
+
+                ImGui::Separator();
+
+                if (ImGui::Button("Save Settings")) {
+                    SaveSettings();
+                    show_settings_window = false;
+                }
+
                 ImGui::SameLine();
                 if (ImGui::Button("Create Ticket")) {
                     ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
@@ -489,13 +497,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_forgot_password_window = true;
                     show_settings_window = false;
                 }
-
-                ImGui::Separator();
-
-                if (ImGui::Button("Save Settings")) {
-                    SaveSettings();
-                    show_settings_window = false;
-                }
+                
                     ImGui::End();
                 }
 
