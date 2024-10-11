@@ -103,7 +103,25 @@ void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedb
     }
 
     std::string headers = "Content-Type: application/json\r\n";
-    std::string payload = "{\"content\": \"Feedback from: " + login + " Type: " + feedbackType + " Input: " + feedback + "\"}";
+    std::string payload = R"({
+        "embeds": [{
+            "title": "Feedback",
+            "description": ")" + feedback + R"(",
+            "color": 16711680,
+            "fields": [
+                {
+                    "name": "Type",
+                    "value": ")" + feedbackType + R"(",
+                    "inline": true
+                },
+                {
+                    "name": "From",
+                    "value": ")" + login + R"(",
+                    "inline": true
+                }
+            ]
+        }]
+    })";
 
     BOOL result = HttpSendRequestA(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
     if (!result) {
