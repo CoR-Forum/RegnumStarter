@@ -627,11 +627,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::BeginDisabled(!featureSpeedhack);
                     if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
-                        float newValue = optionSpeedHack ? 4.8f : 5.6f;
+                        float newValue = optionSpeedHack ? 5.6f : 4.8f;
                         MemoryManipulation("speedhack", newValue);
                     }
-                    ImGui::SameLine();
-                    ShowHelpMarker("Use at own risk");
+                    if (featureSpeedhack) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("Use at own risk");
+                    }
                     ImGui::EndDisabled();
                     if (!featureSpeedhack) {
                         ImGui::SameLine();
