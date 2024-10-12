@@ -1,7 +1,7 @@
 ## Build on macOS
 
 ```
-i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp DirectX/DirectXInit.cpp admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o  -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static && wine ./Sylent-X-0.1.50.exe
+i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp DirectX/DirectXInit.cpp admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o  -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static && wine bin/Sylent-X.exe
 ```
 
 The first part of the command will compile the resource file which will then be included in the program file.
