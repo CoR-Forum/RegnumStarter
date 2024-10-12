@@ -30,16 +30,6 @@ bool show_login_window = true;
 bool show_main_window = false;
 bool g_ShowUI = true;
 
-void ResetDevice();
-
-extern bool featureZoom;
-extern bool featureFov;
-extern bool featureGravity;
-extern bool featureMoonjump;
-extern bool featureMoonwalk;
-extern bool featureFreecam;
-extern bool featureFastfly;
-extern bool featureSpeedhack;
 extern std::string login;
 
 std::vector<Pointer> pointers;
@@ -73,16 +63,6 @@ void UpdateRainbowColor(float speed) {
     textColor.x = (sin(time) * 0.5f) + 0.5f;
     textColor.y = (sin(time + 2.0f) * 0.5f) + 0.5f;
     textColor.z = (sin(time + 4.0f) * 0.5f) + 0.5f;
-}
-
-// Function to reset the Direct3D device
-void ResetDevice() {
-    ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = g_pd3dDevice->Reset(&g_d3dpp);
-    if (hr == D3DERR_INVALIDCALL) {
-        IM_ASSERT(0);
-    }
-    ImGui_ImplDX9_CreateDeviceObjects();
 }
 
 void ShowHelpMarker(const char* desc)
