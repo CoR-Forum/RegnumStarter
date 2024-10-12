@@ -28,8 +28,8 @@ void ShowAdminPanel(bool* show_admin_window) {
     static int selected_key_type = 0;
     static std::string selected_key_type_str = "Lifetime Key"; // Initialize with default value
 
-    static const char* items[] = { "Fov", "Flyhack", "Moonjump", "Moonwalk", "Fakelag", "Freecam" };
-    static bool item_checked[IM_ARRAYSIZE(items)] = { true, true, true, true, true, true };
+    static const char* items[] = { "Fov", "Flyhack", "Moonjump", "Moonwalk", "Fakelag", "Freecam", "Speedhack", "FastFly"};
+    static bool item_checked[IM_ARRAYSIZE(items)] = { true, true, true, true, true, true, true, true };
 
     static const char* statuses[] = { "Undetected", "Updating", "Detected", "Offline" };
     static int selected_status = 1; // Default to "Online"
