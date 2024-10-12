@@ -5,8 +5,8 @@ std::string generatedLicenseKey = ""; // Initialize the global variable
 
 void ShowAdminPanel(bool* show_admin_window) {
     extern std::string generatedLicenseKey;
-    static int selected_key_runtime;
-    static std::string selected_key_runtime_str;
+    static int selected_key_runtime = 0; // Default to the first runtime
+    static std::string selected_key_runtime_str = "10y"; // Default runtime string
 
     static const char* key_features[] = { "fov", "flyhack", "moonjump", "moonwalk", "fakelag", "freecam", "speedhack", "fastfly"};
     static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true };
@@ -29,7 +29,7 @@ void ShowAdminPanel(bool* show_admin_window) {
         }
 
         // Dropdown menu for key type selection
-        const char* key_runtimes[] = { "99y", "1m" };
+        const char* key_runtimes[] = { "10y", "1m" };
         if (ImGui::Combo("Runtime", &selected_key_runtime, key_runtimes, IM_ARRAYSIZE(key_runtimes))) {
             selected_key_runtime_str = key_runtimes[selected_key_runtime];
         }
