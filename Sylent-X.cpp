@@ -560,11 +560,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     PostQuitMessage(0);
                 }
 
-                static bool optionGravity = false;
-                static bool optionZoom = false;
-                static bool optionFov = false;
-                static bool optionMoonjump = false;
-            
+                if (isAdmin) {
+                    if (ImGui::CollapsingHeader("Admins", ImGuiTreeNodeFlags_DefaultOpen)) {
+                        static float fastflyValue = 250.0f; // Default moonjump value
+                        static bool prevflyState = false; // Track previous state of the checkbox
+                        if (ImGui::Checkbox("FastFly", &optionFastFly)) {
+                            if (optionFastFly) {
+                                prevflyState = true;
+                            } else if (prevflyState) {
+                                // Reset fly value to 4.8f when checkbox is unchecked
+                                fastflyValue = 4.8f;
+                                MemoryManipulation("fastfly", fastflyValue);
+                                prevflyState = false;
+                            }
+                        }
+                        if (optionFastFly) {
+                            ImGui::SameLine();
+                            if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
+                                MemoryManipulation("fastfly", fastflyValue);
+                            }
+                        }
+                        ImGui::SameLine();
+                        ShowHelpMarker("Only shown for Admins");
+                    }
+                } 
 
                 if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
                     static float zoomValue = 15.0f; // Default zoom value
@@ -605,7 +624,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::SameLine();
                         ShowHelpMarker("This feature is not available in your current license.");
                     }
-                    static float moonjumpValue = 4.0f; // Default zoom value
+                    static float moonjumpValue = 4.0f; // Default moonjump value
                     static bool prevjumpState = false; // Track previous state of the checkbox
                     ImGui::BeginDisabled(!featureMoonjump);
                     if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
@@ -662,8 +681,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     } else {
                         ImGui::Text("Failed to read position values.");
                     }
-                }
-
+                } 
 
                 ImGui::Spacing();
                 ImGui::Separator();
