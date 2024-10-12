@@ -45,6 +45,9 @@ extern bool featureFov;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
+extern bool featureFreecam;
+extern bool featureFastfly;
+extern bool featureSpeedhack;
 extern std::string login;
 
 std::vector<Pointer> pointers;
@@ -564,6 +567,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (ImGui::CollapsingHeader("Admins", ImGuiTreeNodeFlags_DefaultOpen)) {
                         static float fastflyValue = 250.0f; // Default moonjump value
                         static bool prevflyState = false; // Track previous state of the checkbox
+                        ImGui::BeginDisabled(!featureFastfly);
                         if (ImGui::Checkbox("FastFly", &optionFastFly)) {
                             if (optionFastFly) {
                                 prevflyState = true;
@@ -574,6 +578,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                                 prevflyState = false;
                             }
                         }
+                        ImGui::EndDisabled();
                         if (optionFastFly) {
                             ImGui::SameLine();
                             if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
@@ -582,6 +587,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         }
                         ImGui::SameLine();
                         ShowHelpMarker("Only shown for Admins");
+                        if (!featureFastfly) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                        }
                     }
                 } 
 
@@ -615,6 +624,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Spacing();
 
                 if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+                    ImGui::BeginDisabled(!featureSpeedhack);
+                    if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
+                        float newValue = optionSpeedHack ? 4.8f : 5.6f;
+                        MemoryManipulation("speedhack", newValue);
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureSpeedhack) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
+
                     ImGui::BeginDisabled(!featureGravity);
                     if (ImGui::Checkbox("Flyhack", &optionGravity)) {
                         MemoryManipulation("gravity");
