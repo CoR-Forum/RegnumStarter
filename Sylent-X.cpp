@@ -563,6 +563,37 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     PostQuitMessage(0);
                 }
 
+                if (isAdmin) {
+                    if (ImGui::CollapsingHeader("Admins", ImGuiTreeNodeFlags_DefaultOpen)) {
+                        static float fastflyValue = 250.0f; // Default moonjump value
+                        static bool prevflyState = false; // Track previous state of the checkbox
+                        ImGui::BeginDisabled(!featureFastfly);
+                        if (ImGui::Checkbox("FastFly", &optionFastFly)) {
+                            if (optionFastFly) {
+                                prevflyState = true;
+                            } else if (prevflyState) {
+                                // Reset fly value to 4.8f when checkbox is unchecked
+                                fastflyValue = 4.8f;
+                                MemoryManipulation("fastfly", fastflyValue);
+                                prevflyState = false;
+                            }
+                        }
+                        ImGui::EndDisabled();
+                        if (optionFastFly) {
+                            ImGui::SameLine();
+                            if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
+                                MemoryManipulation("fastfly", fastflyValue);
+                            }
+                        }
+                        ImGui::SameLine();
+                        ShowHelpMarker("Only shown for Admins");
+                        if (!featureFastfly) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                        }
+                    }
+                } 
+
                 if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
