@@ -3,33 +3,17 @@
 #include "UsersTable.h" // Adjust this path if necessary
 #include <random>
 #include <string>
+#include "AdminPanel.h"
 
 std::string currentStatus = "Undetected"; // Default status
 
-std::string GenerateRandomKey() {
-    const std::string prefix = "Sylent-X-";
-    const std::string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    const int key_length = 16; // Length of the random part of the key
-
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_int_distribution<> distribution(0, characters.size() - 1);
-
-    std::string random_key = prefix;
-    for (int i = 0; i < key_length; ++i) {
-        random_key += characters[distribution(generator)];
-    }
-
-    return random_key;
-}
-
 void ShowAdminPanel(bool* show_admin_window) {
-    static std::string generated_key;
-    static int selected_key_type = 0;
-    static std::string selected_key_type_str = "Lifetime Key"; // Initialize with default value
+    extern std::string generatedLicenseKey;
+    static int selected_key_runtime;
+    static std::string selected_key_runtime_str;
 
-    static const char* items[] = { "Fov", "Flyhack", "Moonjump", "Moonwalk", "Fakelag", "Freecam", "Speedhack", "FastFly"};
-    static bool item_checked[IM_ARRAYSIZE(items)] = { true, true, true, true, true, true, true, true };
+    static const char* key_features[] = { "fov", "flyhack", "moonjump", "moonwalk", "fakelag", "freecam", "speedhack", "fastfly"};
+    static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true };
 
     static const char* statuses[] = { "Undetected", "Updating", "Detected", "Offline" };
     static int selected_status = 1; // Default to "Online"
@@ -40,63 +24,68 @@ void ShowAdminPanel(bool* show_admin_window) {
         DisplayUsersTable();
         ImGui::Separator();
 
+        bool any_feature_selected = false;
+        for (int i = 0; i < IM_ARRAYSIZE(key_features); i++) {
+            if (default_key_features_selected[i]) {
+                any_feature_selected = true;
+                break;
+            }
+        }
+
         // Dropdown menu for key type selection
-        const char* key_types[] = { "Lifetime Key", "1 Month License Key" };
-        if (ImGui::Combo("Key Type", &selected_key_type, key_types, IM_ARRAYSIZE(key_types))) {
-            selected_key_type_str = key_types[selected_key_type];
+        const char* key_runtimes[] = { "99y", "1m" };
+        if (ImGui::Combo("Runtime", &selected_key_runtime, key_runtimes, IM_ARRAYSIZE(key_runtimes))) {
+            selected_key_runtime_str = key_runtimes[selected_key_runtime];
         }
 
         ImGui::SameLine();
 
-        // Dropdown menu with checkable items
-        if (ImGui::BeginCombo("Features", "Select License")) {
+        // Dropdown to select features
+        if (ImGui::BeginCombo("Features", "Select Features")) {
             static bool check_all = true;
             if (ImGui::Checkbox("Check/Uncheck All", &check_all)) {
-                for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
-                    item_checked[i] = check_all;
+                for (int i = 0; i < IM_ARRAYSIZE(key_features); i++) {
+                    default_key_features_selected[i] = check_all;
                 }
             }
             ImGui::Separator();
 
-            for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
-                ImGui::Checkbox(items[i], &item_checked[i]);
+            for (int i = 0; i < IM_ARRAYSIZE(key_features); i++) {
+                ImGui::Checkbox(key_features[i], &default_key_features_selected[i]);
             }
             ImGui::EndCombo();
         }
 
         ImGui::SameLine();
 
+        if (ImGui::Button("Generate License Key")) {
+            // call GenerateNewLicense with key_features and runtime
+            std::string licensedFeatures;
+            for (int i = 0; i < IM_ARRAYSIZE(key_features); i++) {
+                if (default_key_features_selected[i]) {
+                    licensedFeatures += key_features[i];
+                    licensedFeatures += ",";
+                }
+            }
+
+            licensedFeatures.pop_back(); // Remove the trailing comma
+
+            GenerateNewLicense(licensedFeatures, selected_key_runtime_str);
+        }
+
+                    // Display the new API key
+            ImGui::Text("New API Key: %s", generatedLicenseKey.c_str());
+
+        // Display the generated license key in an input field
+        ImGui::InputText("Generated License Key", &generatedLicenseKey[0], generatedLicenseKey.size() + 1, ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
         // Dropdown menu for status selection
         if (ImGui::Combo("Current Status", &selected_status, statuses, IM_ARRAYSIZE(statuses))) {
             currentStatus = statuses[selected_status];
-        }
-
-        bool any_feature_selected = false;
-        for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
-            if (item_checked[i]) {
-                any_feature_selected = true;
-                break;
-            }
-        }
-
-        if (!any_feature_selected) {
-            ImGui::TextColored(ImVec4(1, 0, 0, 1), "Please select at least one feature.");
-        }
-
-        if (!selected_key_type_str.empty() && any_feature_selected) {
-            if (ImGui::Button("Generate License Key")) {
-                generated_key = GenerateRandomKey();
-                if (selected_key_type == 1) {
-                    generated_key += "-1M";
-                }
-            }
-        } else {
-            ImGui::Button("Generate License Key");
-        }
-
-        ImGui::SameLine();
-        if (!generated_key.empty()) {
-            ImGui::InputText("Generated Key", &generated_key[0], generated_key.size() + 1, ImGuiInputTextFlags_ReadOnly);
         }
 
         ImGui::End();

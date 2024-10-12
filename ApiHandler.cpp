@@ -608,3 +608,58 @@ void ActivateLicense(const std::string& licenseKey) {
         Log("Exception: " + std::string(e.what()));
     }
 }
+
+void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime) {
+    try {
+        // Check if licensedFeatures is provided
+        if (licensedFeatures.empty()) {
+            LogDebug("licensedFeatures is empty. Cannot generate license.");
+            MessageBox(NULL, "licensedFeatures is empty. Cannot generate license.", "Error", MB_ICONERROR | MB_TOPMOST);
+            return;
+        }
+
+        // Split licensedFeatures by commas and create a JSON array
+        std::vector<std::string> features;
+        std::stringstream ss(licensedFeatures);
+        std::string feature;
+        while (std::getline(ss, feature, ',')) {
+            features.push_back(feature);
+        }
+        nlohmann::json jsonFeatures = features;
+
+        std::string path = "/admin.php?action=generateLicenseKey&username=" + login + "&password=" + password + "&licensedFeatures=" + jsonFeatures.dump() + "&runtime=" + runtime;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        // Split the response into individual JSON objects
+        std::vector<std::string> jsonResponses;
+        size_t pos = 0;
+        while ((pos = response.find("}{")) != std::string::npos) {
+            jsonResponses.push_back(response.substr(0, pos + 1));
+            response.erase(0, pos + 1);
+        }
+        jsonResponses.push_back(response);
+
+        for (const auto& jsonResponseStr : jsonResponses) {
+            auto jsonResponse = nlohmann::json::parse(jsonResponseStr);
+            std::string status = jsonResponse["status"];
+            std::string message = jsonResponse.contains("message") ? jsonResponse["message"] : "";
+
+            if (status == "success") {
+                std::string generatedLicenseKey = jsonResponse["licenseKey"]["license_key"];
+                LogDebug("License generated successfully: " + generatedLicenseKey);
+                MessageBox(NULL, ("License generated successfully: " + generatedLicenseKey).c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+                return; // Exit the function after successfully generating the license
+            } else {
+                LogDebug("Failed to generate license: " + message);
+                MessageBox(NULL, ("Failed to generate license: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            }
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+    }
+}

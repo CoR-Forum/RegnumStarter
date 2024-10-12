@@ -3,7 +3,6 @@
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
 #include "Style.cpp"
-#include "ApiHandler.cpp"
 #include "admin/AdminPanel.h"
 #include "DirectX/DirectXInit.h"
 

@@ -71,6 +71,9 @@ extern void ToggleUserBan(int userId);
 extern void GetMagnatCurrency();
 extern void SendFeedback(const std::string& type, const std::string& message);
 extern void ActivateLicense(const std::string& licenseKey);
+extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
+
+std::string generatedLicenseKey;
 
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;
