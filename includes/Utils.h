@@ -68,6 +68,8 @@ extern void GetAllUsers();
 extern std::string GetAllUsersRawJson;
 extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
+extern void ToggleUserAdmin(int userId);
+extern void ToggleUserActivation(int userId);
 extern void GetMagnatCurrency();
 extern void SendFeedback(const std::string& type, const std::string& message);
 extern void ActivateLicense(const std::string& licenseKey);

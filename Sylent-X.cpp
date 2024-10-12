@@ -838,11 +838,11 @@ void DisplayUsersTable() {
         // Begin the ImGui table with a maximum height
         ImGui::BeginChild("UsersTableChild", ImVec2(800, 600), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
         ImGui::BeginTable("AllUsersTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable);
-        ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 20.0f);
-        ImGui::TableSetupColumn("Username", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Email", ImGuiTableColumnFlags_WidthFixed, 150.0f);
-        ImGui::TableSetupColumn("Role", ImGuiTableColumnFlags_WidthFixed, 30.0f);
-        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+        ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 25.0f);
+        ImGui::TableSetupColumn("Username", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+        ImGui::TableSetupColumn("Email", ImGuiTableColumnFlags_WidthFixed, 200.0f);
+        ImGui::TableSetupColumn("Role", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthFixed, 60.0f);
         ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_WidthFixed, 120.0f);
         ImGui::TableHeadersRow();
 
@@ -861,18 +861,26 @@ void DisplayUsersTable() {
             ImGui::TableNextColumn();
             ImGui::Text("%s", user.value("email", "N/A").c_str());
             ImGui::TableNextColumn();
-            ImGui::Text("%s", user.value("is_admin", 0) ? "Admin" : "User");
-            ImGui::TableNextColumn();
-            // if is_active, show disable button, else show enable button
-            if (user.value("is_active", 0)) {
-                if (ImGui::Button(("Enabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                    // Placeholder for disable logic
-                    std::cout << "User " << user.value("username", "N/A") << " disabled." << std::endl;
+            // button to call ToggleUserAdmin with user["id"]
+            if (user.value("is_admin", 0)) {
+                if (ImGui::Button(("Revoke Admin##" + std::to_string(user.value("id", 0))).c_str())) {
+                    ToggleUserAdmin(user.value("id", 0));
                 }
             } else {
-                if (ImGui::Button(("Disabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                    // Placeholder for enable logic
-                    std::cout << "User " << user.value("username", "N/A") << " enabled." << std::endl;
+                if (ImGui::Button(("Make Admin##" + std::to_string(user.value("id", 0))).c_str())) {
+                    ToggleUserAdmin(user.value("id", 0));
+                }
+            }
+
+            ImGui::TableNextColumn();
+            // button to call ToggleUserActivation with user["id"]
+            if (user.value("is_active", 0)) {
+                if (ImGui::Button(("Deactivate##" + std::to_string(user.value("id", 0))).c_str())) {
+                    ToggleUserActivation(user.value("id", 0));
+                }
+            } else {
+                if (ImGui::Button(("Activate##" + std::to_string(user.value("id", 0))).c_str())) {
+                    ToggleUserActivation(user.value("id", 0));
                 }
             }
             ImGui::TableNextColumn();

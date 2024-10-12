@@ -539,6 +539,56 @@ void ToggleUserBan(int userId) {
     }
 }
 
+void ToggleUserAdmin(int userId) {
+    try {
+        std::string path = "/admin.php?action=toggleUserAdmin&username=" + login + "&password=" + password + "&userId=" + std::to_string(userId);
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("User admin status toggled successfully: " + message);
+            GetAllUsers();
+        } else {
+            LogDebug("Failed to toggle user admin status: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+        GetAllUsers();
+    }
+}
+
+void ToggleUserActivation(int userId) {
+    try {
+        std::string path = "/admin.php?action=toggleUserActivation&username=" + login + "&password=" + password + "&userId=" + std::to_string(userId);
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("User activation status toggled successfully: " + message);
+            GetAllUsers();
+        } else {
+            LogDebug("Failed to toggle user activation status: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+        GetAllUsers();
+    }
+}
+
 // function to fetch amount of Magnat currency for the user
 void GetMagnatCurrency() {
     try {
