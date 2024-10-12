@@ -5,6 +5,7 @@
 #include "Style.cpp"
 #include "admin/AdminPanel.h"
 #include "DirectX/DirectXInit.h"
+#include "helper/UpdateRainbowColor.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -51,7 +52,7 @@ extern std::string login;
 std::vector<Pointer> pointers;
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
-void runRoClientGame(std::string regnumUser, std::string regnumPass) {
+void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
@@ -59,7 +60,7 @@ void runRoClientGame(std::string regnumUser, std::string regnumPass) {
     ZeroMemory(&pi, sizeof(pi));
     
     std::string path = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer\\ROClientGame.exe";
-    std::string command = path + " " + regnumUser + " " + regnumPass;
+    std::string command = path + " " + regnumLoginUser + " " + regnumLoginPassword;
     std::string workingDirectory = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer";
     
     if (!CreateProcess(path.c_str(), (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, workingDirectory.c_str(), &si, &pi)) {
@@ -72,13 +73,6 @@ void runRoClientGame(std::string regnumUser, std::string regnumPass) {
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     }
-}
-
-void UpdateRainbowColor(float speed) {
-    float time = ImGui::GetTime() * speed;
-    textColor.x = (sin(time) * 0.5f) + 0.5f;
-    textColor.y = (sin(time + 2.0f) * 0.5f) + 0.5f;
-    textColor.z = (sin(time + 4.0f) * 0.5f) + 0.5f;
 }
 
 void ShowHelpMarker(const char* desc)
@@ -108,7 +102,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     SelfUpdate();
     LoadLoginCredentials(hInstanceGlobal);
     LoadSettings();
-
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
@@ -596,15 +589,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_regnum_accounts_window = true;
                 }
 
-                // regnumUser and regnumPass are the username and password for the Regnum Online client, respectively
-                static char regnumUser[128] = "";
-                static char regnumPass[128] = "";
+                // regnumLoginUser and regnumLoginPassword are the username and password for the Regnum Online client, respectively
+                static char regnumLoginUser[128] = "";
+                static char regnumLoginPassword[128] = "";
 
-                ImGui::InputText("Regnum User", regnumUser, IM_ARRAYSIZE(regnumUser));
-                ImGui::InputText("Regnum Pass", regnumPass, IM_ARRAYSIZE(regnumPass), ImGuiInputTextFlags_Password);
+                ImGui::InputText("Regnum User", regnumLoginUser, IM_ARRAYSIZE(regnumLoginUser));
+                ImGui::InputText("Regnum Pass", regnumLoginPassword, IM_ARRAYSIZE(regnumLoginPassword), ImGuiInputTextFlags_Password);
 
                 if (ImGui::Button("Run Regnum Online")) {
-                    runRoClientGame(regnumUser, regnumPass);
+                    runRoClientGame(regnumLoginUser, regnumLoginPassword);
                 }
 
                 ImGui::Spacing();
