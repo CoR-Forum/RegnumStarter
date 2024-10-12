@@ -69,6 +69,7 @@ extern std::string GetAllUsersRawJson;
 extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
 extern void GetMagnatCurrency();
+extern void SendFeedback(const std::string& type, const std::string& message);
 
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;

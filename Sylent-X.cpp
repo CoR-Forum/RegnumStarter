@@ -10,11 +10,7 @@
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
 
-// Discord webhook URL
-const std::string webhook_url = "https://discord.com/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6";
-
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 
 static LPDIRECT3D9              g_pD3D = nullptr;
 static LPDIRECT3DDEVICE9        g_pd3dDevice = nullptr;
@@ -81,61 +77,6 @@ void UpdateRainbowColor(float speed) {
     textColor.x = (sin(time) * 0.5f) + 0.5f;
     textColor.y = (sin(time + 2.0f) * 0.5f) + 0.5f;
     textColor.z = (sin(time + 4.0f) * 0.5f) + 0.5f;
-}
-
-void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
-    HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-    if (!hSession) {
-        std::cerr << "InternetOpenA failed" << std::endl;
-        return;
-    }
-
-    HINTERNET hConnect = InternetConnectA(hSession, "discord.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
-    if (!hConnect) {
-        std::cerr << "InternetConnectA failed" << std::endl;
-        InternetCloseHandle(hSession);
-        return;
-    }
-
-    HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6", NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
-    if (!hRequest) {
-        std::cerr << "HttpOpenRequestA failed" << std::endl;
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hSession);
-        return;
-    }
-
-    std::string headers = "Content-Type: application/json\r\n";
-    std::string payload = R"({
-        "embeds": [{
-            "title": "Feedback",
-            "description": ")" + feedback + R"(",
-            "color": 16711680,
-            "fields": [
-                {
-                    "name": "Type",
-                    "value": ")" + feedbackType + R"(",
-                    "inline": true
-                },
-                {
-                    "name": "From",
-                    "value": ")" + login + R"(",
-                    "inline": true
-                }
-            ]
-        }]
-    })";
-
-    BOOL result = HttpSendRequestA(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
-    if (!result) {
-        std::cerr << "HttpSendRequestA failed" << std::endl;
-    } else {
-        std::cout << "Feedback submitted successfully." << std::endl;
-    }
-
-    InternetCloseHandle(hRequest);
-    InternetCloseHandle(hConnect);
-    InternetCloseHandle(hSession);
 }
 
 // Function to reset the Direct3D device
@@ -849,13 +790,24 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 static int feedbackType = 0;
                 const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
+                static char feedbackText[1024] = "";
+                static std::string feedbackMessage = "";
 
                 ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
                 ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
 
                 if (ImGui::Button("Submit")) {
-                    // Handle feedback submission logic here
-                    SendFeedbackToDiscord(feedbackText, feedbackTypes[feedbackType]); // Pass feedback text and type
+                    try {
+                        SendFeedback(feedbackTypes[feedbackType], feedbackText);
+                        feedbackMessage = "Feedback sent successfully!";
+                        feedbackText[0] = '\0'; // Clear the feedback text
+                    } catch (const std::exception& e) {
+                        feedbackMessage = "Failed to send feedback: " + std::string(e.what());
+                    }
+                }
+
+                if (!feedbackMessage.empty()) {
+                    ImGui::Text("%s", feedbackMessage.c_str());
                 }
 
                 ImGui::End();

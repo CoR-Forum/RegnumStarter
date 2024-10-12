@@ -578,3 +578,26 @@ void GetMagnatCurrency() {
         Log("Exception: " + std::string(e.what()));
     }
 }
+
+void SendFeedback(const std::string& type, const std::string& feedback) {
+    try {
+        std::string path = "/feedback.php?type=" + type + "&username=" + login + "&password=" + password + "&feedback=" + feedback;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("Feedback sent successfully: " + message);
+        } else {
+            LogDebug("Failed to send feedback: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+    }
+}
