@@ -1,6 +1,7 @@
 #include "includes/Utils.h"
 #include <stdexcept>
 #include <sstream>
+#include "admin/AdminPanel.h"
 
 #pragma once //added for register in sylent-x.cpp maybe check it 
 
@@ -649,9 +650,8 @@ void GenerateNewLicense(const std::string& licensedFeatures, const std::string& 
             std::string message = jsonResponse.contains("message") ? jsonResponse["message"] : "";
 
             if (status == "success") {
-                std::string generatedLicenseKey = jsonResponse["licenseKey"]["license_key"];
+                generatedLicenseKey = jsonResponse["licenseKey"]["license_key"]; // Set the global variable
                 LogDebug("License generated successfully: " + generatedLicenseKey);
-                MessageBox(NULL, ("License generated successfully: " + generatedLicenseKey).c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
                 return; // Exit the function after successfully generating the license
             } else {
                 LogDebug("Failed to generate license: " + message);

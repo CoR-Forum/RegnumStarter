@@ -1,6 +1,7 @@
 #include "AdminPanel.h"
 
 std::string currentStatus = "Undetected"; // Default status
+std::string generatedLicenseKey = ""; // Initialize the global variable
 
 void ShowAdminPanel(bool* show_admin_window) {
     extern std::string generatedLicenseKey;
@@ -68,11 +69,10 @@ void ShowAdminPanel(bool* show_admin_window) {
             GenerateNewLicense(licensedFeatures, selected_key_runtime_str);
         }
 
-                    // Display the new API key
-            ImGui::Text("New API Key: %s", generatedLicenseKey.c_str());
-
-        // Display the generated license key in an input field
-        ImGui::InputText("Generated License Key", &generatedLicenseKey[0], generatedLicenseKey.size() + 1, ImGuiInputTextFlags_ReadOnly);
+        // Add a text field to display the generated license key
+        if (!generatedLicenseKey.empty()) {
+            ImGui::InputText("Generated License Key", &generatedLicenseKey[0], generatedLicenseKey.size() + 1, ImGuiInputTextFlags_ReadOnly);
+        }
 
         ImGui::Spacing();
         ImGui::Separator();
