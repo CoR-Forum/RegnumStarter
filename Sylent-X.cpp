@@ -435,10 +435,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-                // GetMagnatCurrency();
-
-                // in the right upper corner, show current magnat currency
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 100);
+                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
+                ImGui::Text("Status: %s", currentStatus.c_str());
+                ImGui::SameLine();
                 ImGui::Text("Magnat: %d", magnatCurrency);
 
                 // close the window if the user clicks the close button
@@ -446,23 +445,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveSettings();
                     PostQuitMessage(0);
                 }
-                // Ensure the window is not skipping items
-                if (ImGui::GetCurrentWindow()->SkipItems) {
-                    ImGui::End();
-                    return 0; // Return an integer value
-                }
-
-                // Get the window's width
-                float windowWidth = ImGui::GetWindowSize().x;
-
-                // Calculate the text's width
-                std::string statusText = "We are currently: " + currentStatus;
-
-                float textWidth = ImGui::CalcTextSize(statusText.c_str()).x;
-
-                // Set the cursor position to center the text
-                ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
-                ImGui::Text("%s", statusText.c_str());
 
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
@@ -604,16 +586,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 }
 
-                ImGui::Spacing();
-
-                if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
-                    std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
-                    if (values.size() == 3) {
-                        ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
-                    } else {
-                        ImGui::Text("Failed to read position values.");
-                    }
-                } 
+                // ImGui::Spacing();
+// 
+                // if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
+                //     std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
+                //     if (values.size() == 3) {
+                //         ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
+                //     } else {
+                //         ImGui::Text("Failed to read position values.");
+                //     }
+                // } 
 
                 ImGui::Spacing();
                 ImGui::Separator();
