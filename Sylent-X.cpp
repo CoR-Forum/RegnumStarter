@@ -3,7 +3,7 @@
 #include "Logger.cpp"
 #include "ApiHandler.cpp"
 #include "Style.cpp"
-#include "admin/AdminPanel.h"
+#include "ui/admin/AdminPanel.h"
 #include "DirectX/DirectXInit.h"
 #include "helper/UpdateRainbowColor.h"
 

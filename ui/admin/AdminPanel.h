@@ -1,4 +1,3 @@
-// admin/AdminPanel.h
 #pragma once
 
 extern std::string currentStatus;
