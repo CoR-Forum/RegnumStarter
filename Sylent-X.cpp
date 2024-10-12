@@ -16,7 +16,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static bool                     g_DeviceLost = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static bool show_license_window = false;
-static char licenseKey[128] = "";
 static bool enableRainbow = false;
 static float rainbowSpeed = 0.1f;
 static float fontSize = 10.0f;
@@ -771,6 +770,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (show_license_window) {
                 ImGui::Begin("Activate License", &show_license_window, ImGuiWindowFlags_AlwaysAutoResize);
                 
+                static char licenseKey[128] = "";
+
                 // Display the input text field for the license key
                 ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
 
