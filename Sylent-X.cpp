@@ -534,11 +534,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 100);
                 ImGui::Text("Magnat: %d", magnatCurrency);
 
-            // close the window if the user clicks the close button
-            if (!mainWindowIsOpen) {
-                SaveSettings();
-                PostQuitMessage(0);
-            }
+                // close the window if the user clicks the close button
+                if (!mainWindowIsOpen) {
+                    SaveSettings();
+                    PostQuitMessage(0);
+                }
                 // Ensure the window is not skipping items
                 if (ImGui::GetCurrentWindow()->SkipItems) {
                     ImGui::End();
@@ -743,7 +743,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 if (ImGui::Button("Activate License")) {
                 show_license_window = true;
-            }
+                }
 
                 ImGui::SameLine();
                 if (ImGui::Button("Settings")) {
