@@ -630,6 +630,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         float newValue = optionSpeedHack ? 4.8f : 5.6f;
                         MemoryManipulation("speedhack", newValue);
                     }
+                    ImGui::SameLine();
+                    ShowHelpMarker("Use at own risk");
                     ImGui::EndDisabled();
                     if (!featureSpeedhack) {
                         ImGui::SameLine();
