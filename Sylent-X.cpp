@@ -50,10 +50,10 @@ void runRoClientGame(std::string regnumUser, std::string regnumPass) {
         Log("Failed to start the Regnum Online client");
     } else {
         // Wait until child process exits.
-        WaitForSingleObject(pi.hProcess, INFINITE);
+        WaitForSingleObject(pi.regnumProcess, INFINITE);
 
         // Close process and thread handles.
-        CloseHandle(pi.hProcess);
+        CloseHandle(pi.regnumProcess);
         CloseHandle(pi.hThread);
     }
 }
@@ -944,7 +944,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
+HANDLE regnumProcess = nullptr; // Handle to the target process (ROClientGame.exe)
+
 DWORD pid; // Process ID of the target process
 // Function to get the base address of a module
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
@@ -1024,14 +1025,14 @@ public:
 // function to get process path
 std::wstring GetProcessPath(DWORD pid) {
     std::wstring path;
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    if (hProcess) {
+    HANDLE regnumProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (regnumProcess) {
         wchar_t buffer[MAX_PATH];
         DWORD size = MAX_PATH;
-        if (QueryFullProcessImageNameW(hProcess, 0, buffer, &size)) {
+        if (QueryFullProcessImageNameW(regnumProcess, 0, buffer, &size)) {
             path = buffer;
         }
-        CloseHandle(hProcess);
+        CloseHandle(regnumProcess);
     }
     return path;
 }
@@ -1046,7 +1047,7 @@ uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
 // Function to write a float value to the game process memory
 bool Memory::WriteFloat(uintptr_t address, float value) {
     LogDebug(L"Writing " + std::to_wstring(value) + L" to address: " + std::to_wstring(address));
-    return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
+    return WriteProcessMemory(regnumProcess, (LPVOID)address, &value, sizeof(value), NULL);
 }
 
 // Function to manipulate memory values in the game process
@@ -1059,9 +1060,9 @@ void MemoryManipulation(const std::string& option, float newValue) {
         return;
     }
     // Open the game process
-    HANDLE hProcess = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_VM_READ, FALSE, pid);
+    HANDLE regnumProcess = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_VM_READ, FALSE, pid);
     // Check if the process is valid
-    if (!hProcess) {
+    if (!regnumProcess) {
         LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
         return;
     } else {
@@ -1072,7 +1073,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
     // Check if the base address is valid
     if (baseAddress == 0) {
         LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
-        CloseHandle(hProcess);
+        CloseHandle(regnumProcess);
         return;
     } else {
         LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
@@ -1085,7 +1086,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
 
     if (it == g_pointers.end()) {
         LogDebug(L"Pointer not found for option: " + std::wstring(option.begin(), option.end()));
-        CloseHandle(hProcess);
+        CloseHandle(regnumProcess);
         return;
     }
 
@@ -1097,11 +1098,11 @@ void MemoryManipulation(const std::string& option, float newValue) {
     if (!pointer.offsets.empty()) {
         SIZE_T bytesRead;
         for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-            if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+            if (ReadProcessMemory(regnumProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
                 // Check if the read was successful
                 if (bytesRead != sizeof(finalAddress)) {
                     LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
-                    CloseHandle(hProcess);
+                    CloseHandle(regnumProcess);
                     return;
                 }
                 // Apply the offsets to the final address
@@ -1109,7 +1110,7 @@ void MemoryManipulation(const std::string& option, float newValue) {
                 LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
             } else {
                 LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
-                CloseHandle(hProcess);
+                CloseHandle(regnumProcess);
                 return;
             }
         }
@@ -1117,30 +1118,30 @@ void MemoryManipulation(const std::string& option, float newValue) {
 
     // Check memory protection before writing
     MEMORY_BASIC_INFORMATION mbi;
-    if (VirtualQueryEx(hProcess, (LPCVOID)finalAddress, &mbi, sizeof(mbi)) == 0) {
+    if (VirtualQueryEx(regnumProcess, (LPCVOID)finalAddress, &mbi, sizeof(mbi)) == 0) {
         LogDebug(L"Failed to query memory protection. Error code: " + std::to_wstring(GetLastError()));
-        CloseHandle(hProcess);
+        CloseHandle(regnumProcess);
         return;
     }
 
     if (!(mbi.Protect & PAGE_READWRITE) && !(mbi.Protect & PAGE_WRITECOPY)) {
         LogDebug(L"Memory region is not writable. Changing protection...");
         DWORD oldProtect;
-        if (!VirtualProtectEx(hProcess, (LPVOID)finalAddress, sizeof(newValue), PAGE_READWRITE, &oldProtect)) {
+        if (!VirtualProtectEx(regnumProcess, (LPVOID)finalAddress, sizeof(newValue), PAGE_READWRITE, &oldProtect)) {
             LogDebug(L"Failed to change memory protection. Error code: " + std::to_wstring(GetLastError()));
-            CloseHandle(hProcess);
+            CloseHandle(regnumProcess);
             return;
         }
     }
 
     // Write the new value to the final address
-    if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+    if (WriteProcessMemory(regnumProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
         LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
     } else {
         LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()));
     }
 
-    CloseHandle(hProcess);
+    CloseHandle(regnumProcess);
 }
 
 std::atomic<bool> isWriting(false);
@@ -1154,8 +1155,8 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
         return values;
     }
 
-    HANDLE hProcess = OpenProcess(PROCESS_VM_READ, FALSE, pid);
-    if (!hProcess) {
+    HANDLE regnumProcess = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (!regnumProcess) {
         LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
         return values;
     }
@@ -1163,7 +1164,7 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
     if (baseAddress == 0) {
         LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
-        CloseHandle(hProcess);
+        CloseHandle(regnumProcess);
         return values;
     }
 
@@ -1184,7 +1185,7 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
         if (!pointer.offsets.empty()) {
             SIZE_T bytesRead;
             for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                if (ReadProcessMemory(regnumProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
                     if (bytesRead != sizeof(finalAddress)) {
                         LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
                         break;
@@ -1199,7 +1200,7 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
         }
 
         float value = 0.0f;
-        if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &value, sizeof(value), NULL)) {
+        if (ReadProcessMemory(regnumProcess, (LPCVOID)finalAddress, &value, sizeof(value), NULL)) {
             LogDebug(L"Successfully read " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(value));
             values.push_back(value);
         } else {
@@ -1207,6 +1208,6 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
         }
     }
 
-    CloseHandle(hProcess);
+    CloseHandle(regnumProcess);
     return values;
 }
