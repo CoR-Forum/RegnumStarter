@@ -70,6 +70,7 @@ extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
 extern void GetMagnatCurrency();
 extern void SendFeedback(const std::string& type, const std::string& message);
+extern void ActivateLicense(const std::string& licenseKey);
 
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;
@@ -77,7 +78,6 @@ int magnatCurrency;
 // User settings
 extern std::string login;
 extern std::string password;
-extern bool ActivateLicense(const char* licenseKey);
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");

@@ -127,13 +127,6 @@ bool InitDirectX(HWND hwnd) {
     return true;
 }
 
-bool ActivateLicense(const char* licenseKey) {
-    // Implement the function logic here
-    // For example, you can check the license key against a predefined value
-    const std::string validLicenseKey = "YOUR_VALID_LICENSE_KEY";
-    return validLicenseKey == licenseKey;
-}
-
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
     // Create a named mutex
@@ -850,12 +843,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 // Display the submit button
                 if (ImGui::Button("Submit")) {
-                    // Check the license key when the submit button is clicked
-                    if (ActivateLicense(licenseKey)) {
-                        MessageBox(NULL, "License activated successfully.", "Success", MB_ICONINFORMATION);
-                        show_license_window = false; // Close the window on success
-                    } else {
-                        MessageBox(NULL, "Failed to activate license. Please try again.", "Error", MB_ICONERROR);
+                    try {
+                        ActivateLicense(licenseKey);
+                        ImGui::Text("License activated successfully!");
+                    } catch (const std::exception& e) {
+                        Log("Failed to activate license: " + std::string(e.what()));
+                        ImGui::Text("Failed to activate license: %s", e.what());
                     }
                 }
 

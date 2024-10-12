@@ -601,3 +601,26 @@ void SendFeedback(const std::string& type, const std::string& feedback) {
         Log("Exception: " + std::string(e.what()));
     }
 }
+
+void ActivateLicense(const std::string& licenseKey) {
+    try {
+        std::string path = "/license.php?action=activate&username=" + login + "&password=" + password + "&key=" + licenseKey;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("License activated successfully: " + message);
+        } else {
+            LogDebug("Failed to activate license: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+    }
+}
