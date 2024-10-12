@@ -19,6 +19,7 @@ static bool show_license_window = false;
 static char licenseKey[128] = "";
 static bool enableRainbow = false;
 static float rainbowSpeed = 0.1f;
+static float fontSize = 10.0f;
 static char chatInput[256] = ""; // Declare chatInput as a static variable
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
@@ -380,6 +381,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 
                 // Show the color wheel
                 ImGui::ShowColorWheel(textColor);
+
+                // Slider to adjust the font size
+                ImGui::SliderFloat("Font Size", &fontSize, 0.5f, 2.0f);
 
                 ImGui::Separator();
 
