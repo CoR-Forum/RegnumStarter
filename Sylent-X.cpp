@@ -5,6 +5,7 @@
 #include "Style.cpp"
 #include "admin/AdminPanel.h"
 #include "DirectX/DirectXInit.h"
+#include "helper/UpdateRainbowColor.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -14,12 +15,11 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static bool                     g_DeviceLost = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
-static char feedbackSender[128] = ""; // Add this line
 static bool show_license_window = false;
 static char licenseKey[128] = "";
 static bool enableRainbow = false;
 static float rainbowSpeed = 0.1f;
-static char chatInput[128] = ""; // Declare chatInput as a static variable
+static char chatInput[256] = ""; // Declare chatInput as a static variable
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
 
@@ -27,9 +27,17 @@ ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 bool show_login_window = true;
 bool show_main_window = false;
+bool show_register_window = false;
+bool show_feedback_window = false;
+bool show_chat_window = false;
+bool show_forgot_password_window = false;
+bool show_token_window = false;
+bool show_admin_window = false;
+bool show_settings_window = false;
+bool show_info_window = false;
+bool show_regnum_settings_window = false;
+bool show_regnum_accounts_window = false;
 bool g_ShowUI = true;
-
-void ResetDevice();
 
 extern bool featureZoom;
 extern bool featureFov;
@@ -44,7 +52,7 @@ extern std::string login;
 std::vector<Pointer> pointers;
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
-void runRoClientGame(std::string regnumUser, std::string regnumPass) {
+void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
@@ -52,7 +60,7 @@ void runRoClientGame(std::string regnumUser, std::string regnumPass) {
     ZeroMemory(&pi, sizeof(pi));
     
     std::string path = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer\\ROClientGame.exe";
-    std::string command = path + " " + regnumUser + " " + regnumPass;
+    std::string command = path + " " + regnumLoginUser + " " + regnumLoginPassword;
     std::string workingDirectory = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer";
     
     if (!CreateProcess(path.c_str(), (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, workingDirectory.c_str(), &si, &pi)) {
@@ -65,23 +73,6 @@ void runRoClientGame(std::string regnumUser, std::string regnumPass) {
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     }
-}
-
-void UpdateRainbowColor(float speed) {
-    float time = ImGui::GetTime() * speed;
-    textColor.x = (sin(time) * 0.5f) + 0.5f;
-    textColor.y = (sin(time + 2.0f) * 0.5f) + 0.5f;
-    textColor.z = (sin(time + 4.0f) * 0.5f) + 0.5f;
-}
-
-// Function to reset the Direct3D device
-void ResetDevice() {
-    ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = g_pd3dDevice->Reset(&g_d3dpp);
-    if (hr == D3DERR_INVALIDCALL) {
-        IM_ASSERT(0);
-    }
-    ImGui_ImplDX9_CreateDeviceObjects();
 }
 
 void ShowHelpMarker(const char* desc)
@@ -112,13 +103,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     LoadLoginCredentials(hInstanceGlobal);
     LoadSettings();
 
-
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
         Log("Auto-login successful");
         show_login_window = false;
         show_main_window = true;
-        // InitializePointers(); // Initialize pointers after successful login
     } else {
         Log("Auto-login failed");
         show_login_window = true;
@@ -154,24 +143,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     static char username[128] = "";
     static char password[128] = "";
-    static char regUsername[128] = "";
-    static char regPassword[128] = "";
-    static char regEmail[128] = "";
-    static char feedbackText[1024] = "";
-    static char chatInput[256] = "";
-    static char forgotPasswordEmail[128] = "";
+
     static std::vector<std::string> chatMessages;
 
-    bool show_register_window = false;
-    bool show_feedback_window = false;
-    bool show_chat_window = false;
-    bool show_forgot_password_window = false;
-    bool show_token_window = false;
-    bool show_admin_window = false;
-    bool show_settings_window = false;
-    bool show_info_window = false;
-    bool show_regnum_settings_window = false;
-    bool show_regnum_accounts_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -265,13 +239,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (show_register_window) {
                 static bool registerWindowIsOpen = true;
-
                 ImGui::Begin("Register", &registerWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
                 if (!registerWindowIsOpen) {
-                SaveSettings();
-                PostQuitMessage(0);
+                    SaveSettings();
+                    PostQuitMessage(0);
                 }
+
+                static char regUsername[128] = "";
+                static char regPassword[128] = "";
+                static char regEmail[128] = "";
 
                 ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
                 ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
@@ -304,6 +281,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 SaveSettings();
                 PostQuitMessage(0);
                 }
+
+                static char forgotPasswordEmail[128] = "";
 
                 ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
 
@@ -610,15 +589,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_regnum_accounts_window = true;
                 }
 
-                // regnumUser and regnumPass are the username and password for the Regnum Online client, respectively
-                static char regnumUser[128] = "";
-                static char regnumPass[128] = "";
+                // regnumLoginUser and regnumLoginPassword are the username and password for the Regnum Online client, respectively
+                static char regnumLoginUser[128] = "";
+                static char regnumLoginPassword[128] = "";
 
-                ImGui::InputText("Regnum User", regnumUser, IM_ARRAYSIZE(regnumUser));
-                ImGui::InputText("Regnum Pass", regnumPass, IM_ARRAYSIZE(regnumPass), ImGuiInputTextFlags_Password);
+                ImGui::InputText("Regnum User", regnumLoginUser, IM_ARRAYSIZE(regnumLoginUser));
+                ImGui::InputText("Regnum Pass", regnumLoginPassword, IM_ARRAYSIZE(regnumLoginPassword), ImGuiInputTextFlags_Password);
 
                 if (ImGui::Button("Run Regnum Online")) {
-                    runRoClientGame(regnumUser, regnumPass);
+                    runRoClientGame(regnumLoginUser, regnumLoginPassword);
                 }
 
                 ImGui::Spacing();
