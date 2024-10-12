@@ -243,6 +243,9 @@ void SaveSettings() {
         settingsJson["optionMoonjump"] = optionMoonjump;
         settingsJson["optionZoom"] = optionZoom;
         settingsJson["optionMoonwalk"] = optionMoonwalk;
+        settingsJson["optionFreecam"] = optionFreecam;
+        settingsJson["optionFov"] = optionFov;
+        settingsJson["optionFastFly"] = optionFastFly;
         settingsJson["debugLog"] = debugLog;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
 
@@ -293,6 +296,9 @@ void LoadSettings() {
                     optionMoonjump = settingsJson.value("optionMoonjump", false);
                     optionZoom = settingsJson.value("optionZoom", false);
                     optionMoonwalk = settingsJson.value("optionMoonwalk", false);
+                    optionFreecam = settingsJson.value("optionFreecam", false);
+                    optionFov = settingsJson.value("optionFov", false);
+                    optionFastFly = settingsJson.value("optionFastFly", false);
                     debugLog = settingsJson.value("debugLog", false);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
