@@ -97,6 +97,7 @@ bool optionFreecam = false;
 bool optionMoonwalk = false;
 bool optionFov = false;
 bool optionFastFly = false;
+bool optionSpeedHack = false;
 
 // Feature states
 bool featureZoom = true;
@@ -106,6 +107,7 @@ bool featureFreecam = false;
 bool featureMoonwalk = false;
 bool featureMoonjump = false;
 bool featureFastfly = false;
+bool featureSpeedhack = false;
 
 // Keydown states
 bool isGravityKeyPressed = false;
