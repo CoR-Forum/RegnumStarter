@@ -10,6 +10,10 @@ extern bool featureZoom;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
+extern bool featureFov;
+extern bool featureSpeedhack;
+extern bool featureFreecam;
+extern bool featureFastfly;
 
 std::string login;
 std::string password;
@@ -79,12 +83,19 @@ bool Login(const std::string& login, const std::string& password) {
             featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
             featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
             featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
+            featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
+            featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
+            featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
+
 
             Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                 std::string(featureGravity ? ", Gravity" : "") + 
                 std::string(featureMoonjump ? ", Moonjump" : ""));
                 std::string(featureMoonwalk ? ", Moonwalk" : "");
                 std::string(featureFov ? ", Field of View" : "");
+                std::string(featureSpeedhack ? ", Speedhack" : "");
+                std::string(featureFastfly ? ", Fastfly" : "");
+                std::string(featureFreecam ? ", Freecam" : "");
                 
             // Parse role and set isAdmin
             std::string role = jsonResponse["role"];
@@ -246,6 +257,7 @@ void SaveSettings() {
         settingsJson["optionFreecam"] = optionFreecam;
         settingsJson["optionFov"] = optionFov;
         settingsJson["optionFastFly"] = optionFastFly;
+        settingsJson["optionSpeedHack"] = optionSpeedHack;
         settingsJson["debugLog"] = debugLog;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
 
@@ -299,6 +311,7 @@ void LoadSettings() {
                     optionFreecam = settingsJson.value("optionFreecam", false);
                     optionFov = settingsJson.value("optionFov", false);
                     optionFastFly = settingsJson.value("optionFastFly", false);
+                    optionSpeedHack = settingsJson.value("optionSpeedHack", false);
                     debugLog = settingsJson.value("debugLog", false);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
