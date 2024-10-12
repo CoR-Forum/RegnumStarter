@@ -14,12 +14,11 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static bool                     g_DeviceLost = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
-static char feedbackSender[128] = ""; // Add this line
 static bool show_license_window = false;
 static char licenseKey[128] = "";
 static bool enableRainbow = false;
 static float rainbowSpeed = 0.1f;
-static char chatInput[128] = ""; // Declare chatInput as a static variable
+static char chatInput[256] = ""; // Declare chatInput as a static variable
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
 
@@ -27,6 +26,16 @@ ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 bool show_login_window = true;
 bool show_main_window = false;
+bool show_register_window = false;
+bool show_feedback_window = false;
+bool show_chat_window = false;
+bool show_forgot_password_window = false;
+bool show_token_window = false;
+bool show_admin_window = false;
+bool show_settings_window = false;
+bool show_info_window = false;
+bool show_regnum_settings_window = false;
+bool show_regnum_accounts_window = false;
 bool g_ShowUI = true;
 
 extern bool featureZoom;
@@ -106,7 +115,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         Log("Auto-login successful");
         show_login_window = false;
         show_main_window = true;
-        // InitializePointers(); // Initialize pointers after successful login
     } else {
         Log("Auto-login failed");
         show_login_window = true;
@@ -142,24 +150,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     static char username[128] = "";
     static char password[128] = "";
-    static char regUsername[128] = "";
-    static char regPassword[128] = "";
-    static char regEmail[128] = "";
-    static char feedbackText[1024] = "";
-    static char chatInput[256] = "";
-    static char forgotPasswordEmail[128] = "";
+
     static std::vector<std::string> chatMessages;
 
-    bool show_register_window = false;
-    bool show_feedback_window = false;
-    bool show_chat_window = false;
-    bool show_forgot_password_window = false;
-    bool show_token_window = false;
-    bool show_admin_window = false;
-    bool show_settings_window = false;
-    bool show_info_window = false;
-    bool show_regnum_settings_window = false;
-    bool show_regnum_accounts_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -253,13 +246,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (show_register_window) {
                 static bool registerWindowIsOpen = true;
-
                 ImGui::Begin("Register", &registerWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
                 if (!registerWindowIsOpen) {
-                SaveSettings();
-                PostQuitMessage(0);
+                    SaveSettings();
+                    PostQuitMessage(0);
                 }
+
+                static char regUsername[128] = "";
+                static char regPassword[128] = "";
+                static char regEmail[128] = "";
 
                 ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
                 ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
@@ -292,6 +288,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 SaveSettings();
                 PostQuitMessage(0);
                 }
+
+                static char forgotPasswordEmail[128] = "";
 
                 ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
 
