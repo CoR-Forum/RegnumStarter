@@ -695,6 +695,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Spacing();
 
                 ImGui::SameLine();
+                if (ImGui::Button("Chat")) {
+                    show_chat_window = true;
+                }
+
+                ImGui::SameLine();
                 if (ImGui::Button("Activate License")) {
                 show_license_window = true;
             }
@@ -813,6 +818,35 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::End();
             }
         
+        
+            if (show_chat_window) {
+                ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                // Log display box at the bottom
+                ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                for (const auto& msg : g_chatMessages) {
+                    ImGui::TextWrapped("%s", msg.c_str());
+                }
+                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                }
+
+                ImGui::EndChild();
+
+                ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+
+                ImGui::SameLine();
+                
+                if (ImGui::Button("Send Message")) {
+                    if (strlen(chatInput) > 0) {
+                        SendChatMessage(chatInput);
+                        chatInput[0] = '\0'; // Clear input field
+                    }
+                }
+
+                ImGui::End();
+            }
+
             if (show_license_window) {
                 ImGui::Begin("Activate License", &show_license_window, ImGuiWindowFlags_AlwaysAutoResize);
                 
