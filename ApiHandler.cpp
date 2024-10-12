@@ -602,8 +602,10 @@ void ActivateLicense(const std::string& licenseKey) {
 
         if (status == "success") {
             LogDebug("License activated successfully: " + message);
+            MessageBox(NULL, "Please restart Sylent-X to complete the activation.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
         } else {
             LogDebug("Failed to activate license: " + message);
+            MessageBox(NULL, message.c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
         }
     } catch (const std::exception& e) {
         Log("Exception: " + std::string(e.what()));
