@@ -1,8 +1,3 @@
-// AdminPanel.cpp
-#include "../libs/imgui/imgui.h"
-#include "UsersTable.h" // Adjust this path if necessary
-#include <random>
-#include <string>
 #include "AdminPanel.h"
 
 std::string currentStatus = "Undetected"; // Default status
