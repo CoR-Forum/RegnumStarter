@@ -1,7 +1,7 @@
 #include "includes/Utils.h"
 #include <stdexcept>
 #include <sstream>
-#include "admin/AdminPanel.h"
+#include "ui/admin/AdminPanel.h"
 
 #pragma once //added for register in sylent-x.cpp maybe check it 
 
