@@ -31,7 +31,7 @@ bool show_register_window = false;
 bool show_feedback_window = false;
 bool show_chat_window = false;
 bool show_forgot_password_window = false;
-bool show_token_window = false;
+bool show_password_reset_window = false;
 bool show_admin_window = false;
 bool show_settings_window = false;
 bool show_info_window = false;
@@ -289,7 +289,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button("Submit")) {
                     if (ResetPasswordRequest(forgotPasswordEmail)) {
                         show_forgot_password_window = false;
-                        show_token_window = true;
+                        show_password_reset_window = true;
                     } else {
                         ImGui::Text("Failed to send reset password request. Please try again.");
                     }
@@ -297,7 +297,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 if (ImGui::Button("I already have a token")) {
                     show_forgot_password_window = false;
-                    show_token_window = true;
+                    show_password_reset_window = true;
                 }
 
                 if (ImGui::Button("Back to Login")) {
@@ -308,7 +308,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::End();
             }
 
-            if (show_token_window) {
+            if (show_password_reset_window) {
                 static bool tokenWindowIsOpen = true;
 
                 ImGui::Begin("Enter Token and New Password", &tokenWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
@@ -318,10 +318,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 PostQuitMessage(0);
                 }
 
-                static char token[128] = "";
+                static char passwordResetToken[128] = "";
                 static char newPassword[128] = "";
 
-                ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
+                ImGui::InputText("Token", passwordResetToken, IM_ARRAYSIZE(passwordResetToken));
                 ImGui::SameLine();
                 ShowHelpMarker("Sent to you by e-mail");
 
@@ -331,9 +331,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 if (ImGui::Button("Submit")) {
                     // Implement the logic to verify the token and update the password
-                    if (SetNewPassword(token, newPassword)) {
+                    if (SetNewPassword(passwordResetToken, newPassword)) {
                         MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
-                        show_token_window = false;
+                        show_password_reset_window = false;
                         show_login_window = true;
                     } else {
                         statusText = "Failed to set new password. Please try again.";
@@ -343,12 +343,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Text("%s", statusText.c_str());
 
                 if (ImGui::Button("Request new token")) {
-                    show_token_window = false;
+                    show_password_reset_window = false;
                     show_forgot_password_window = true;
                 }
 
                 if (ImGui::Button("Back to Login")) {
-                    show_token_window = false;
+                    show_password_reset_window = false;
                     show_login_window = true;
                 }
 
