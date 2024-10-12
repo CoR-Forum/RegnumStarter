@@ -39,13 +39,17 @@ using json = nlohmann::json;
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
 
+LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); // Handles messages sent to the main window, such as creating and destroying windows, and custom messages like
+const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier for starting the self-update process
+const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // Message Identifier for retrieving message to enable checkboxes
+
 struct Pointer {
     std::string name;
     unsigned long address;
     std::vector<unsigned long> offsets;
 };
 
-extern std::vector<Pointer> InitializePointers();
+extern std::vector<Pointer> InitializePointers(); // Updated declaration
 extern std::vector<Pointer> g_pointers;
 extern std::vector<std::string> g_chatMessages;
 extern std::string login;
@@ -105,6 +109,9 @@ bool featureMoonwalk = false;
 bool featureMoonjump = false;
 bool featureFastfly = false;
 bool featureSpeedhack = false;
+
+// Keydown states
+bool isGravityKeyPressed = false;
 
 // Seems to be the main window declaration?
 HWND hwnd = nullptr;
