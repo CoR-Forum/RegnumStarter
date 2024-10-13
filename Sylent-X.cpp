@@ -677,10 +677,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 // input field and button to send chat messages using sendChatMessage function
                 ImGui::PushItemWidth(360); // Set the width of the input field
-                ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput));
+                if (ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    if (strlen(chatInput) > 0) {
+                        SendChatMessage(chatInput);
+                        chatInput[0] = '\0'; // Clear input field
+                    }
+                }
                 ImGui::PopItemWidth(); // Reset the item width to default
                 ImGui::SameLine();
-                if (ImGui::Button("Send")) {
+                if (ImGui::Button("Send") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
                     if (strlen(chatInput) > 0) {
                         SendChatMessage(chatInput);
                         chatInput[0] = '\0'; // Clear input field
