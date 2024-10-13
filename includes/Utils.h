@@ -74,6 +74,9 @@ extern void SendFeedback(const std::string& type, const std::string& message);
 extern void ActivateLicense(const std::string& licenseKey);
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
 
+extern void SaveRegnumAccounts(const std::vector<std::string>& accounts);
+extern void LoadRegnumAccounts();
+
 
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;

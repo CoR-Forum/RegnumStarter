@@ -280,6 +280,33 @@ void LoadSettings() {
     }
 }
 
+void SaveRegnumAccounts(const std::vector<std::string>& accounts) {
+    std::string path = std::string(appDataPath) + "\\Sylent-X\\regnum_accounts.txt";
+    std::ofstream file(path);
+    if (file.is_open()) {
+        for (const auto& acc : accounts) {
+            file << acc << std::endl;
+        }
+        file.close();
+    } else {
+        Log("Failed to open regnum accounts file for writing");
+    }
+}
+
+void LoadRegnumAccounts(std::vector<std::string>& accounts) {
+    std::string path = std::string(appDataPath) + "\\Sylent-X\\regnum_accounts.txt";
+    std::ifstream file(path);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            accounts.push_back(line);
+        }
+        file.close();
+    } else {
+        Log("Failed to open regnum accounts file for reading");
+    }
+}
+
 void LoadLoginCredentials(HINSTANCE hInstance) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
 
