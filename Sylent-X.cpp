@@ -634,7 +634,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ShowAdminPanel(&show_admin_window);
                     
                     ImGui::SameLine();
-                    ImGui::Checkbox("Debug", &debugLog);
+                    if (ImGui::Checkbox("Debug", &debugLog)) {
+                        if (debugLog) {
+                            Log("Debug logging enabled");
+                        } else {
+                            Log("Debug logging disabled");
+                        }
+                    }
                 }
 
                 ImGui::SameLine();
