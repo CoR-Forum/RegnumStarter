@@ -75,6 +75,7 @@ bool Login(const std::string& login, const std::string& password) {
 
         auto jsonResponse = nlohmann::json::parse(response);
         std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
 
         if (status == "success") {
             LogDebug("User " + login + " logged in successfully");
@@ -89,15 +90,14 @@ bool Login(const std::string& login, const std::string& password) {
             featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
             featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
 
-
             Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                 std::string(featureGravity ? ", Gravity" : "") + 
-                std::string(featureMoonjump ? ", Moonjump" : ""));
-                std::string(featureMoonwalk ? ", Moonwalk" : "");
-                std::string(featureFov ? ", Field of View" : "");
-                std::string(featureSpeedhack ? ", Speedhack" : "");
-                std::string(featureFastfly ? ", Fastfly" : "");
-                std::string(featureFreecam ? ", Freecam" : "");
+                std::string(featureMoonjump ? ", Moonjump" : "") + 
+                std::string(featureMoonwalk ? ", Moonwalk" : "") + 
+                std::string(featureFov ? ", Field of View" : "") + 
+                std::string(featureSpeedhack ? ", Speedhack" : "") + 
+                std::string(featureFastfly ? ", Fastfly" : "") + 
+                std::string(featureFreecam ? ", Freecam" : ""));
                 
             // Parse role and set isAdmin
             std::string role = jsonResponse["role"];
@@ -113,8 +113,7 @@ bool Login(const std::string& login, const std::string& password) {
 
             return true;
         } else {
-            std::string message = jsonResponse["message"];
-            Log("Failed to log in: " + message);
+            MessageBox(NULL, ("Failed to login: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
             return false;
         }
     } catch (const std::exception& e) {
