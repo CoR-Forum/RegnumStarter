@@ -205,6 +205,8 @@ void SaveSettings() {
         settingsJson["debugLog"] = debugLog;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = fontSize;
+        settingsJson["enableRainbow"] = enableRainbow;
+        settingsJson["rainbowSpeed"] = rainbowSpeed;
 
         std::string settingsStr = settingsJson.dump();
         std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
@@ -249,7 +251,8 @@ void LoadSettings() {
                 if (jsonResponse.contains("settings") && jsonResponse["settings"].is_object()) {
                     auto settingsJson = jsonResponse["settings"];
                     fontSize = settingsJson.value("fontSize", 1.0f);
-                    
+                    enableRainbow = settingsJson.value("enableRainbow", false);
+                    rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
                     debugLog = settingsJson.value("debugLog", false);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {

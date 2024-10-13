@@ -89,7 +89,9 @@ const char* appName = "Sylent-X";
 
 extern ImVec4 textColor;
 
-float fontSize;
+float fontSize = 14.0f;
+bool enableRainbow = false;
+float rainbowSpeed = 0.1f;
 
 // Global variables
 bool debugLog = true;
