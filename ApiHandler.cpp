@@ -514,6 +514,26 @@ void GetAllUsers() {
     }
 }
 
+std::string GetAllLicensesRawJson;
+
+void GetAllLicenses() {
+    try {
+        std::string path = "/admin.php?action=getLicenses&username=" + login + "&password=" + password;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        // Store the raw JSON response in the global variable
+        GetAllLicensesRawJson = response;
+        LogDebug("Licenses fetched successfully: " + response);
+
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+    }
+}
+
 void ToggleUserBan(int userId) {
     try {
         std::string path = "/admin.php?action=toggleUserBan&username=" + login + "&password=" + password + "&userId=" + std::to_string(userId);
@@ -713,5 +733,35 @@ void GenerateNewLicense(const std::string& licensedFeatures, const std::string& 
     } catch (const std::exception& e) {
         Log("Exception: " + std::string(e.what()));
         MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+    }
+}
+
+// function to expire a license by id
+void ExpireLicense(int licenseId) {
+    try {
+        std::string path = "/admin.php?action=expireLicense&username=" + login + "&password=" + password + "&licenseId=" + std::to_string(licenseId);
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("License expired successfully: " + message);
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            GetAllLicenses();
+        } else {
+            LogDebug("Failed to expire license: " + message);
+            MessageBox(NULL, message.c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            GetAllLicenses();
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+        GetAllLicenses();
     }
 }
