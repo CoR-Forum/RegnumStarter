@@ -1,0 +1,25 @@
+name: Build Sylent-X
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y mingw-w64 wine
+
+    - name: Build Sylent-X
+      run: |
+        i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp helper/UpdateRainbowColor.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
+        wine bin/Sylent-X.exe
