@@ -1,6 +1,6 @@
 #include "includes/Utils.h"
 #include "Updater.cpp"
-#include "Logger.cpp"
+#include "includes/Logger/Logger.cpp"
 #include "ApiHandler.cpp"
 #include "Style.cpp"
 #include "ui/admin/AdminPanel.h"
