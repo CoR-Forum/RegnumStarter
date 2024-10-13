@@ -199,55 +199,6 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
     }
 }
 
-void LoadLoginCredentials(HINSTANCE hInstance) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-
-    std::ifstream file(configFilePath);
-    bool loginFound = false;
-    bool passwordFound = false;
-
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.find("login=") != std::string::npos) {
-                login = line.substr(line.find("=") + 1);
-                loginFound = true;
-            }
-            if (line.find("password=") != std::string::npos) {
-                password = line.substr(line.find("=") + 1);
-                passwordFound = true;
-            }
-        }
-        file.close();
-    } else {
-        Log("Failed to open config file for reading");
-    }
-
-    if (!loginFound || !passwordFound) {
-        Log("Login or password not found in config file. Please login.");
-    } 
-}
-
-void SaveLoginCredentials(const std::string& login, const std::string& password) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-
-    std::ofstream file(configFilePath);
-    if (file.is_open()) {
-        file << "login=" << login << std::endl;
-        file << "password=" << password << std::endl;
-        file.close();
-
-        if (Login(login, password)) {
-            MessageBox(NULL, "Login successful after saving credentials - Please restart the application to apply your license", "Success", MB_ICONINFORMATION | MB_TOPMOST);
-            PostQuitMessage(0);
-        } else {
-            MessageBox(NULL, "Login failed after saving credentials", "Error", MB_ICONERROR | MB_TOPMOST);
-        }
-    } else {
-        MessageBox(NULL, "Failed to open config file for writing", "Error", MB_ICONERROR | MB_TOPMOST);
-    }
-}
-
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
@@ -320,6 +271,57 @@ void LoadSettings() {
         }
     } catch (const std::exception& e) {
         Log("Settings load failed with Exception: " + std::string(e.what()));
+    }
+}
+
+void LoadLoginCredentials(HINSTANCE hInstance) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ifstream file(configFilePath);
+    bool loginFound = false;
+    bool passwordFound = false;
+
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("login=") != std::string::npos) {
+                login = line.substr(line.find("=") + 1);
+                loginFound = true;
+            }
+            if (line.find("password=") != std::string::npos) {
+                password = line.substr(line.find("=") + 1);
+                passwordFound = true;
+            }
+        }
+        file.close();
+    } else {
+        Log("Failed to open config file for reading");
+    }
+
+    if (!loginFound || !passwordFound) {
+        Log("Login or password not found in config file. Please login.");
+    } 
+}
+
+void SaveLoginCredentials(const std::string& login, const std::string& password) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
+
+    std::ofstream file(configFilePath);
+    if (file.is_open()) {
+        file << "login=" << login << std::endl;
+        file << "password=" << password << std::endl;
+        file.close();
+
+        if (Login(login, password)) {
+            // MessageBox(NULL, "Login successful after saving credentials - Please restart the application to apply your license", "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            LoadLoginCredentials(hInstanceGlobal);
+            LoadSettings();
+            InitializePointers();
+        } else {
+            MessageBox(NULL, "Login failed after saving credentials", "Error", MB_ICONERROR | MB_TOPMOST);
+        }
+    } else {
+        MessageBox(NULL, "Failed to open config file for writing", "Error", MB_ICONERROR | MB_TOPMOST);
     }
 }
 
