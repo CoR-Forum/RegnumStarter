@@ -1,12 +1,25 @@
 #include "Logger.h"
+#include <iostream>
+#include <fstream>
+#include <deque>
+#include <mutex>
+#include <ctime>
+#include <string>
+#include <locale>
+#include <codecvt>
 
 namespace {
-    const size_t MAX_LOG_MESSAGES = 500;
-    const char* LOG_FILE_PATH = "\\Sylent-X\\log.txt";
-    std::deque<std::string> logMessages;
-    std::mutex logMutex;
+    const size_t MAX_LOG_MESSAGES = 500; ///< Maximum number of log messages to keep in memory.
+    const char* LOG_FILE_PATH = "\\Sylent-X\\log.txt"; ///< Path to the log file.
+    std::deque<std::string> logMessages; ///< Deque to store log messages.
+    std::mutex logMutex; ///< Mutex to protect access to logMessages.
 }
 
+/**
+ * @brief Writes a log message to the log file.
+ * 
+ * @param logMessage The log message to write.
+ */
 void WriteLogToFile(const std::string& logMessage) {
     std::ofstream logFile(std::string(appDataPath) + LOG_FILE_PATH, std::ios_base::app);
     if (logFile.is_open()) {
@@ -16,6 +29,11 @@ void WriteLogToFile(const std::string& logMessage) {
     }
 }
 
+/**
+ * @brief Gets the current timestamp in the format YYYY-MM-DD HH:MM:SS.
+ * 
+ * @return The current timestamp as a string.
+ */
 std::string GetCurrentTimestamp() {
     std::time_t now = std::time(nullptr);
     char timestamp[20];
@@ -23,6 +41,11 @@ std::string GetCurrentTimestamp() {
     return std::string(timestamp);
 }
 
+/**
+ * @brief Logs a message with a timestamp.
+ * 
+ * @param message The message to log.
+ */
 void Log(const std::string& message) {
     std::string logMessage = "[" + GetCurrentTimestamp() + "] " + message;
 
@@ -38,17 +61,33 @@ void Log(const std::string& message) {
     std::cout << logMessage << std::endl;
 }
 
+/**
+ * @brief Logs a debug message if debug logging is enabled.
+ * 
+ * @param message The debug message to log.
+ */
 void LogDebug(const std::string& message) {
     if (setting_debugLog) {
         Log("DEBUG: " + message);
     }
 }
 
+/**
+ * @brief Converts a wide string to a UTF-8 encoded string for logging.
+ * 
+ * @param wstr The wide string to convert.
+ * @return The converted UTF-8 string.
+ */
 std::string WStringToStringForLog(const std::wstring& wstr) {
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
     return converter.to_bytes(wstr);
 }
 
+/**
+ * @brief Logs a debug message from a wide string if debug logging is enabled.
+ * 
+ * @param message The wide string debug message to log.
+ */
 void LogDebug(const std::wstring& message) {
     LogDebug(WStringToStringForLog(message));
 }
