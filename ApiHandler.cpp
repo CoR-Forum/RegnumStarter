@@ -431,9 +431,6 @@ void SendChatMessage(const std::string& message) {
         std::string message = jsonResponse["message"];
 
         if (status == "success") {
-            LogDebug("Chat message sent successfully");
-
-            // Process the messages array
             auto messages = jsonResponse["messages"];
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
