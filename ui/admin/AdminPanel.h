@@ -2,12 +2,28 @@
 
 // AdminPanel.cpp
 #include "../../libs/imgui/imgui.h"
-#include "UsersTable.h" // Adjust this path if necessary
-#include <random>
 #include <string>
+#include <vector>
+#include <sstream>
+#include <iostream>
+#include <ctime>
+#include "../../libs/json.hpp"
+using json = nlohmann::json;
 
 extern std::string currentStatus;
+extern std::string GetAllUsersRawJson;
+extern std::string GetAllLicensesRawJson;
+extern std::string generatedLicenseKey;
 
 void ShowAdminPanel(bool* show_admin_window);
+
+void DisplayUsersTable();
+void DisplayLicensesTable();
+
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
-extern std::string generatedLicenseKey;
+
+extern void ToggleUserBan(int userId);
+extern void ToggleUserAdmin(int userId);
+extern void ToggleUserActivation(int userId);
+
+extern void ExpireLicense(int licenseId);
