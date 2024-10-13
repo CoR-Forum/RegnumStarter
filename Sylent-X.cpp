@@ -1,5 +1,5 @@
 #include "includes/Utils.h"
-#include "Updater.cpp"
+#include "includes/Updater/Updater.cpp"
 #include "includes/Logger/Logger.cpp"
 #include "ApiHandler.cpp"
 #include "Style.cpp"
