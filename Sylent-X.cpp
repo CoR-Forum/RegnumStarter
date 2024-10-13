@@ -6,6 +6,7 @@
 #include "ui/admin/AdminPanel.h"
 #include "DirectX/DirectXInit.h"
 #include "helper/UpdateRainbowColor.h"
+#include "helper/ShowHelpMarker.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -69,21 +70,6 @@ void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPasswor
         // Close process and thread handles.
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-    }
-}
-
-void ShowHelpMarker(const char* desc)
-{   
-    ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0.098f, 0.098f, 0.902f, 1.0f)); // Color #1919e6
-    ImGui::TextDisabled("(?)");
-    ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
     }
 }
 
