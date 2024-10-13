@@ -6,7 +6,7 @@ std::string generatedLicenseKey = ""; // Initialize the global variable
 void ShowAdminPanel(bool* show_admin_window) {
     extern std::string generatedLicenseKey;
     static int selected_key_runtime = 0; // Default to the first runtime
-    static std::string selected_key_runtime_str = "10y"; // Default runtime string
+    static std::string selected_key_runtime_str = "1h"; // Default runtime string
 
     static const char* key_features[] = { "zoom", "fov", "gravity", "moonjump", "moonwalk", "fakelag", "freecam", "speedhack"};
     static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true };
