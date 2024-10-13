@@ -645,7 +645,23 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 if (ImGui::Button("Logout")) {
-                    Logout(); // Use the logic from ApiHandler.cpp
+                    ImGui::OpenPopup("Confirm Logout");
+                }
+
+                if (ImGui::BeginPopupModal("Confirm Logout", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                    ImGui::Text("Are you sure you want to logout?\nThis will remove your login credentials and close the application.\nYour license key is stored in your account and will be available after you login again.");
+                    ImGui::Separator();
+
+                    if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                        Logout(); // Use the logic from ApiHandler.cpp
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
                 }
 
                 ImGui::Spacing();
