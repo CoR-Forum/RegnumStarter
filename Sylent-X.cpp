@@ -190,9 +190,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
         
-        if (g_ShowUI)
-        {
-
+        if (g_ShowUI) {
             if (show_login_window) {
                 static bool settingsWindowIsOpen = true;
                 ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
@@ -201,7 +199,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 SaveSettings();
                 PostQuitMessage(0);
                 }
-
 
                 ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
                 ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
