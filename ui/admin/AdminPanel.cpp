@@ -40,7 +40,7 @@ void ShowAdminPanel(bool* show_admin_window) {
         }
 
         // Dropdown menu for key type selection
-        const char* key_runtimes[] = { "10y", "1m" };
+        const char* key_runtimes[] = { "1h", "7d", "1m", "3m", "10y" };
         if (ImGui::Combo("Runtime", &selected_key_runtime, key_runtimes, IM_ARRAYSIZE(key_runtimes))) {
             selected_key_runtime_str = key_runtimes[selected_key_runtime];
         }
