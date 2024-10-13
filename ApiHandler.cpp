@@ -204,6 +204,7 @@ void SaveSettings() {
         nlohmann::json settingsJson;
         settingsJson["debugLog"] = debugLog;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
+        settingsJson["fontSize"] = fontSize;
 
         std::string settingsStr = settingsJson.dump();
         std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
@@ -247,6 +248,7 @@ void LoadSettings() {
             if (status == "success") {
                 if (jsonResponse.contains("settings") && jsonResponse["settings"].is_object()) {
                     auto settingsJson = jsonResponse["settings"];
+                    fontSize = settingsJson.value("fontSize", 1.0f);
                     
                     debugLog = settingsJson.value("debugLog", false);
 

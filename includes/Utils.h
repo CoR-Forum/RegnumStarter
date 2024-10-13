@@ -89,6 +89,8 @@ const char* appName = "Sylent-X";
 
 extern ImVec4 textColor;
 
+float fontSize;
+
 // Global variables
 bool debugLog = true;
 bool isAdmin = false;
