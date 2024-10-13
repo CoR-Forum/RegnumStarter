@@ -202,11 +202,11 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
-        settingsJson["debugLog"] = debugLog;
+        settingsJson["debugLog"] = setting_debugLog;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
-        settingsJson["fontSize"] = fontSize;
-        settingsJson["enableRainbow"] = enableRainbow;
-        settingsJson["rainbowSpeed"] = rainbowSpeed;
+        settingsJson["fontSize"] = setting_fontSize;
+        settingsJson["enableRainbow"] = setting_enableRainbow;
+        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;
 
         std::string settingsStr = settingsJson.dump();
         std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
@@ -250,10 +250,10 @@ void LoadSettings() {
             if (status == "success") {
                 if (jsonResponse.contains("settings") && jsonResponse["settings"].is_object()) {
                     auto settingsJson = jsonResponse["settings"];
-                    fontSize = settingsJson.value("fontSize", 1.0f);
-                    enableRainbow = settingsJson.value("enableRainbow", false);
-                    rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
-                    debugLog = settingsJson.value("debugLog", false);
+                    setting_fontSize = settingsJson.value("fontSize", 1.0f);
+                    setting_enableRainbow = settingsJson.value("enableRainbow", false);
+                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
+                    setting_debugLog = settingsJson.value("debugLog", false);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
                         textColor.x = settingsJson["textColor"][0];

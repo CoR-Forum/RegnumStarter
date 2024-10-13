@@ -2,7 +2,7 @@
 
 #include "includes/Utils.h"
 
-extern bool debugLog;
+extern bool setting_debugLog;
 extern const char* appDataPath;
 
 namespace {
@@ -49,7 +49,7 @@ void Log(const std::string& message) {
 
 // Logs a debug message if debug logging is enabled
 void LogDebug(const std::string& message) {
-    if (debugLog) {
+    if (setting_debugLog) {
         Log("DEBUG: " + message);
     }
 }

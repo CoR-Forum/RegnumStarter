@@ -89,12 +89,12 @@ const char* appName = "Sylent-X";
 
 extern ImVec4 textColor;
 
-float fontSize = 14.0f;
-bool enableRainbow = false;
-float rainbowSpeed = 0.1f;
+float setting_fontSize = 14.0f;
+bool setting_enableRainbow = false;
+float setting_rainbowSpeed = 0.1f;
 
 // Global variables
-bool debugLog = true;
+bool setting_debugLog = true;
 bool isAdmin = false;
 
 // Checkboxes states

@@ -362,21 +362,21 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (show_settings_window) {
                 ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-                if (enableRainbow) {
-                    UpdateRainbowColor(rainbowSpeed);
+                if (setting_enableRainbow) {
+                    UpdateRainbowColor(setting_rainbowSpeed);
                 }                
 
                 // Checkbox to enable/disable rainbow effect
-                ImGui::Checkbox("Enable Rainbow Text", &enableRainbow);
+                ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
                 ImGui::SameLine();
                 // Slider to control the speed of the rainbow effect
-                ImGui::SliderFloat("Rainbow Speed", &rainbowSpeed, 0.01f, 1.0f, "%.2f");
+                ImGui::SliderFloat("Rainbow Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
                 
                 // Show the color wheel
                 ImGui::ShowColorWheel(textColor);
 
                 // Slider to adjust the font size
-                ImGui::SliderFloat("Font Size", &fontSize, 0.5f, 2.0f);
+                ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
 
                 ImGui::Separator();
 
@@ -631,8 +631,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ShowAdminPanel(&show_admin_window);
                     
                     ImGui::SameLine();
-                    if (ImGui::Checkbox("Debug", &debugLog)) {
-                        if (debugLog) {
+                    if (ImGui::Checkbox("Debug", &setting_debugLog)) {
+                        if (setting_debugLog) {
                             Log("Debug logging enabled");
                         } else {
                             Log("Debug logging disabled");
