@@ -65,7 +65,6 @@ DWORD GetProcessIdByName(const std::wstring& processName);
 extern bool ResetPasswordRequest(const std::string& email);
 extern void CheckChatMessages();
 extern void GetAllUsers();
-extern std::string GetAllUsersRawJson;
 extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
 extern void ToggleUserAdmin(int userId);
