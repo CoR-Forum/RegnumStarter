@@ -1,6 +1,7 @@
 #include "includes/Utils.h"
 #include <stdexcept>
 #include <sstream>
+#include <regex>
 #include "ui/admin/AdminPanel.h"
 
 #pragma once //added for register in sylent-x.cpp maybe check it 
@@ -641,14 +642,62 @@ void GetMagnatCurrency() {
     }
 }
 
-void SendFeedback(const std::string& type, const std::string& feedback) {
+void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile) {
     try {
-        std::string path = "/feedback.php?type=" + type + "&username=" + login + "&password=" + password + "&feedback=" + feedback;
+        std::string logContent;
+        if (feedback_includeLogfile) {
+            for (const auto& logMessage : logMessages) {
+                logContent += logMessage + "\n";
+                Log("Log message: " + logMessage);
+            }
+        }
+
+        nlohmann::json requestBody;
+        requestBody["type"] = type;
+        requestBody["username"] = login;
+        requestBody["password"] = password;
+        requestBody["feedback"] = feedback;
+        if (!logContent.empty()) {
+            requestBody["log"] = logContent;
+        }
+
+        std::string requestBodyStr = requestBody.dump();
+
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "/feedback.php", NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
+        if (!hRequest) {
+            throw std::runtime_error("Failed to open HTTP request");
+        }
+
+        const char* headers = "Content-Type: application/json";
+        INTERNET_BUFFERSA buffers = {0};
+        buffers.dwStructSize = sizeof(INTERNET_BUFFERSA);
+        buffers.lpcszHeader = headers;
+        buffers.dwHeadersLength = (DWORD)strlen(headers);
+        buffers.dwBufferTotal = (DWORD)requestBodyStr.length();
+
+        if (!HttpSendRequestEx(hRequest, &buffers, NULL, HSR_INITIATE, 0)) {
+            throw std::runtime_error("Failed to send HTTP request");
+        }
+
+        DWORD bytesWritten;
+        if (!InternetWriteFile(hRequest, requestBodyStr.c_str(), (DWORD)requestBodyStr.length(), &bytesWritten)) {
+            throw std::runtime_error("Failed to write request body");
+        }
+
+        if (!HttpEndRequest(hRequest, NULL, 0, 0)) {
+            throw std::runtime_error("Failed to end HTTP request");
+        }
+
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        // Check if the response is valid JSON
+        if (response.empty() || response[0] != '{') {
+            Log("Invalid response received: " + response);
+            return;
+        }
 
         auto jsonResponse = nlohmann::json::parse(response);
         std::string status = jsonResponse["status"];
