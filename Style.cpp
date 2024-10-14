@@ -1,9 +1,13 @@
-﻿#include "imgui.h"
-#include "imgui_internal.h"
+﻿#include "includes/Utils.h"
+
+extern ImVec4 textColor;
 
 void ApplyCustomStyle()
 {
     ImGuiStyle& style = ImGui::GetStyle();
+    
+    // Apply the loaded text color
+    style.Colors[ImGuiCol_Text] = textColor;
 
     style.WindowBorderSize = 2.0f;
     style.WindowPadding = ImVec2(15, 15);
@@ -18,7 +22,6 @@ void ApplyCustomStyle()
     style.GrabMinSize = 5.0f;
     style.GrabRounding = 3.0f;
 
-    style.Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
     style.Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
@@ -45,17 +48,22 @@ void ApplyCustomStyle()
     style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
     style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-    style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
 
+    // Load and set the font from resource
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 12);
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 10);
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 14);
-    io.Fonts->AddFontFromFileTTF("Ruda-Bold.ttf", 18);
+    HRSRC hResource = FindResource(NULL, MAKEINTRESOURCE(IDR_FONT_RUDA_BOLD), RT_FONT);
+    if (hResource)
+    {
+        HGLOBAL hMemory = LoadResource(NULL, hResource);
+        if (hMemory)
+        {
+            void* pData = LockResource(hMemory);
+            DWORD size = SizeofResource(NULL, hResource);
+            if (pData && size > 0)
+            {
+                io.Fonts->AddFontFromMemoryTTF(pData, size, 13.0f);
+                io.FontDefault = io.Fonts->Fonts.back();
+            }
+        }
+    }
 }

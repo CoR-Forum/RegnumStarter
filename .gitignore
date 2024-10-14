@@ -42,3 +42,6 @@ background.bmp
 
 # ImGui
 imgui.ini
+
+# Build path
+bin/

@@ -1,144 +1,76 @@
-#include <windows.h>
-#include <urlmon.h>
-#include <comdef.h>
-#include <objbase.h>
-#include <tlhelp32.h>
-#include <wininet.h>
-#include <tchar.h> // Add this header for TEXT macro
-#include "Utils.h"
-#include "Updater.cpp"
-#include "Logger.cpp"
+#include "includes/Utils.h"
+#include "includes/Updater/Updater.cpp"
+#include "includes/Logger/Logger.cpp"
 #include "ApiHandler.cpp"
-#include "Keyboard.cpp"
-#include "imgui.h"
-#include "imgui_impl_dx9.h"
-#include "imgui_impl_win32.h"
-#include <d3d9.h>
 #include "Style.cpp"
-#include "ApiHandler.cpp"
+#include "ui/admin/AdminPanel.h"
+#include "DirectX/DirectXInit.h"
+#include "helper/UpdateRainbowColor.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
 
-// Discord webhook URL
-const std::string webhook_url = "https://discord.com/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6";
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#define WM_CLOSE_REGISTRATION_WINDOW (WM_USER + 1)
-
-static LPDIRECT3D9              g_pD3D = nullptr;
-static LPDIRECT3DDEVICE9        g_pd3dDevice = nullptr;
 static bool                     g_DeviceLost = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
-static D3DPRESENT_PARAMETERS    g_d3dpp = {};
-static char feedbackSender[128] = ""; // Add this line
+static bool show_license_window = false;
+static char chatInput[256] = ""; // Declare chatInput as a static variable
+static bool spaceKeyPressed = false;
+static bool ctrlKeyPressed = false;
 
-// Define a static variable to hold the selected text color
-static ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color
-// Declare chatInput as a static variable
-static char chatInput[128] = "";
+ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-bool CreateDeviceD3D(HWND hWnd);
-void CleanupDeviceD3D();
-void ResetDevice();
 bool show_login_window = true;
 bool show_main_window = false;
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+bool show_register_window = false;
+bool show_feedback_window = false;
+bool show_chat_window = false;
+bool show_forgot_password_window = false;
+bool show_password_reset_window = false;
+bool show_admin_window = false;
+bool show_settings_window = false;
+bool show_info_window = false;
+bool show_regnum_settings_window = false;
+bool show_regnum_accounts_window = false;
+bool g_ShowUI = true;
+
 extern bool featureZoom;
+extern bool featureFov;
 extern bool featureGravity;
 extern bool featureMoonjump;
 extern bool featureMoonwalk;
+extern bool featureFreecam;
+extern bool featureFastfly;
+extern bool featureSpeedhack;
 extern std::string login;
 
 std::vector<Pointer> pointers;
+std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
-void SendFeedbackToDiscord(const std::string& feedback, const std::string& feedbackType) {
-    HINTERNET hSession = InternetOpenA("FeedbackSender", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-    if (!hSession) {
-        std::cerr << "InternetOpenA failed" << std::endl;
-        return;
-    }
-
-    HINTERNET hConnect = InternetConnectA(hSession, "discord.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
-    if (!hConnect) {
-        std::cerr << "InternetConnectA failed" << std::endl;
-        InternetCloseHandle(hSession);
-        return;
-    }
-
-    HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/api/webhooks/1289932329778679890/Erl7M4hc12KnajYOqeK9jGOpE_G53qonvUcXHIuGb-XvfuA_VkTfI_FF3p1PROFXkL_6", NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
-    if (!hRequest) {
-        std::cerr << "HttpOpenRequestA failed" << std::endl;
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hSession);
-        return;
-    }
-
-    std::string headers = "Content-Type: application/json\r\n";
-    std::string payload = "{\"content\": \"Feedback from: " + login + " Type: " + feedbackType + " Input: " + feedback + "\"}";
-
-    BOOL result = HttpSendRequestA(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
-    if (!result) {
-        std::cerr << "HttpSendRequestA failed" << std::endl;
+void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    
+    std::string path = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer\\ROClientGame.exe";
+    std::string command = path + " " + regnumLoginUser + " " + regnumLoginPassword;
+    std::string workingDirectory = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer";
+    
+    if (!CreateProcess(path.c_str(), (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, workingDirectory.c_str(), &si, &pi)) {
+        Log("Failed to start the Regnum Online client");
     } else {
-        std::cout << "Feedback submitted successfully." << std::endl;
+        // Wait until child process exits.
+        WaitForSingleObject(pi.hProcess, INFINITE);
+
+        // Close process and thread handles.
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
     }
-
-    InternetCloseHandle(hRequest);
-    InternetCloseHandle(hConnect);
-    InternetCloseHandle(hSession);
 }
-
-// Function to initialize DirectX
-bool InitDirectX(HWND hwnd) {
-    if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) {
-        return false;
-    }
-
-    ZeroMemory(&g_d3dpp, sizeof(g_d3dpp));
-    g_d3dpp.Windowed = TRUE;
-    g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    g_d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-    g_d3dpp.EnableAutoDepthStencil = TRUE;
-    g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-    g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-
-    if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, 
-                             D3DCREATE_HARDWARE_VERTEXPROCESSING, 
-                             &g_d3dpp, &g_pd3dDevice) < 0) {
-        return false;
-    }
-
-    return true;
-}
-
-
-void RenderUI()
-{
-    static ImVec4 disabledTextColor = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
-    // Show the color wheel to allow the user to change the disabled text color
-    ImGui::ShowColorWheel(disabledTextColor);
-
-    // Render the InputTextWithHint with the updated disabled text color
-    static char chatInput[256] = "";
-    ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-}
-
-// Function to reset the Direct3D device
-void ResetDevice() {
-    ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = g_pd3dDevice->Reset(&g_d3dpp);
-    if (hr == D3DERR_INVALIDCALL) {
-        IM_ASSERT(0);
-    }
-    ImGui_ImplDX9_CreateDeviceObjects();
-}
-
-// Constants
-
-
-// Declare the Register function
-void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 
 void ShowHelpMarker(const char* desc)
 {   
@@ -164,15 +96,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         return 1;
     }
 
-    LoadSettings();
     SelfUpdate();
+    LoadLoginCredentials(hInstanceGlobal);
+    LoadSettings();
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
         Log("Auto-login successful");
         show_login_window = false;
         show_main_window = true;
-        // InitializePointers(); // Initialize pointers after successful login
     } else {
         Log("Auto-login failed");
         show_login_window = true;
@@ -208,22 +140,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     static char username[128] = "";
     static char password[128] = "";
-    static char regUsername[128] = "";
-    static char regPassword[128] = "";
-    static char regEmail[128] = "";
-    static char feedbackText[1024] = "";
-    static char chatInput[256] = "";
-    static char forgotPasswordEmail[128] = "";
+
     static std::vector<std::string> chatMessages;
 
-    bool show_register_window = false;
-    bool show_feedback_window = false;
-    bool show_chat_window = false;
-    bool show_forgot_password_window = false;
-    bool show_token_window = false;
-    bool show_admin_window = false;
-    bool show_settings_window = false;
-    bool show_info_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool done = false;
@@ -255,367 +174,648 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             g_ResizeWidth = g_ResizeHeight = 0;
             ResetDevice();
         }
+
+        // Check for the "Insert" key press
+        if (GetAsyncKeyState(VK_INSERT) & 0x8000)
+        {
+            g_ShowUI = !g_ShowUI;
+            // Add a small delay to prevent rapid toggling
+            Sleep(200);
+        }
+
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
-        if (show_login_window) {
-            ImGui::Begin("Login", &show_login_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+        
+        if (g_ShowUI) {
+            if (show_login_window) {
+                static bool settingsWindowIsOpen = true;
+                ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                
+                if (!settingsWindowIsOpen) {
+                SaveSettings();
+                PostQuitMessage(0);
+                }
 
-            ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
-            ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
-            
-            if (ImGui::Button("Login")) {
-                loginSuccess = Login(username, password);
+                ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
+                ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
+                
+                if (ImGui::Button("Login")) {
+                    loginSuccess = Login(username, password);
+                    if (loginSuccess) {
+                        Log("Login successful");
+                        SaveLoginCredentials(username, password);
+                        show_login_window = false;
+                        show_main_window = true;
+                    } else {
+                        Log("Login failed");
+                    }
+                }
+
                 if (loginSuccess) {
-                    Log("Login successful");
-                    SaveLoginCredentials(username, password);
+                    ImGui::Text("Login successful");
+                } else {
+                    ImGui::Text("Login failed");
+                }
+
+                if (ImGui::Button("Register")) {
                     show_login_window = false;
-                    show_main_window = true;
-                } else {
-                    Log("Login failed");
+                    show_register_window = true;
                 }
-            }
 
-            if (loginSuccess) {
-                ImGui::Text("Login successful");
-            } else {
-                ImGui::Text("Login failed");
-            }
-
-            if (ImGui::Button("Register")) {
-                show_login_window = false;
-                show_register_window = true;
-            }
-
-            if (ImGui::Button("Forgot Password")) {
-                show_login_window = false;
-                show_forgot_password_window = true;
-            }
-
-            ImGui::End();
-        }
-
-        if (show_register_window) {
-            ImGui::Begin("Register", &show_register_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
-            ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
-            ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
-
-            if (ImGui::Button("Register")) {
-                RegisterUser(regUsername, regEmail, regPassword);
-                show_register_window = false;
-                show_login_window = true;
-            }
-
-            if (ImGui::Button("Back to Login")) {
-                show_register_window = false;
-                show_login_window = true;
-            }
-
-            if (ImGui::Button("Exit")) {
-                done = true;
-            }
-
-            ImGui::End();
-        }
-
-        if (show_forgot_password_window) {
-            ImGui::Begin("Forgot Password", &show_forgot_password_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
-
-            if (ImGui::Button("Submit")) {
-                if (ResetPasswordRequest(forgotPasswordEmail)) {
-                    show_forgot_password_window = false;
-                    show_token_window = true;
-                } else {
-                    ImGui::Text("Failed to send reset password request. Please try again.");
+                if (ImGui::Button("Forgot Password")) {
+                    show_login_window = false;
+                    show_forgot_password_window = true;
                 }
+
+                ImGui::End();
             }
 
-            if (ImGui::Button("I already have a token")) {
-                show_forgot_password_window = false;
-                show_token_window = true;
-            }
+            if (show_register_window) {
+                static bool registerWindowIsOpen = true;
+                ImGui::Begin("Register", &registerWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-            if (ImGui::Button("Back to Login")) {
-                show_forgot_password_window = false;
-                show_login_window = true;
-            }
+                if (!registerWindowIsOpen) {
+                    SaveSettings();
+                    PostQuitMessage(0);
+                }
 
-            ImGui::End();
-        }
+                static char regUsername[128] = "";
+                static char regPassword[128] = "";
+                static char regEmail[128] = "";
 
-        if (show_token_window) {
-            ImGui::Begin("Enter Token and New Password", &show_token_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
+                ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
+                ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
 
-            static char token[128] = "";
-            static char newPassword[128] = "";
-
-            ImGui::InputText("Token", token, IM_ARRAYSIZE(token));
-            ImGui::SameLine();
-            ShowHelpMarker("Sent to you by e-mail");
-
-            ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
-
-            static std::string statusText = "";
-
-            if (ImGui::Button("Submit")) {
-                // Implement the logic to verify the token and update the password
-                if (SetNewPassword(token, newPassword)) {
-                    MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
-                    show_token_window = false;
+                if (ImGui::Button("Register")) {
+                    RegisterUser(regUsername, regEmail, regPassword);
+                    show_register_window = false;
                     show_login_window = true;
-                } else {
-                    statusText = "Failed to set new password. Please try again.";
                 }
+
+                if (ImGui::Button("Back to Login")) {
+                    show_register_window = false;
+                    show_login_window = true;
+                }
+
+                if (ImGui::Button("Exit")) {
+                    done = true;
+                }
+
+                ImGui::End();
             }
-            ImGui::SameLine();
-            ImGui::Text("%s", statusText.c_str());
 
-            if (ImGui::Button("Request new token")) {
-                show_token_window = false;
-                show_forgot_password_window = true;
+            if (show_forgot_password_window) {
+                static bool forgotpassWindowIsOpen = true;
+                
+                ImGui::Begin("Forgot Password", &forgotpassWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                if (!forgotpassWindowIsOpen) {
+                SaveSettings();
+                PostQuitMessage(0);
+                }
+
+                static char forgotPasswordEmail[128] = "";
+
+                ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
+
+                if (ImGui::Button("Submit")) {
+                    if (ResetPasswordRequest(forgotPasswordEmail)) {
+                        show_forgot_password_window = false;
+                        show_password_reset_window = true;
+                    } else {
+                        ImGui::Text("Failed to send reset password request. Please try again.");
+                    }
+                }
+
+                if (ImGui::Button("I already have a token")) {
+                    show_forgot_password_window = false;
+                    show_password_reset_window = true;
+                }
+
+                if (ImGui::Button("Back to Login")) {
+                    show_forgot_password_window = false;
+                    show_login_window = true;
+                }
+
+                ImGui::End();
             }
 
-            if (ImGui::Button("Back to Login")) {
-                show_token_window = false;
-                show_login_window = true;
+            if (show_password_reset_window) {
+                static bool tokenWindowIsOpen = true;
+
+                ImGui::Begin("Enter Token and New Password", &tokenWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                if (!tokenWindowIsOpen) {
+                SaveSettings();
+                PostQuitMessage(0);
+                }
+
+                static char passwordResetToken[128] = "";
+                static char newPassword[128] = "";
+
+                ImGui::InputText("Token", passwordResetToken, IM_ARRAYSIZE(passwordResetToken));
+                ImGui::SameLine();
+                ShowHelpMarker("Sent to you by e-mail");
+
+                ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
+
+                static std::string statusText = "";
+
+                if (ImGui::Button("Submit")) {
+                    // Implement the logic to verify the token and update the password
+                    if (SetNewPassword(passwordResetToken, newPassword)) {
+                        MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
+                        show_password_reset_window = false;
+                        show_login_window = true;
+                    } else {
+                        statusText = "Failed to set new password. Please try again.";
+                    }
+                }
+                ImGui::SameLine();
+                ImGui::Text("%s", statusText.c_str());
+
+                if (ImGui::Button("Request new token")) {
+                    show_password_reset_window = false;
+                    show_forgot_password_window = true;
+                }
+
+                if (ImGui::Button("Back to Login")) {
+                    show_password_reset_window = false;
+                    show_login_window = true;
+                }
+
+                ImGui::End();
             }
 
-            ImGui::End();
-        }
-
-        if (show_info_window) {
-            ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+            if (show_info_window) {
+                ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
             ImGui::Text("Sylent-X %s", currentVersion.c_str());
-            ImGui::Text("Made with hate in Germany by Francis, Shaiko and Manu.");
+            ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
+            ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
             ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
+            ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
             ImGui::End();
-        }
-
-        if (show_settings_window) {
-            ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            // Dropdown for selecting the update channel
-            static int updateChannel = 0;
-            const char* updateChannels[] = { "Stable", "Beta", "Dev" };
-            ImGui::Combo("Update Channel", &updateChannel, updateChannels, IM_ARRAYSIZE(updateChannels));   
-
-            ImGui::ShowColorWheel(textColor); // Show the color wheel        
-
-            if (ImGui::Button("Save Settings")) {
-                SaveSettings();
             }
 
-            ImGui::End();
-        }
+            if (show_settings_window) {
+                ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                if (setting_enableRainbow) {
+                    UpdateRainbowColor(setting_rainbowSpeed);
+                }                
 
-        if (show_main_window) {
-            std::string windowTitle = "Sylent-X " + currentVersion;
-            static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
-            ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
-
-            // close the window if the user clicks the close button
-            if (!mainWindowIsOpen) {
-                PostQuitMessage(0);
-            }
-
-            static bool optionGravity = false;
-            static bool optionZoom = false;
-            static bool optionMoonjump = false;
-
-            if (ImGui::CollapsingHeader("POV", ImGuiTreeNodeFlags_DefaultOpen)) {
-                static float zoomValue = 15.0f; // Default zoom value
-                ImGui::Checkbox("Enable Zoom", &optionZoom);
+                // Checkbox to enable/disable rainbow effect
+                ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
                 ImGui::SameLine();
-                if (optionZoom && ImGui::SliderFloat("Zoom", &zoomValue, 10.0f, 50.0f)) { // Adjust the range as needed
-                    MemoryManipulation("zoom", zoomValue);
+                // Slider to control the speed of the rainbow effect
+                ImGui::SliderFloat("Rainbow Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
+                
+                // Show the color wheel
+                ImGui::ShowColorWheel(textColor);
+
+                // Slider to adjust the font size
+                ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
+
+                ImGui::Separator();
+
+                if (ImGui::Button("Save Settings")) {
+                    SaveSettings();
+                    show_settings_window = false;
                 }
-            }
 
-            ImGui::Spacing();
+                ImGui::SameLine();
+                if (ImGui::Button("Create Ticket")) {
+                    ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Password Reset")) {
+                    show_forgot_password_window = true;
+                    show_settings_window = false;
+                }
+                
+                    ImGui::End();
+                }
 
-            if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
-                ImGui::BeginDisabled(!featureGravity);
-                if (ImGui::Checkbox("Gravity", &optionGravity)) {
-                    float newValue = optionGravity ? -8.0f : 8.0f;
-                    // print all global pointers from g_pointers
-                    LogDebug("Printing all pointers: ");
-                    for (const auto& pointer : g_pointers) {
-                        std::stringstream ss;
-                        ss << std::hex << pointer.address;
-                        LogDebug("Pointer: " + pointer.name + " Address: 0x" + ss.str() + " Offsets: ");
-                        for (const auto& offset : pointer.offsets) {
-                            ss.str(""); // Clear the stringstream
-                            ss << std::hex << offset;
-                            LogDebug("Offset: 0x" + ss.str());
+
+            if (show_main_window) {
+                std::string windowTitle = "Sylent-X " + currentVersion;
+                static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
+                ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
+                ImGui::Text("Status: %s", currentStatus.c_str());
+                ImGui::SameLine();
+                ImGui::Text("Magnat: %d", magnatCurrency);
+
+                // close the window if the user clicks the close button
+                if (!mainWindowIsOpen) {
+                    SaveSettings();
+                    PostQuitMessage(0);
+                }
+
+                // close the window if the user clicks the close button
+                if (!mainWindowIsOpen) {
+                    SaveSettings();
+                    PostQuitMessage(0);
+                }
+
+                if (isAdmin) {
+                    if (ImGui::CollapsingHeader("Admins", ImGuiTreeNodeFlags_DefaultOpen)) {
+                        static float fastflyValue = 250.0f; // Default moonjump value
+                        static bool prevflyState = false; // Track previous state of the checkbox
+                        ImGui::BeginDisabled(!featureFastfly);
+                        if (ImGui::Checkbox("FastFly", &optionFastFly)) {
+                            if (optionFastFly) {
+                                prevflyState = true;
+                            } else if (prevflyState) {
+                                // Reset fly value to 4.8f when checkbox is unchecked
+                                fastflyValue = 4.8f;
+                                MemoryManipulation("fastfly", fastflyValue);
+                                prevflyState = false;
+                            }
+                        }
+                        ImGui::EndDisabled();
+                        if (optionFastFly) {
+                            ImGui::SameLine();
+                            if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
+                                MemoryManipulation("fastfly", fastflyValue);
+                            }
+                        }
+                        ImGui::SameLine();
+                        ShowHelpMarker("Only shown for Admins");
+                        if (!featureFastfly) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
                         }
                     }
-                    MemoryManipulation("gravity", newValue);
+                } 
+
+                if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    static float zoomValue = 15.0f; // Default zoom value
+                    static bool prevZoomState = false; // Track previous state of the checkbox
+
+                    ImGui::Checkbox("Enable Zoom", &optionZoom);               
+                        if (optionZoom) {
+                            ImGui::SameLine();
+                            if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                                MemoryManipulation("zoom", zoomValue);
+                            }
+                        } else if (prevZoomState) {
+                            // Reset zoom value to 15.0f when checkbox is unchecked
+                            zoomValue = 15.0f;
+                            MemoryManipulation("zoom", zoomValue);
+                        }
+
+                    prevZoomState = optionZoom; // Update previous state
+
+                    ImGui::BeginDisabled(!featureFov);
+                    if (ImGui::Checkbox("Field of View", &optionFov)) {
+                        float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
+                        MemoryManipulation("fov", newValue);
+                    }
+                    ImGui::EndDisabled();
+
                 }
-                ImGui::EndDisabled();
-                ImGui::BeginDisabled(!featureMoonjump);
-                if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
-                    float newValue = optionMoonjump ? 1.0f : 4.0f;
-                    MemoryManipulation("moonjump", newValue);
+
+                ImGui::Spacing();
+
+                if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+                    ImGui::BeginDisabled(!featureSpeedhack);
+                    if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
+                        float newValue = optionSpeedHack ? 5.6f : 4.8f;
+                        MemoryManipulation("speedhack", newValue);
+                    }
+                    if (featureSpeedhack) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("Use at own risk");
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureSpeedhack) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
+
+                    ImGui::BeginDisabled(!featureGravity);
+                    if (ImGui::Checkbox("Flyhack", &optionGravity)) {
+                        MemoryManipulation("gravity");
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureGravity) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
+                    static float moonjumpValue = 4.0f; // Default moonjump value
+                    static bool prevjumpState = false; // Track previous state of the checkbox
+                    ImGui::BeginDisabled(!featureMoonjump);
+                    if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
+                        if (optionMoonjump) {
+                            prevjumpState = true;
+                        } else if (prevjumpState) {
+                            // Reset zoom value to 4.0f when checkbox is unchecked
+                            moonjumpValue = 4.0f;
+                            MemoryManipulation("moonjump", moonjumpValue);
+                            prevjumpState = false;
+                        }
+                    }
+                    if (optionMoonjump) {
+                        ImGui::SameLine();
+                        if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
+                            MemoryManipulation("moonjump", moonjumpValue);
+                        }
+                        ImGui::SameLine();
+                        ShowHelpMarker("We recommend value 1.00");
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureMoonjump) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
+
+                    ImGui::BeginDisabled(!featureMoonwalk);
+                    if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
+                        float newValue = optionMoonwalk ? 9.219422856E-41f : 0.0f;
+                        MemoryManipulation("moonwalk", newValue);
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureMoonwalk) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
+
+                    // Check for global key press and release events using Windows API
+                    if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
+                        MemoryManipulation("gravity", -8.0f);
+                    }
+
+                    if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
+                        MemoryManipulation("gravity", 8.0f);
+                    }
                 }
-                ImGui::EndDisabled();
 
-                ImGui::BeginDisabled(!featureMoonwalk);
-                if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                    float newValue = optionMoonwalk ? 9.219422856E-41f : 0.0f;
-                    MemoryManipulation("moonwalk", newValue);
+                // ImGui::Spacing();
+// 
+                // if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
+                //     std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
+                //     if (values.size() == 3) {
+                //         ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
+                //     } else {
+                //         ImGui::Text("Failed to read position values.");
+                //     }
+                // } 
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                // button to open the regnum settings window
+                if (ImGui::Button("Regnum Settings")) {
+                    show_regnum_settings_window = true;
                 }
-                ImGui::EndDisabled();
-            }
 
-            ImGui::Spacing();
-            ImGui::Spacing();
-
-            ImGui::SameLine();
-            if (ImGui::Button("Chat")) {
-                show_chat_window = true;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Feedback")) {
-                show_feedback_window = true;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Settings")) {
-                show_settings_window = true;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Logout")) {
-                Logout(); // Use the logic from ApiHandler.cpp
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Credits")) {
-                show_info_window = true;
-            }
-
-            // checkbox to toggle debug logging
-            ImGui::Checkbox("Debug Log", &debugLog);
-            ImGui::SameLine();
-
-            // button to call admin UI, only visible if isAdmin is true
-            if (isAdmin && ImGui::Button("Admin UI")) {
-                GetAllUsers();
-                show_admin_window = true; // Show the admin window
-            }
-
-            // Log and chat display box at the bottom
-            ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (const auto& msg : logMessages) {
-                ImGui::TextWrapped("%s", msg.c_str());
-            }
-            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-            }
-            ImGui::EndChild();
-
-            // input field and button to send chat messages using sendChatMessage function
-            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-            ImGui::SameLine();
-            if (ImGui::Button("Send Chat")) {
-                if (strlen(chatInput) > 0) {
-                    SendChatMessage(chatInput);
-                    chatInput[0] = '\0'; // Clear input field
+                // button to configure the Regnum Online accounts
+                if (ImGui::Button("Regnum Accounts")) {
+                    show_regnum_accounts_window = true;
                 }
+
+                // regnumLoginUser and regnumLoginPassword are the username and password for the Regnum Online client, respectively
+                static char regnumLoginUser[128] = "";
+                static char regnumLoginPassword[128] = "";
+
+                ImGui::InputText("Regnum User", regnumLoginUser, IM_ARRAYSIZE(regnumLoginUser));
+                ImGui::InputText("Regnum Pass", regnumLoginPassword, IM_ARRAYSIZE(regnumLoginPassword), ImGuiInputTextFlags_Password);
+
+                if (ImGui::Button("Run Regnum Online")) {
+                    runRoClientGame(regnumLoginUser, regnumLoginPassword);
+                }
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                ImGui::SameLine();
+                if (ImGui::Button("Chat")) {
+                    show_chat_window = true;
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Activate License")) {
+                show_license_window = true;
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Settings")) {
+                    show_settings_window = true;
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Credits")) {
+                    show_info_window = true;
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Feedback")) {
+                    show_feedback_window = true;
+                }
+
+                if (isAdmin) {
+                    ImGui::SameLine();
+                    if (ImGui::Button("Admin")) {
+                        GetAllUsers();
+                        GetAllLicenses();
+                        show_admin_window = true; // Show the admin window
+                    }
+
+                    ShowAdminPanel(&show_admin_window);
+                    
+                    ImGui::SameLine();
+                    if (ImGui::Checkbox("Debug", &setting_debugLog)) {
+                        if (setting_debugLog) {
+                            Log("Debug logging enabled");
+                        } else {
+                            Log("Debug logging disabled");
+                        }
+                    }
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Logout")) {
+                    ImGui::OpenPopup("Confirm Logout");
+                }
+
+                if (ImGui::BeginPopupModal("Confirm Logout", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                    ImGui::Text("Are you sure you want to logout?\nThis will remove your login credentials and close the application.\nYour license key is stored in your account and will be available after you login again.");
+                    ImGui::Separator();
+
+                    if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                        Logout(); // Use the logic from ApiHandler.cpp
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                // Log and chat display box at the bottom
+                ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                for (const auto& msg : logMessages) {
+                    ImGui::TextWrapped("%s", msg.c_str());
+                }
+                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                }
+                ImGui::EndChild();
+
+                // input field and button to send chat messages using sendChatMessage function
+                ImGui::PushItemWidth(360); // Set the width of the input field
+                if (ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    if (strlen(chatInput) > 0) {
+                        SendChatMessage(chatInput);
+                        chatInput[0] = '\0'; // Clear input field
+                    }
+                }
+                ImGui::PopItemWidth(); // Reset the item width to default
+                ImGui::SameLine();
+                if (ImGui::Button("Send") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+                    if (strlen(chatInput) > 0) {
+                        SendChatMessage(chatInput);
+                        chatInput[0] = '\0'; // Clear input field
+                    }
+                }
+
+                ImGui::End();
             }
 
-            ImGui::End();
+            if (show_regnum_accounts_window) {
+                ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                ImGui::Text("Regnum Accounts");
+
+                ImGui::End();
+            }
+
+            if (show_regnum_settings_window) {
+                ImGui::Begin("Regnum Settings", &show_regnum_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+                // large info that indiciates that those settings are not working yet
+                ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
+
+                // slider to set sound volume
+                static float soundVolume = 0.5f;
+                ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 1.0f);
+
+                // checkbox to enable/disable music
+                static bool enableMusic = true;
+                ImGui::Checkbox("Enable Music", &enableMusic);
+
+                // checkbox to enable/disable sound effects
+                static bool enableSoundEffects = true;
+                ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
+
+                // button to save the settings
+                if (ImGui::Button("Save Settings")) {
+                    // Implement the logic to save the settings
+                }
+
+                ImGui::End();
+
+            }
+        
+            if (show_feedback_window) {
+                ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+
+                static int feedbackType = 0;
+                static bool feedback_includeLogfile = true;
+                const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
+                static char feedbackText[1024] = "";
+                static std::string feedbackMessage = "";
+
+                ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
+
+                ImGui::SameLine();
+                ImGui::Checkbox("Include Log File", &feedback_includeLogfile);
+
+                ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
+
+
+                if (ImGui::Button("Submit")) {
+                    try {
+                        SendFeedback(feedbackTypes[feedbackType], feedbackText, feedback_includeLogfile);
+                        feedbackMessage = "Feedback sent successfully!";
+                        feedbackText[0] = '\0'; // Clear the feedback text
+                    } catch (const std::exception& e) {
+                        feedbackMessage = "Failed to send feedback: " + std::string(e.what());
+                    }
+                }
+
+                if (!feedbackMessage.empty()) {
+                    ImGui::Text("%s", feedbackMessage.c_str());
+                }
+
+                ImGui::End();
+            }
         }
+        
+            if (show_chat_window) {
+                ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-        if (show_feedback_window) {
-            ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-
-            static int feedbackType = 0;
-            const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
-
-            ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
-            ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
-
-            if (ImGui::Button("Submit")) {
-                // Handle feedback submission logic here
-                SendFeedbackToDiscord(feedbackText, feedbackTypes[feedbackType]); // Pass feedback text and type
-            }
-
-            ImGui::End();
-        }
-
-        if (show_chat_window) {
-            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            // Log display box at the bottom
-            ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (const auto& msg : g_chatMessages) {
-                ImGui::TextWrapped("%s", msg.c_str());
-            }
-            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-            }
-
-            ImGui::EndChild();
-
-            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-
-            ImGui::SameLine();
-            
-            if (ImGui::Button("Send Message")) {
-                if (strlen(chatInput) > 0) {
-                    SendChatMessage(chatInput);
-                    chatInput[0] = '\0'; // Clear input field
+                // Log display box at the bottom
+                ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                for (const auto& msg : g_chatMessages) {
+                    ImGui::TextWrapped("%s", msg.c_str());
                 }
+                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                }
+
+                ImGui::EndChild();
+
+                ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+
+                ImGui::SameLine();
+                
+                if (ImGui::Button("Send Message")) {
+                    if (strlen(chatInput) > 0) {
+                        SendChatMessage(chatInput);
+                        chatInput[0] = '\0'; // Clear input field
+                    }
+                }
+
+                ImGui::End();
             }
+        if (g_ShowUI)
+        {
 
-            ImGui::End();
-        }
+            if (show_license_window) {
+                ImGui::Begin("Activate License", &show_license_window, ImGuiWindowFlags_AlwaysAutoResize);
+                
+                static char licenseKey[128] = "";
 
-        if (show_admin_window) { // Add this block
-            ImGui::Begin("Admin Panel", &show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                // Display the input text field for the license key
+                ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
 
-            // Add admin-specific controls here
-            ImGui::Text("Admin Controls");
+                // Display the submit button
+                if (ImGui::Button("Submit")) {
+                    try {
+                        ActivateLicense(licenseKey);
+                        ImGui::Text("License activated successfully!");
+                    } catch (const std::exception& e) {
+                        Log("Failed to activate license: " + std::string(e.what()));
+                        ImGui::Text("Failed to activate license: %s", e.what());
+                    }
+                }
 
-            ImGui::Spacing();
-
-            // Add UI for generating license keys
-            static char licenseKey[128] = "";
-            if (ImGui::Button("Generate License Key")) {
-                // Logic to generate license key will be implemented later
-                strcpy(licenseKey, "GeneratedLicenseKey123"); // Placeholder
+                ImGui::End();
             }
-            ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_ReadOnly);
-
-            ImGui::Spacing();
-
-            // Add UI for banning users
-            static char banUsername[128] = "";
-            ImGui::InputText("Username to Ban", banUsername, IM_ARRAYSIZE(banUsername));
-            if (ImGui::Button("Ban User")) {
-                // Logic to ban user will be implemented later
-                // Placeholder for ban logic
-                std::cout << "User " << banUsername << " banned." << std::endl;
-            }
-
-            // table from GetAllUsersRawJson
-
-            ImGui::Spacing();
-
-            ImGui::Text("All Users");
-
-            DisplayUsersTable();
-                        
-            ImGui::Spacing();
-
-            ImGui::End();
         }
 
         // Rendering
@@ -647,85 +847,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     return 0;
 }
 
-void DisplayUsersTable() {
-    // Parse the JSON data
-    nlohmann::json jsonData;
-    try {
-        jsonData = nlohmann::json::parse(GetAllUsersRawJson);
-    } catch (const nlohmann::json::parse_error& e) {
-        std::cerr << "Failed to parse JSON: " << e.what() << std::endl;
-        return;
-    }
-
-    // Check if jsonData contains the "users" array
-    if (!jsonData.contains("users") || !jsonData["users"].is_array()) {
-        std::cerr << "Expected JSON array 'users' but got: " << jsonData.type_name() << std::endl;
-        return;
-    }
-
-    // Begin the ImGui table with a maximum height
-    ImGui::BeginChild("UsersTableChild", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-    ImGui::BeginTable("AllUsersTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable);
-        ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 20.0f);
-        ImGui::TableSetupColumn("Username", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Email", ImGuiTableColumnFlags_WidthFixed, 150.0f);
-        ImGui::TableSetupColumn("Role", ImGuiTableColumnFlags_WidthFixed, 30.0f);
-        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-        ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_WidthFixed, 120.0f);
-        ImGui::TableHeadersRow();
-
-        // Iterate over the user data and populate the table rows
-        for (const auto& user : jsonData["users"]) {
-            if (!user.is_object()) {
-                std::cerr << "Expected JSON object but got: " << user.type_name() << std::endl;
-                continue;
-            }
-
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::Text("%d", user.value("id", 0));
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", user.value("username", "N/A").c_str());
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", user.value("email", "N/A").c_str());
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", user.value("is_admin", 0) ? "Admin" : "User");
-            ImGui::TableNextColumn();
-            // if is_active, show disable button, else show enable button
-            if (user.value("is_active", 0)) {
-                if (ImGui::Button(("Enabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                    // Placeholder for disable logic
-                    std::cout << "User " << user.value("username", "N/A") << " disabled." << std::endl;
-                }
-            } else {
-                if (ImGui::Button(("Disabled##" + std::to_string(user.value("id", 0))).c_str())) {
-                    // Placeholder for enable logic
-                    std::cout << "User " << user.value("username", "N/A") << " enabled." << std::endl;
-                }
-            }
-            ImGui::TableNextColumn();
-            // button to call ToggleUserBan with user["id"]
-            if (user.value("is_banned", 0)) {
-                if (ImGui::Button(("Unban##" + std::to_string(user.value("id", 0))).c_str())) {
-                    ToggleUserBan(user.value("id", 0));
-                }
-            } else {
-                if (ImGui::Button(("Ban##" + std::to_string(user.value("id", 0))).c_str())) {
-                    ToggleUserBan(user.value("id", 0));
-                }
-            }
-        }
-    
-    ImGui::EndTable();
-    ImGui::EndChild();
-}
-
-void CleanupDeviceD3D()
-{
-    if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = nullptr; }
-    if (g_pD3D) { g_pD3D->Release(); g_pD3D = nullptr; }
-}
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -748,27 +869,15 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         ::PostQuitMessage(0);
         return 0;
+    case WM_KEYDOWN:
+        if (wParam == VK_INSERT)
+        {
+            g_ShowUI = !g_ShowUI;
+            return 0;
+        }
+        break;
     }
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
-}
-
-bool CreateDeviceD3D(HWND hWnd)
-
-{
-    if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == nullptr)
-        return false;
-
-    ZeroMemory(&g_d3dpp, sizeof(g_d3dpp));
-    g_d3dpp.Windowed = TRUE;
-    g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    g_d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-    g_d3dpp.EnableAutoDepthStencil = TRUE;
-    g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-    g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;          
-    if (g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_d3dpp, &g_pd3dDevice) < 0)
-        return false;
-
-    return true;
 }
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
@@ -834,6 +943,13 @@ DWORD GetProcessIdByName(const std::wstring& processName) {
     return processId;
 }
 
+// Define MemoryAddress struct
+struct MemoryAddress {
+    std::string name;
+    uintptr_t address;
+    std::vector<unsigned long> offsets;
+};
+
 // Memory class to handle memory operations
 class Memory {
 public:
@@ -841,9 +957,25 @@ public:
     bool WriteFloat(uintptr_t address, float value);
 };
 
+// function to get process path
+std::wstring GetProcessPath(DWORD pid) {
+    std::wstring path;
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (hProcess) {
+        wchar_t buffer[MAX_PATH];
+        DWORD size = MAX_PATH;
+        if (QueryFullProcessImageNameW(hProcess, 0, buffer, &size)) {
+            path = buffer;
+        }
+        CloseHandle(hProcess);
+    }
+    return path;
+}
+
 // Function to get the base address of a memory address
 uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
     LogDebug(L"Getting base address of " + std::wstring(memAddr.name.begin(), memAddr.name.end()) + L" at address: " + std::to_wstring(memAddr.address));
+    LogDebug("ROClientGame.exe path:  " + WStringToString(GetProcessPath(pid)));
     return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
 }
 
@@ -857,86 +989,91 @@ bool Memory::WriteFloat(uintptr_t address, float value) {
 void MemoryManipulation(const std::string& option, float newValue) {
     LogDebug("MemoryManipulation called with option: " + option);
     pid = GetProcessIdByName(L"ROClientGame.exe");
-
     // Check if the game process is running
     if (pid == 0) {
         LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
-        // return;
+        return;
     }
-
     // Open the game process
-    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    HANDLE hProcess = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_VM_READ, FALSE, pid);
     // Check if the process is valid
     if (!hProcess) {
         LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
-        // return;
+        return;
     } else {
         LogDebug(L"Successfully opened ROClientGame.exe process: " + std::to_wstring(pid));
     }
-
     // Get the base address of the game module
     uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
     // Check if the base address is valid
     if (baseAddress == 0) {
         LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
         CloseHandle(hProcess);
-        // return;
+        return;
     } else {
         LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
     }
 
-    // Initialize the Memory class
-    LogDebug(L"Initializing Memory class for " + std::wstring(option.begin(), option.end()) + L" option with new value: " + std::to_wstring(newValue) + L" and base address: " + std::to_wstring(baseAddress) + L" and process ID: " + std::to_wstring(pid));
-    LogDebug(L"Global pointers: ");
-    for (const auto& pointer : g_pointers) {
-        std::stringstream ss;
-        ss << std::hex << pointer.address;
-        LogDebug("Pointer: " + pointer.name + " Address: 0x" + ss.str() + " Offsets: ");
-        for (const auto& offset : pointer.offsets) {
-            std::stringstream ss;
-            ss << std::hex << offset;
-            LogDebug("Offset: 0x" + ss.str());
-        }
+    // Find the pointer with the given option
+    auto it = std::find_if(g_pointers.begin(), g_pointers.end(), [&option](const Pointer& ptr) {
+        return ptr.name == option;
+    });
+
+    if (it == g_pointers.end()) {
+        LogDebug(L"Pointer not found for option: " + std::wstring(option.begin(), option.end()));
+        CloseHandle(hProcess);
+        return;
     }
-    // Iterate through all pointers and apply the memory manipulation for those that match the option
-    for (const auto& pointer : g_pointers) {
-        if (pointer.name == option) {
-            LogDebug(L"Found the " + std::wstring(option.begin(), option.end()) + L" pointer at address: " + std::to_wstring(pointer.address) + L" with " + std::to_wstring(pointer.offsets.size()) + L" offsets");
 
-            // Calculate the final address
-            uintptr_t optionPointer = baseAddress + pointer.address;
-            LogDebug(std::wstring(option.begin(), option.end()) + L" pointer address: " + std::to_wstring(optionPointer));
+    const Pointer& pointer = *it;
+    uintptr_t finalAddress = baseAddress + pointer.address;
+    LogDebug(L"Calculated final address: 0x" + std::to_wstring(finalAddress));
 
-            // Read the final address
-            uintptr_t finalAddress = optionPointer;
-            LogDebug(std::wstring(option.begin(), option.end()) + L" final address: " + std::to_wstring(finalAddress));
-            SIZE_T bytesRead;
-
-            // Iterate through the offsets
-            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-                // Read the final address with the offsets applied
-                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
-                    // Check if the read was successful
-                    if (bytesRead != sizeof(finalAddress)) {
-                        LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
-                        return;
-                    }
-                    // Apply the offsets to the final address
-                    finalAddress += pointer.offsets[i];
-                    LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
-                } else {
+    // If there are offsets, apply them
+    if (!pointer.offsets.empty()) {
+        SIZE_T bytesRead;
+        for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+            if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                // Check if the read was successful
+                if (bytesRead != sizeof(finalAddress)) {
                     LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
+                    CloseHandle(hProcess);
                     return;
                 }
-            }
-
-            // Write the new value to the final address with the offsets applied (if needed)
-            if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-                LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
+                // Apply the offsets to the final address
+                finalAddress += pointer.offsets[i];
+                LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
             } else {
-                LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()).c_str());
+                LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
+                CloseHandle(hProcess);
+                return;
             }
         }
+    }
+
+    // Check memory protection before writing
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQueryEx(hProcess, (LPCVOID)finalAddress, &mbi, sizeof(mbi)) == 0) {
+        LogDebug(L"Failed to query memory protection. Error code: " + std::to_wstring(GetLastError()));
+        CloseHandle(hProcess);
+        return;
+    }
+
+    if (!(mbi.Protect & PAGE_READWRITE) && !(mbi.Protect & PAGE_WRITECOPY)) {
+        LogDebug(L"Memory region is not writable. Changing protection...");
+        DWORD oldProtect;
+        if (!VirtualProtectEx(hProcess, (LPVOID)finalAddress, sizeof(newValue), PAGE_READWRITE, &oldProtect)) {
+            LogDebug(L"Failed to change memory protection. Error code: " + std::to_wstring(GetLastError()));
+            CloseHandle(hProcess);
+            return;
+        }
+    }
+
+    // Write the new value to the final address
+    if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
+        LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
+    } else {
+        LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()));
     }
 
     CloseHandle(hProcess);
@@ -945,9 +1082,67 @@ void MemoryManipulation(const std::string& option, float newValue) {
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
 
-void ContinuousMemoryWrite(const std::string& option) {
-    while (isWriting) {
-        MemoryManipulation(option);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the interval as needed
+std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
+    std::vector<float> values;
+    pid = GetProcessIdByName(L"ROClientGame.exe");
+    if (pid == 0) {
+        LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
+        return values;
     }
+
+    HANDLE hProcess = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (!hProcess) {
+        LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
+        return values;
+    }
+
+    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
+    if (baseAddress == 0) {
+        LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
+        CloseHandle(hProcess);
+        return values;
+    }
+
+    for (const auto& option : options) {
+        auto it = std::find_if(g_pointers.begin(), g_pointers.end(), [&option](const Pointer& ptr) {
+            return ptr.name == option;
+        });
+        if (it == g_pointers.end()) {
+            LogDebug(L"Pointer not found for option: " + std::wstring(option.begin(), option.end()));
+            continue;
+        }
+
+        const Pointer& pointer = *it;
+        uintptr_t finalAddress = baseAddress + pointer.address;
+        LogDebug(L"Base address for " + std::wstring(option.begin(), option.end()) + L": 0x" + std::to_wstring(baseAddress));
+        LogDebug(L"Initial final address for " + std::wstring(option.begin(), option.end()) + L": 0x" + std::to_wstring(finalAddress));
+
+        if (!pointer.offsets.empty()) {
+            SIZE_T bytesRead;
+            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
+                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
+                    if (bytesRead != sizeof(finalAddress)) {
+                        LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
+                        break;
+                    }
+                    finalAddress += pointer.offsets[i];
+                    LogDebug(L"Updated final address for " + std::wstring(option.begin(), option.end()) + L" after offset " + std::to_wstring(i) + L": 0x" + std::to_wstring(finalAddress));
+                } else {
+                    LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()));
+                    break;
+                }
+            }
+        }
+
+        float value = 0.0f;
+        if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &value, sizeof(value), NULL)) {
+            LogDebug(L"Successfully read " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(value));
+            values.push_back(value);
+        } else {
+            LogDebug(L"Failed to read " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()));
+        }
+    }
+
+    CloseHandle(hProcess);
+    return values;
 }
