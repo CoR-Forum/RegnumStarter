@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "vcpkg"
+  - package-ecosystem: "nuget"
     directory: "/" # Adjust this to the directory where your vcpkg.json file is located
     schedule:
       interval: "daily"
