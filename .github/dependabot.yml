@@ -3,4 +3,4 @@ updates:
   - package-ecosystem: "vcpkg"
     directory: "/" # Adjust this to the directory where your vcpkg.json file is located
     schedule:
-      interval: "hourly"
+      interval: "daily"
