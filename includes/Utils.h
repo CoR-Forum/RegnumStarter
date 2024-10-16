@@ -119,6 +119,8 @@ bool featureMoonwalk = false;
 bool featureMoonjump = false;
 bool featureFastfly = false;
 bool featureSpeedhack = false;
+// Variable to store the checkbox state
+bool excludeFromCapture = false;
 
 // Keydown states
 bool isGravityKeyPressed = false;
