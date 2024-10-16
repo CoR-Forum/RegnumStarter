@@ -319,8 +319,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
 
-                static std::string statusText = "";
-
                 if (ImGui::Button("Submit")) {
                     // Implement the logic to verify the token and update the password
                     if (SetNewPassword(passwordResetToken, newPassword)) {
@@ -328,11 +326,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         show_password_reset_window = false;
                         show_login_window = true;
                     } else {
-                        statusText = "Failed to set new password. Please try again.";
+                        ImGui::Text("Failed to update password. Please try again.");
                     }
                 }
-                ImGui::SameLine();
-                ImGui::Text("%s", statusText.c_str());
 
                 if (ImGui::Button("Request new token")) {
                     show_password_reset_window = false;
