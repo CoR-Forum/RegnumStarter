@@ -49,12 +49,8 @@ extern bool featureFastfly;
 extern bool featureSpeedhack;
 extern bool featureFakelag;
 
-// Your window handle
-extern HWND hwnd;
-
 std::vector<Pointer> pointers;
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
-
 
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
