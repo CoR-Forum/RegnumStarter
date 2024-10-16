@@ -36,6 +36,8 @@ bool show_info_window = false;
 bool show_regnum_settings_window = false;
 bool show_regnum_accounts_window = false;
 bool g_ShowUI = true;
+// Variable to store the checkbox state
+bool excludeFromCapture = false;
 
 extern bool featureZoom;
 extern bool featureFov;
@@ -46,14 +48,16 @@ extern bool featureFreecam;
 extern bool featureFastfly;
 extern bool featureSpeedhack;
 extern std::string login;
+// Your window handle
+extern HWND hwnd;
 
 std::vector<Pointer> pointers;
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
-void SetWindowCaptureExclusion(HWND hwnd)
+void SetWindowCaptureExclusion(HWND hwnd, bool exclude)
 {
     // Set the window display affinity to exclude from capture
-    SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
+    SetWindowDisplayAffinity(hwnd, exclude ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
 }
 
 void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
@@ -106,7 +110,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
     HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1200, 1000, NULL, NULL, wc.hInstance, NULL);
-    SetWindowCaptureExclusion(hwnd);
+    SetWindowCaptureExclusion(hwnd, excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
     if (!CreateDeviceD3D(hwnd)) {
@@ -132,7 +136,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
-    SetWindowCaptureExclusion(hwnd);
+    SetWindowCaptureExclusion(hwnd, excludeFromCapture);
 
     static char username[128] = "";
     static char password[128] = "";
@@ -360,7 +364,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
                 if (setting_enableRainbow) {
                     UpdateRainbowColor(setting_rainbowSpeed);
-                }                
+                }              
 
                 // Checkbox to enable/disable rainbow effect
                 ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
@@ -390,6 +394,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_forgot_password_window = true;
                     show_settings_window = false;
                 }
+                ImGui::Separator();
+                if (ImGui::Checkbox("Streamproof", &excludeFromCapture))
+                    {
+                        // Update the window capture exclusion based on checkbox state
+                        SetWindowCaptureExclusion(hwnd, excludeFromCapture);
+                    }
                 
                     ImGui::End();
                 }
