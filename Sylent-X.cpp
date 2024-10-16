@@ -46,6 +46,7 @@ extern bool featureMoonwalk;
 extern bool featureFreecam;
 extern bool featureFastfly;
 extern bool featureSpeedhack;
+extern bool featureFakelag;
 extern std::string login;
 // Your window handle
 extern HWND hwnd;
@@ -552,6 +553,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                     ImGui::EndDisabled();
                     if (!featureMoonwalk) {
+                        ImGui::SameLine();
+                        ShowHelpMarker("This feature is not available in your current license.");
+                    }
+
+                    ImGui::BeginDisabled(!featureFakelag);
+                    if (ImGui::Checkbox("fakelag", &optionFakelag)) {
+                        float newValue = optionFakelag ? 9.219422856E-41f : 0.0f;
+                        MemoryManipulation("fakelag", newValue);
+                    }
+                    ImGui::EndDisabled();
+                    if (!featureFakelag) {
                         ImGui::SameLine();
                         ShowHelpMarker("This feature is not available in your current license.");
                     }
