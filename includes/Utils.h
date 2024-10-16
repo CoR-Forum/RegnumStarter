@@ -70,7 +70,7 @@ extern void ToggleUserBan(int userId);
 extern void ToggleUserAdmin(int userId);
 extern void ToggleUserActivation(int userId);
 extern void GetMagnatCurrency();
-extern void SendFeedback(const std::string& type, const std::string& message);
+extern void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile);
 extern void ActivateLicense(const std::string& licenseKey);
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
 
