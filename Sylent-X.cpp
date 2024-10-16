@@ -604,7 +604,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 if (ImGui::Button("Regnum Accounts")) {
-                    LoadRegnumAccounts();
                     show_regnum_accounts_window = true;
                 }
 
