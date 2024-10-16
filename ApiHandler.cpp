@@ -16,6 +16,7 @@ extern bool featureFov;
 extern bool featureSpeedhack;
 extern bool featureFreecam;
 extern bool featureFastfly;
+extern bool featureFakelag;
 
 std::string login;
 std::string password;
@@ -91,6 +92,7 @@ bool Login(const std::string& login, const std::string& password) {
                 featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
                 featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
                 featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
+                featureFakelag = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fakelag") != licensedFeatures.end();
                 featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
                 featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
                 featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
@@ -103,6 +105,7 @@ bool Login(const std::string& login, const std::string& password) {
                     std::string(featureFov ? ", Field of View" : "") + 
                     std::string(featureSpeedhack ? ", Speedhack" : "") + 
                     std::string(featureFastfly ? ", Fastfly" : "") + 
+                    std::string(featureFakelag ? ", fakelag" : "") + 
                     std::string(featureFreecam ? ", Freecam" : ""));
                     
                 // Check if role is not null
