@@ -7,6 +7,7 @@
 #include "libs/DirectX/DirectXInit.h"
 #include "ui/helper/UpdateRainbowColor.h"
 #include "ui/helper/ShowHelpMarker.h"
+#include "ui/helper/ShowLicenseMarker.h"
 #include "includes/streamproof/streamproof.h"
 #include "includes/chrono/chrono.h"
 #include "includes/process/process.h"
@@ -454,10 +455,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             }
                         }
                         ImGui::SameLine();
-                        ShowHelpMarker("Only shown for Admins");
                         if (!featureFastfly) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                         }
                     }
                 } 
@@ -505,7 +505,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureSpeedhack) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
 
                     ImGui::BeginDisabled(!featureGravity);
@@ -516,8 +516,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureGravity) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
+
                     static float moonjumpValue = 4.0f; // Default moonjump value
                     static bool prevjumpState = false; // Track previous state of the checkbox
                     ImGui::BeginDisabled(!featureMoonjump);
@@ -542,7 +543,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureMoonjump) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
 
                     ImGui::BeginDisabled(!featureMoonwalk);
@@ -553,7 +554,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureMoonwalk) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
 
                     ImGui::BeginDisabled(!featureFakelag);
@@ -569,7 +570,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureFakelag) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
 
                     // Check for global key press and release events using Windows API
