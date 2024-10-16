@@ -97,7 +97,7 @@ float setting_rainbowSpeed = 0.1f;
 bool setting_excludeFromCapture = false;
 
 // Global variables
-bool setting_debugLog = true;
+bool setting_log_debug = true;
 bool isAdmin = false;
 
 // Checkboxes states

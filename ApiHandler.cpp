@@ -234,7 +234,7 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
-        settingsJson["debugLog"] = setting_debugLog;
+        settingsJson["logDebug"] = setting_log_debug;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = setting_fontSize;
         settingsJson["enableRainbow"] = setting_enableRainbow;
@@ -286,7 +286,7 @@ void LoadSettings() {
                     setting_fontSize = settingsJson.value("fontSize", 1.0f);
                     setting_enableRainbow = settingsJson.value("enableRainbow", false);
                     setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
-                    setting_debugLog = settingsJson.value("debugLog", false);
+                    setting_log_debug = settingsJson.value("log_debug", false);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
