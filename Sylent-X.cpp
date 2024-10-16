@@ -402,7 +402,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Separator();
                     // License information from license_runtime_end and license_features
                     ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
-                    ImGui::Text("Licensed Features: %s", license_features.c_str());
                     
                     if (ImGui::Button("Activate a License")) {
                     show_settings_window = false;
