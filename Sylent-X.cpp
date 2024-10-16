@@ -75,6 +75,11 @@ void SetWindowCaptureExclusion(HWND hwnd, bool exclude)
     SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 }
 
+
+
+const std::string regnumLoginUser = "username";
+const std::string regnumLoginPassword = "password";
+
 void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -336,8 +341,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
 
-                static std::string statusText = "";
-
                 if (ImGui::Button("Submit")) {
                     // Implement the logic to verify the token and update the password
                     if (SetNewPassword(passwordResetToken, newPassword)) {
@@ -345,11 +348,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         show_password_reset_window = false;
                         show_login_window = true;
                     } else {
-                        statusText = "Failed to set new password. Please try again.";
+                        ImGui::Text("Failed to update password. Please try again.");
                     }
                 }
-                ImGui::SameLine();
-                ImGui::Text("%s", statusText.c_str());
 
                 if (ImGui::Button("Request new token")) {
                     show_password_reset_window = false;
@@ -594,24 +595,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Separator();
                 ImGui::Spacing();
 
-                // button to open the regnum settings window
                 if (ImGui::Button("Regnum Settings")) {
                     show_regnum_settings_window = true;
                 }
 
-                // button to configure the Regnum Online accounts
+                ImGui::SameLine();
                 if (ImGui::Button("Regnum Accounts")) {
                     show_regnum_accounts_window = true;
                 }
 
-                // regnumLoginUser and regnumLoginPassword are the username and password for the Regnum Online client, respectively
-                static char regnumLoginUser[128] = "";
-                static char regnumLoginPassword[128] = "";
+                ImGui::SameLine();
+                static int selectedAccount = -1;
+                const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
+                if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
+                    for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
+                        bool isSelected = (selectedAccount == i);
+                        if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
+                            selectedAccount = i;
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
 
-                ImGui::InputText("Regnum User", regnumLoginUser, IM_ARRAYSIZE(regnumLoginUser));
-                ImGui::InputText("Regnum Pass", regnumLoginPassword, IM_ARRAYSIZE(regnumLoginPassword), ImGuiInputTextFlags_Password);
-
-                if (ImGui::Button("Run Regnum Online")) {
+                ImGui::SameLine();
+                if (ImGui::Button("Play")) {
                     runRoClientGame(regnumLoginUser, regnumLoginPassword);
                 }
 
