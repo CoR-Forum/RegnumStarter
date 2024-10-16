@@ -8,6 +8,7 @@
 #include "helper/UpdateRainbowColor.h"
 #include "helper/ShowHelpMarker.h"
 #include "includes/streamproof/streamproof.h"
+#include "includes/chrono/chrono.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -562,7 +563,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             float newValue = 0.0f;
                             MemoryManipulation("fakelag", newValue);
                             MemoryManipulation("fakelagg", newValue);
-                            optionFakelag = false;
+                            std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
                         }
                     }
                     
