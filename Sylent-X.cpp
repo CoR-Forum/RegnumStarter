@@ -378,9 +378,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (show_settings_window) {
                 ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-                if (setting_enableRainbow) {
-                    UpdateRainbowColor(setting_rainbowSpeed);
-                }              
+        
 
                 ImGui::Text("Appearance Settings");
 
@@ -451,6 +449,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveSettings();
                     PostQuitMessage(0);
                 }
+
+                if (setting_enableRainbow) {
+                    UpdateRainbowColor(setting_rainbowSpeed);
+                }      
 
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
@@ -539,6 +541,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (ImGui::Checkbox("Flyhack", &optionGravity)) {
                         MemoryManipulation("gravity");
                     }
+                    
                     ImGui::EndDisabled();
                     if (!featureGravity) {
                         ImGui::SameLine();
