@@ -678,7 +678,6 @@ void SendFeedback(const std::string& type, const std::string& feedback, bool fee
         if (feedback_includeLogfile) {
             for (const auto& logMessage : logMessages) {
                 logContent += logMessage + "\n";
-                Log("Log message: " + logMessage);
             }
         }
 
