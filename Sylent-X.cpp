@@ -559,8 +559,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::BeginDisabled(!featureFakelag);
                     if (ImGui::Checkbox("fakelag", &optionFakelag)) {
-                        float newValue = optionFakelag ? 9.219422856E-41f : 0.0f;
-                        MemoryManipulation("fakelag", newValue);
+                        if (optionFakelag) {
+                            float newValue = 0.0f;
+                            MemoryManipulation("fakelag", newValue);
+                        }
                     }
                     ImGui::EndDisabled();
                     if (!featureFakelag) {
