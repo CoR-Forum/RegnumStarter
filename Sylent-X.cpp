@@ -4,7 +4,7 @@
 #include "ApiHandler.cpp"
 #include "Style.cpp"
 #include "ui/admin/AdminPanel.h"
-#include "DirectX/DirectXInit.h"
+#include "libs/DirectX/DirectXInit.h"
 #include "helper/UpdateRainbowColor.h"
 #include "helper/ShowHelpMarker.h"
 #include "includes/streamproof/streamproof.h"
