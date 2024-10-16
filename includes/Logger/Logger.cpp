@@ -8,6 +8,8 @@
 #include <locale>
 #include <codecvt>
 
+// const to store setting_log_maxMessages
+
 namespace {
     const size_t MAX_LOG_MESSAGES = 500; ///< Maximum number of log messages to keep in memory.
     const char* LOG_FILE_PATH = "\\Sylent-X\\log.txt"; ///< Path to the log file.
@@ -67,7 +69,7 @@ void Log(const std::string& message) {
  * @param message The debug message to log.
  */
 void LogDebug(const std::string& message) {
-    if (setting_debugLog) {
+    if (setting_log_debug) {
         Log("DEBUG: " + message);
     }
 }

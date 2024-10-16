@@ -70,13 +70,9 @@ extern void ToggleUserBan(int userId);
 extern void ToggleUserAdmin(int userId);
 extern void ToggleUserActivation(int userId);
 extern void GetMagnatCurrency();
-extern void SendFeedback(const std::string& type, const std::string& message);
+extern void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile);
 extern void ActivateLicense(const std::string& licenseKey);
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
-
-extern void SaveRegnumAccounts(const std::vector<std::string>& accounts);
-extern void LoadRegnumAccounts();
-
 
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;
@@ -101,7 +97,7 @@ float setting_rainbowSpeed = 0.1f;
 bool setting_excludeFromCapture = false;
 
 // Global variables
-bool setting_debugLog = true;
+bool setting_log_debug = true;
 bool isAdmin = false;
 
 // Checkboxes states

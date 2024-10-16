@@ -663,8 +663,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ShowAdminPanel(&show_admin_window);
                     
                     ImGui::SameLine();
-                    if (ImGui::Checkbox("Debug", &setting_debugLog)) {
-                        if (setting_debugLog) {
+                    if (ImGui::Checkbox("Debug", &setting_log_debug)) {
+                        if (setting_log_debug) {
                             Log("Debug logging enabled");
                         } else {
                             Log("Debug logging disabled");
@@ -731,6 +731,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
                 ImGui::Text("Regnum Accounts");
+
+                // display a table with 
 
                 ImGui::End();
             }

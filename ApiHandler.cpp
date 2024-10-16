@@ -234,7 +234,7 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
-        settingsJson["debugLog"] = setting_debugLog;
+        settingsJson["logDebug"] = setting_log_debug;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = setting_fontSize;
         settingsJson["enableRainbow"] = setting_enableRainbow;
@@ -286,7 +286,7 @@ void LoadSettings() {
                     setting_fontSize = settingsJson.value("fontSize", 1.0f);
                     setting_enableRainbow = settingsJson.value("enableRainbow", false);
                     setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
-                    setting_debugLog = settingsJson.value("debugLog", false);
+                    setting_log_debug = settingsJson.value("log_debug", false);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
@@ -310,33 +310,6 @@ void LoadSettings() {
         }
     } catch (const std::exception& e) {
         Log("Settings load failed with Exception: " + std::string(e.what()));
-    }
-}
-
-void SaveRegnumAccounts(const std::vector<std::string>& accounts) {
-    std::string path = std::string(appDataPath) + "\\Sylent-X\\regnum_accounts.txt";
-    std::ofstream file(path);
-    if (file.is_open()) {
-        for (const auto& acc : accounts) {
-            file << acc << std::endl;
-        }
-        file.close();
-    } else {
-        Log("Failed to open regnum accounts file for writing");
-    }
-}
-
-void LoadRegnumAccounts(std::vector<std::string>& accounts) {
-    std::string path = std::string(appDataPath) + "\\Sylent-X\\regnum_accounts.txt";
-    std::ifstream file(path);
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            accounts.push_back(line);
-        }
-        file.close();
-    } else {
-        Log("Failed to open regnum accounts file for reading");
     }
 }
 
@@ -705,7 +678,6 @@ void SendFeedback(const std::string& type, const std::string& feedback, bool fee
         if (feedback_includeLogfile) {
             for (const auto& logMessage : logMessages) {
                 logContent += logMessage + "\n";
-                Log("Log message: " + logMessage);
             }
         }
 
