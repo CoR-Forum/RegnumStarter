@@ -9,6 +9,7 @@
 #include "helper/ShowHelpMarker.h"
 #include "includes/streamproof/streamproof.h"
 #include "includes/chrono/chrono.h"
+#include "includes/process/process.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -581,16 +582,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 }
 
-                // ImGui::Spacing();
-// 
-                // if (ImGui::CollapsingHeader("Player")) {
-                //     std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
-                //     if (values.size() == 3) {
-                //         ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
-                //     } else {
-                //         ImGui::Text("Failed to read position values.");
-                //     }
-                // } 
+                ImGui::Spacing();
+ 
+                if (IsProcessOpen("ROClientGame.exe")) {
+                    if (ImGui::CollapsingHeader("Player")) {
+                        std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
+                        if (values.size() == 3) {
+                            ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
+                        } else {
+                            ImGui::Text("Failed to read position values.");
+                        }
+                    }
+                }
 
                 ImGui::Spacing();
                 ImGui::Separator();
