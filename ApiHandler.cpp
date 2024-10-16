@@ -20,6 +20,9 @@ extern bool featureFastfly;
 std::string login;
 std::string password;
 
+std::string license_runtime_end;
+std::string license_features;
+
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
     if (hConnect) InternetCloseHandle(hConnect);
@@ -103,6 +106,16 @@ bool Login(const std::string& login, const std::string& password) {
             std::string role = jsonResponse["role"];
             isAdmin = (role == "admin");
             Log("Role: " + role);
+
+            // save license information (runtime_end, licensed_features) to global variables for later use
+            license_runtime_end = jsonResponse["runtime_end"];
+            // Convert the licensed_features array to a comma-separated string
+            std::ostringstream oss;
+            for (const auto& feature : jsonResponse["licensed_features"]) {
+                if (oss.tellp() > 0) oss << ", ";
+                oss << feature.get<std::string>();
+            }
+            license_features = oss.str();
 
             g_pointers = InitializePointers();
             GetMagnatCurrency();

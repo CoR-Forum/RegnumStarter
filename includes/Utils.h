@@ -85,6 +85,9 @@ int magnatCurrency;
 extern std::string login;
 extern std::string password;
 
+extern std::string license_runtime_end;
+extern std::string license_features;
+
 // Global constants
 const char* appDataPath = getenv("APPDATA");
 const std::string currentVersion = "0.1.63"; // Current version of the application
