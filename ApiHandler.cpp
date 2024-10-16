@@ -1,7 +1,5 @@
 #include "Apihandler.h"
 
-#pragma once //added for register in sylent-x.cpp maybe check it 
-
 extern HWND hwnd; // Declare the handle to the main window
 
 extern bool featureZoom;

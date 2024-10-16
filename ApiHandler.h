@@ -1,3 +1,5 @@
+#pragma once
+
 #include "includes/Utils.h"
 #include <stdexcept>
 #include <sstream>
