@@ -562,8 +562,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             float newValue = 0.0f;
                             MemoryManipulation("fakelag", newValue);
                             MemoryManipulation("fakelagg", newValue);
+                            optionFakelag = false;
                         }
                     }
+                    
                     ImGui::EndDisabled();
                     if (!featureFakelag) {
                         ImGui::SameLine();
