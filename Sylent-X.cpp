@@ -382,11 +382,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     UpdateRainbowColor(setting_rainbowSpeed);
                 }              
 
-                // Checkbox to enable/disable rainbow effect
+                ImGui::Text("Appearance Settings");
+
                 ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
                 ImGui::SameLine();
-                // Slider to control the speed of the rainbow effect
-                ImGui::SliderFloat("Rainbow Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
+                ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
                 
                 // Show the color wheel
                 ImGui::ShowColorWheel(textColor);
@@ -396,12 +396,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::Separator();
 
+                ImGui::Text("Advanced Settings");
+
                 if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture))
                     {
-                        // Update the window capture exclusion based on checkbox state
                         SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     }
                 
+                ImGui::SameLine();
+                ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
 
                 ImGui::Separator();
 
@@ -424,7 +427,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     // License information from license_runtime_end and license_features
                     ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
                     ImGui::Text("Licensed Features: %s", license_features.c_str());
-
+                    
+                    if (ImGui::Button("Activate a License")) {
+                    show_settings_window = false;
+                    show_license_window = true;
+                    }
                     ImGui::End();
             }
 
@@ -634,11 +641,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 if (ImGui::Button("Chat")) {
                     show_chat_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Activate License")) {
-                show_license_window = true;
                 }
 
                 ImGui::SameLine();
