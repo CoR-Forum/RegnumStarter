@@ -66,7 +66,6 @@ std::string ReadResponse(HINTERNET hRequest) {
     }
     return response;
 }
-
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/user.php?action=login&username=" + login + "&password=" + password;
@@ -77,56 +76,73 @@ bool Login(const std::string& login, const std::string& password) {
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
 
-        if (status == "success") {
-            LogDebug("User " + login + " logged in successfully");
+        // Check if status and message are not null
+        if (jsonResponse.contains("status") && !jsonResponse["status"].is_null() &&
+            jsonResponse.contains("message") && !jsonResponse["message"].is_null()) {
+            std::string status = jsonResponse["status"];
+            std::string message = jsonResponse["message"];
 
-            auto licensedFeatures = jsonResponse["licensed_features"];
-            featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
-            featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
-            featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
-            featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
-            featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
-            featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
-            featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
-            featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
+            if (status == "success") {
+                LogDebug("User " + login + " logged in successfully");
 
-            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
-                std::string(featureGravity ? ", Gravity" : "") + 
-                std::string(featureMoonjump ? ", Moonjump" : "") + 
-                std::string(featureMoonwalk ? ", Moonwalk" : "") + 
-                std::string(featureFov ? ", Field of View" : "") + 
-                std::string(featureSpeedhack ? ", Speedhack" : "") + 
-                std::string(featureFastfly ? ", Fastfly" : "") + 
-                std::string(featureFreecam ? ", Freecam" : ""));
-                
-            // Parse role and set isAdmin
-            std::string role = jsonResponse["role"];
-            isAdmin = (role == "admin");
-            Log("Role: " + role);
+                auto licensedFeatures = jsonResponse["licensed_features"];
+                featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
+                featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
+                featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
+                featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
+                featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
+                featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
+                featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
+                featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
 
-            // save license information (runtime_end, licensed_features) to global variables for later use
-            license_runtime_end = jsonResponse["runtime_end"];
-            // Convert the licensed_features array to a comma-separated string
-            std::ostringstream oss;
-            for (const auto& feature : jsonResponse["licensed_features"]) {
-                if (oss.tellp() > 0) oss << ", ";
-                oss << feature.get<std::string>();
+                Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
+                    std::string(featureGravity ? ", Gravity" : "") + 
+                    std::string(featureMoonjump ? ", Moonjump" : "") + 
+                    std::string(featureMoonwalk ? ", Moonwalk" : "") + 
+                    std::string(featureFov ? ", Field of View" : "") + 
+                    std::string(featureSpeedhack ? ", Speedhack" : "") + 
+                    std::string(featureFastfly ? ", Fastfly" : "") + 
+                    std::string(featureFreecam ? ", Freecam" : ""));
+                    
+                // Check if role is not null
+                if (jsonResponse.contains("role") && !jsonResponse["role"].is_null()) {
+                    std::string role = jsonResponse["role"];
+                    isAdmin = (role == "admin");
+                    Log("Role: " + role);
+                } else {
+                    isAdmin = false;
+                    Log("Role: unknown");
+                }
+
+                // Check if runtime_end is not null
+                if (jsonResponse.contains("runtime_end") && !jsonResponse["runtime_end"].is_null()) {
+                    license_runtime_end = jsonResponse["runtime_end"];
+                } else {
+                    license_runtime_end = "";
+                }
+
+                // Convert the licensed_features array to a comma-separated string
+                std::ostringstream oss;
+                for (const auto& feature : jsonResponse["licensed_features"]) {
+                    if (oss.tellp() > 0) oss << ", ";
+                    oss << feature.get<std::string>();
+                }
+                license_features = oss.str();
+
+                g_pointers = InitializePointers();
+                GetMagnatCurrency();
+
+                // Start the CheckChatMessages process in a new thread
+                std::thread chatThread(CheckChatMessages);
+                chatThread.detach(); // Detach the thread to run independently
+
+                return true;
+            } else {
+                return false;
             }
-            license_features = oss.str();
-
-            g_pointers = InitializePointers();
-            GetMagnatCurrency();
-
-            // Start the CheckChatMessages process in a new thread
-            std::thread chatThread(CheckChatMessages);
-            chatThread.detach(); // Detach the thread to run independently
-
-            return true;
         } else {
-            MessageBox(NULL, ("Failed to login: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            Log("Invalid response: missing status or message");
             return false;
         }
     } catch (const std::exception& e) {
