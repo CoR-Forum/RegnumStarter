@@ -126,7 +126,6 @@ bool Login(const std::string& login, const std::string& password) {
 
             return true;
         } else {
-            MessageBox(NULL, ("Failed to login: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
             return false;
         }
     } catch (const std::exception& e) {
