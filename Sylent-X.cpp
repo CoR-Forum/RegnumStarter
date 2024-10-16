@@ -431,12 +431,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     UpdateRainbowColor(setting_rainbowSpeed);
                 }      
 
-                // close the window if the user clicks the close button
-                if (!mainWindowIsOpen) {
-                    SaveSettings();
-                    PostQuitMessage(0);
-                }
-
                 if (isAdmin) {
                     if (ImGui::CollapsingHeader("Admins")) {
                         static float fastflyValue = 250.0f; // Default moonjump value
