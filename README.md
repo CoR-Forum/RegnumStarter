@@ -1,5 +1,6 @@
 ## Build on macOS
 
+1. Build the application
 ```
 i686-w64-mingw32-windres resource.rc resource.o && \
 i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp ui/helper/UpdateRainbowColor.cpp ui/helper/ShowHelpMarker.cpp includes/streamproof/streamproof.cpp includes/chrono/chrono.cpp includes/process/process.cpp resource.o  -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static && wine bin/Sylent-X.exe
@@ -7,7 +8,7 @@ i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/DirectX/
 
 The first part of the command will compile the resource file which will then be included in the program file.
 
-You can also add ``&& wine Sylent-X-0.1.0.exe`` at the end while debugging.
+You can also add ``&& wine Sylent-X.exe`` at the end while debugging.
 
 ## Build on Windows
 
