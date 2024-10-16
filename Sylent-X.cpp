@@ -48,7 +48,7 @@ extern bool featureFreecam;
 extern bool featureFastfly;
 extern bool featureSpeedhack;
 extern bool featureFakelag;
-extern std::string login;
+
 // Your window handle
 extern HWND hwnd;
 
