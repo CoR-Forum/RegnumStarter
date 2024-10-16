@@ -326,13 +326,16 @@ void SaveRegnumAccounts(const std::vector<std::string>& accounts) {
     }
 }
 
-void LoadRegnumAccounts(std::vector<std::string>& accounts) {
+std::vector<std::string> regnumAccounts; // Store accounts in a const vector
+
+void LoadRegnumAccounts() {
     std::string path = std::string(appDataPath) + "\\Sylent-X\\regnum_accounts.txt";
     std::ifstream file(path);
     if (file.is_open()) {
         std::string line;
         while (std::getline(file, line)) {
-            accounts.push_back(line);
+            regnumAccounts.push_back(line);
+            Log("Regnum account: " + line);
         }
         file.close();
     } else {

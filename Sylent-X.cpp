@@ -604,6 +604,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 if (ImGui::Button("Regnum Accounts")) {
+                    LoadRegnumAccounts();
                     show_regnum_accounts_window = true;
                 }
 
@@ -728,6 +729,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
                 ImGui::Text("Regnum Accounts");
+
+                // display a table with 
 
                 ImGui::End();
             }
