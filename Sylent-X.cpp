@@ -380,6 +380,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::Separator();
 
+                if (ImGui::Checkbox("Streamproof", &excludeFromCapture))
+                    {
+                        // Update the window capture exclusion based on checkbox state
+                        SetWindowCaptureExclusion(hwnd, excludeFromCapture);
+                    }
+
+                ImGui::Separator();
+
                 if (ImGui::Button("Save Settings")) {
                     SaveSettings();
                     show_settings_window = false;
@@ -394,15 +402,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_forgot_password_window = true;
                     show_settings_window = false;
                 }
-                ImGui::Separator();
-                if (ImGui::Checkbox("Streamproof", &excludeFromCapture))
-                    {
-                        // Update the window capture exclusion based on checkbox state
-                        SetWindowCaptureExclusion(hwnd, excludeFromCapture);
-                    }
-                
+
                     ImGui::End();
-                }
+            }
 
 
             if (show_main_window) {
