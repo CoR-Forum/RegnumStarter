@@ -452,7 +452,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 if (isAdmin) {
-                    if (ImGui::CollapsingHeader("Admins", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (ImGui::CollapsingHeader("Admins")) {
                         static float fastflyValue = 250.0f; // Default moonjump value
                         static bool prevflyState = false; // Track previous state of the checkbox
                         ImGui::BeginDisabled(!featureFastfly);
@@ -482,7 +482,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 } 
 
-                if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader("View")) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
 
@@ -511,7 +511,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::Spacing();
 
-                if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader("Movement")) {
 
                     ImGui::BeginDisabled(!featureSpeedhack);
                     if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
@@ -587,7 +587,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 // ImGui::Spacing();
 // 
-                // if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
+                // if (ImGui::CollapsingHeader("Player")) {
                 //     std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
                 //     if (values.size() == 3) {
                 //         ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
