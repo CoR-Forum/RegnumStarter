@@ -1,7 +1,8 @@
 ## Build on macOS
 
 ```
-i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp helper/UpdateRainbowColor.cpp resource.o  -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static && wine bin/Sylent-X.exe
+i686-w64-mingw32-windres resource.rc resource.o && \
+i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp helper/UpdateRainbowColor.cpp helper/ShowHelpMarker.cpp resource.o  -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static && wine bin/Sylent-X.exe
 ```
 
 The first part of the command will compile the resource file which will then be included in the program file.
@@ -23,7 +24,7 @@ Now
 3. Create bin folder.
 4. Run the build command:
 ```
-windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp helper/UpdateRainbowColor.cpp helper/showhelpmarker.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
+windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp helper/UpdateRainbowColor.cpp helper/ShowHelpMarker.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
 
 ```
 
