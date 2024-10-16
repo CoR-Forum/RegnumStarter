@@ -108,7 +108,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
     HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1200, 1000, NULL, NULL, wc.hInstance, NULL);
-    SetWindowCaptureExclusion(hwnd, excludeFromCapture);
+    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
     if (!CreateDeviceD3D(hwnd)) {
@@ -134,7 +134,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
-    SetWindowCaptureExclusion(hwnd, excludeFromCapture);
+    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
 
     static char username[128] = "";
     static char password[128] = "";
@@ -378,10 +378,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::Separator();
 
-                if (ImGui::Checkbox("Streamproof", &excludeFromCapture))
+                if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture))
                     {
                         // Update the window capture exclusion based on checkbox state
-                        SetWindowCaptureExclusion(hwnd, excludeFromCapture);
+                        SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     }
                 
 

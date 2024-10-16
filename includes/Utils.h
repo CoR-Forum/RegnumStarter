@@ -95,6 +95,7 @@ extern ImVec4 textColor;
 float setting_fontSize = 14.0f;
 bool setting_enableRainbow = false;
 float setting_rainbowSpeed = 0.1f;
+bool setting_excludeFromCapture = false;
 
 // Global variables
 bool setting_debugLog = true;
@@ -119,8 +120,6 @@ bool featureMoonwalk = false;
 bool featureMoonjump = false;
 bool featureFastfly = false;
 bool featureSpeedhack = false;
-// Variable to store the checkbox state
-bool excludeFromCapture = false;
 
 // Keydown states
 bool isGravityKeyPressed = false;
