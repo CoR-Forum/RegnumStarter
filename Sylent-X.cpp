@@ -36,8 +36,6 @@ bool show_info_window = false;
 bool show_regnum_settings_window = false;
 bool show_regnum_accounts_window = false;
 bool g_ShowUI = true;
-// Variable to store the checkbox state
-bool excludeFromCapture = false;
 
 extern bool featureZoom;
 extern bool featureFov;
@@ -385,6 +383,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         // Update the window capture exclusion based on checkbox state
                         SetWindowCaptureExclusion(hwnd, excludeFromCapture);
                     }
+                
 
                 ImGui::Separator();
 
