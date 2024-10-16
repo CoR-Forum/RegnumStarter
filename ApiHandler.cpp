@@ -255,7 +255,7 @@ void LoadSettings() {
                     setting_enableRainbow = settingsJson.value("enableRainbow", false);
                     setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
                     setting_debugLog = settingsJson.value("debugLog", false);
-                    excludeFromCapture = settingsJson["excludeFromCapture"];
+                    excludeFromCapture = settingsJson["excludeFromCapture", false];
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
                         textColor.x = settingsJson["textColor"][0];
