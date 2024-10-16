@@ -58,6 +58,11 @@ void SetWindowCaptureExclusion(HWND hwnd, bool exclude)
     SetWindowDisplayAffinity(hwnd, exclude ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
 }
 
+
+
+const std::string regnumLoginUser = "username";
+const std::string regnumLoginPassword = "password";
+
 void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -573,24 +578,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Separator();
                 ImGui::Spacing();
 
-                // button to open the regnum settings window
                 if (ImGui::Button("Regnum Settings")) {
                     show_regnum_settings_window = true;
                 }
 
-                // button to configure the Regnum Online accounts
+                ImGui::SameLine();
                 if (ImGui::Button("Regnum Accounts")) {
                     show_regnum_accounts_window = true;
                 }
 
-                // regnumLoginUser and regnumLoginPassword are the username and password for the Regnum Online client, respectively
-                static char regnumLoginUser[128] = "";
-                static char regnumLoginPassword[128] = "";
+                ImGui::SameLine();
+                static int selectedAccount = -1;
+                const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
+                if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
+                    for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
+                        bool isSelected = (selectedAccount == i);
+                        if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
+                            selectedAccount = i;
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
 
-                ImGui::InputText("Regnum User", regnumLoginUser, IM_ARRAYSIZE(regnumLoginUser));
-                ImGui::InputText("Regnum Pass", regnumLoginPassword, IM_ARRAYSIZE(regnumLoginPassword), ImGuiInputTextFlags_Password);
-
-                if (ImGui::Button("Run Regnum Online")) {
+                ImGui::SameLine();
+                if (ImGui::Button("Play")) {
                     runRoClientGame(regnumLoginUser, regnumLoginPassword);
                 }
 
