@@ -98,6 +98,7 @@ bool setting_excludeFromCapture = false;
 
 // Global variables
 bool setting_log_debug = true;
+int setting_log_maxMessages = 10;
 bool isAdmin = false;
 
 // Checkboxes states

@@ -8,10 +8,8 @@
 #include <locale>
 #include <codecvt>
 
-// const to store setting_log_maxMessages
-
 namespace {
-    const size_t MAX_LOG_MESSAGES = 500; ///< Maximum number of log messages to keep in memory.
+    const size_t MAX_LOG_MESSAGES = setting_log_maxMessages; ///< Maximum number of log messages to keep in memory.
     const char* LOG_FILE_PATH = "\\Sylent-X\\log.txt"; ///< Path to the log file.
     std::deque<std::string> logMessages; ///< Deque to store log messages.
     std::mutex logMutex; ///< Mutex to protect access to logMessages.

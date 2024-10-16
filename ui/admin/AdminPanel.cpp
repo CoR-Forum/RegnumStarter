@@ -94,6 +94,8 @@ void ShowAdminPanel(bool* show_admin_window) {
             currentStatus = statuses[selected_status];
         }
 
+        ImGui::Checkbox("Debug Log", &setting_log_debug);
+
         ImGui::End();
     }
 }
