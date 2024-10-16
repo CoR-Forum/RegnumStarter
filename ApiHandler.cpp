@@ -1,23 +1,5 @@
 #include "Apihandler.h"
 
-extern HWND hwnd; // Declare the handle to the main window
-
-extern bool featureZoom;
-extern bool featureGravity;
-extern bool featureMoonjump;
-extern bool featureMoonwalk;
-extern bool featureFov;
-extern bool featureSpeedhack;
-extern bool featureFreecam;
-extern bool featureFastfly;
-extern bool featureFakelag;
-
-std::string login;
-std::string password;
-
-std::string license_runtime_end;
-std::string license_features;
-
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
     if (hConnect) InternetCloseHandle(hConnect);
@@ -374,6 +356,7 @@ std::string FetchDataFromAPI(const std::string& url) {
         return "";
     }
 }
+
 std::vector<Pointer> InitializePointers() {
     std::vector<Pointer> pointers;
     std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
@@ -420,8 +403,6 @@ std::vector<Pointer> InitializePointers() {
     return pointers;
 }
 
-std::vector<Pointer> g_pointers;
-
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     try {
         HINTERNET hSession = OpenInternetConnection();
@@ -444,7 +425,6 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
     }
 }
-std::vector<std::string> g_chatMessages;
 
 void SendChatMessage(const std::string& message) {
     try {
@@ -528,8 +508,6 @@ void CheckChatMessages() {
 // ADMIN FUNCTIONS
 // only available if isAdmin is true
 
-std::string GetAllUsersRawJson;
-
 void GetAllUsers() {
     try {
         std::string path = "/admin.php?action=getUsers&username=" + login + "&password=" + password;
@@ -547,8 +525,6 @@ void GetAllUsers() {
         Log("Exception: " + std::string(e.what()));
     }
 }
-
-std::string GetAllLicensesRawJson;
 
 void GetAllLicenses() {
     try {
@@ -643,7 +619,6 @@ void ToggleUserActivation(int userId) {
     }
 }
 
-// function to fetch amount of Magnat currency for the user
 void GetMagnatCurrency() {
     try {
         std::string path = "/magnat.php?action=getWallet&username=" + login + "&password=" + password;
@@ -818,7 +793,6 @@ void GenerateNewLicense(const std::string& licensedFeatures, const std::string& 
     }
 }
 
-// function to expire a license by id
 void ExpireLicense(int licenseId) {
     try {
         std::string path = "/admin.php?action=expireLicense&username=" + login + "&password=" + password + "&licenseId=" + std::to_string(licenseId);
