@@ -65,10 +65,18 @@ DWORD GetProcessIdByName(const std::wstring& processName);
 extern bool ResetPasswordRequest(const std::string& email);
 extern void CheckChatMessages();
 extern void GetAllUsers();
-extern std::string GetAllUsersRawJson;
 extern void DisplayUsersTable();
 extern void ToggleUserBan(int userId);
+extern void ToggleUserAdmin(int userId);
+extern void ToggleUserActivation(int userId);
 extern void GetMagnatCurrency();
+extern void SendFeedback(const std::string& type, const std::string& message);
+extern void ActivateLicense(const std::string& licenseKey);
+extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
+
+extern void SaveRegnumAccounts(const std::vector<std::string>& accounts);
+extern void LoadRegnumAccounts();
+
 
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;
@@ -76,7 +84,9 @@ int magnatCurrency;
 // User settings
 extern std::string login;
 extern std::string password;
-extern bool ActivateLicense(const char* licenseKey);
+
+extern std::string license_runtime_end;
+extern std::string license_features;
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
@@ -85,14 +95,19 @@ const char* appName = "Sylent-X";
 
 extern ImVec4 textColor;
 
+float setting_fontSize = 14.0f;
+bool setting_enableRainbow = false;
+float setting_rainbowSpeed = 0.1f;
+bool setting_excludeFromCapture = false;
+
 // Global variables
-bool debugLog = true;
+bool setting_debugLog = true;
 bool isAdmin = false;
 
 // Checkboxes states
 bool optionGravity = false;
 bool optionMoonjump = false;
-bool optionZoom = true;
+bool optionZoom = false;
 bool optionFreecam = false;
 bool optionMoonwalk = false;
 bool optionFov = false;
