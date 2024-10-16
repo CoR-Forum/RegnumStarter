@@ -28,4 +28,4 @@ std::string license_features;
 std::string GetAllLicensesRawJson;
 std::string GetAllUsersRawJson;
 std::vector<Pointer> g_pointers;
-std::vector<std::string> g_chatMessages;
+std::vector<std::string> g_chatMessages; 
