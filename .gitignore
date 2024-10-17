@@ -3,6 +3,7 @@
 
 # VS Code
 .vscode/
+build-and-run.sh
 
 # Other
 background.bmp

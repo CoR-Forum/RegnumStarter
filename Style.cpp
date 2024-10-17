@@ -51,7 +51,7 @@ void ApplyCustomStyle()
 
     // Load and set the font from resource
     ImGuiIO& io = ImGui::GetIO();
-    HRSRC hResource = FindResource(NULL, MAKEINTRESOURCE(IDR_FONT_RUDA_BOLD), RT_FONT);
+    HRSRC hResource = FindResource(NULL, MAKEINTRESOURCE(IDR_FONT_TANNENBERG_BOLD), RT_FONT);
     if (hResource)
     {
         HGLOBAL hMemory = LoadResource(NULL, hResource);
@@ -61,7 +61,7 @@ void ApplyCustomStyle()
             DWORD size = SizeofResource(NULL, hResource);
             if (pData && size > 0)
             {
-                io.Fonts->AddFontFromMemoryTTF(pData, size, 13.0f);
+                io.Fonts->AddFontFromMemoryTTF(pData, size, 14.0f);
                 io.FontDefault = io.Fonts->Fonts.back();
             }
         }

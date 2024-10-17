@@ -12,7 +12,8 @@
 #include <codecvt>
 
 // External variables
-extern bool setting_debugLog; ///< Flag to enable or disable debug logging
+extern bool setting_log_debug; ///< Flag to enable or disable debug logging
+extern int setting_log_maxMessages; ///< Maximum number of log messages to keep in memory
 extern const char* appDataPath; ///< Path to the application data directory
 
 /**

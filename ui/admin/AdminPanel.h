@@ -8,12 +8,15 @@
 #include <iostream>
 #include <ctime>
 #include "../../libs/json.hpp"
+
 using json = nlohmann::json;
 
 extern std::string currentStatus;
 extern std::string GetAllUsersRawJson;
 extern std::string GetAllLicensesRawJson;
 extern std::string generatedLicenseKey;
+
+extern bool setting_log_debug;
 
 void ShowAdminPanel(bool* show_admin_window);
 

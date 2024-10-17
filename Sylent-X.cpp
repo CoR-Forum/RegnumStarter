@@ -4,8 +4,13 @@
 #include "ApiHandler.cpp"
 #include "Style.cpp"
 #include "ui/admin/AdminPanel.h"
-#include "DirectX/DirectXInit.h"
-#include "helper/UpdateRainbowColor.h"
+#include "libs/DirectX/DirectXInit.h"
+#include "ui/helper/UpdateRainbowColor.h"
+#include "ui/helper/Markers/HelpMarker.h"
+#include "ui/helper/Markers/LicenseMarker.h"
+#include "includes/streamproof/streamproof.h"
+#include "includes/chrono/chrono.h"
+#include "includes/process/process.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -44,10 +49,13 @@ extern bool featureMoonwalk;
 extern bool featureFreecam;
 extern bool featureFastfly;
 extern bool featureSpeedhack;
-extern std::string login;
+extern bool featureFakelag;
 
 std::vector<Pointer> pointers;
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
+
+const std::string regnumLoginUser = "username";
+const std::string regnumLoginPassword = "password";
 
 void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
     STARTUPINFO si;
@@ -69,21 +77,6 @@ void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPasswor
         // Close process and thread handles.
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-    }
-}
-
-void ShowHelpMarker(const char* desc)
-{   
-    ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0.098f, 0.098f, 0.902f, 1.0f)); // Color #1919e6
-    ImGui::TextDisabled("(?)");
-    ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
     }
 }
 
@@ -114,6 +107,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
     HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1200, 1000, NULL, NULL, wc.hInstance, NULL);
+    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
     if (!CreateDeviceD3D(hwnd)) {
@@ -128,6 +122,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.MouseDrawCursor = false; // Hide ImGui cursor
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
@@ -137,6 +132,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
+
+    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
 
     static char username[128] = "";
     static char password[128] = "";
@@ -321,8 +318,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
 
-                static std::string statusText = "";
-
                 if (ImGui::Button("Submit")) {
                     // Implement the logic to verify the token and update the password
                     if (SetNewPassword(passwordResetToken, newPassword)) {
@@ -330,11 +325,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         show_password_reset_window = false;
                         show_login_window = true;
                     } else {
-                        statusText = "Failed to set new password. Please try again.";
+                        ImGui::Text("Failed to update password. Please try again.");
                     }
                 }
-                ImGui::SameLine();
-                ImGui::Text("%s", statusText.c_str());
 
                 if (ImGui::Button("Request new token")) {
                     show_password_reset_window = false;
@@ -362,21 +355,33 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (show_settings_window) {
                 ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-                if (setting_enableRainbow) {
-                    UpdateRainbowColor(setting_rainbowSpeed);
-                }                
+        
 
-                // Checkbox to enable/disable rainbow effect
+                ImGui::Text("Appearance Settings");
+
                 ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
                 ImGui::SameLine();
-                // Slider to control the speed of the rainbow effect
-                ImGui::SliderFloat("Rainbow Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
+                ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
                 
                 // Show the color wheel
                 ImGui::ShowColorWheel(textColor);
 
                 // Slider to adjust the font size
                 ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
+
+                ImGui::Separator();
+
+                ImGui::Text("Advanced Settings");
+
+                if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture))
+                    {
+                        SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+                    }
+
+                ImGui::InputInt("Max Log Messages to store", &setting_log_maxMessages);
+                
+                ImGui::SameLine();
+                ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
 
                 ImGui::Separator();
 
@@ -394,9 +399,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_forgot_password_window = true;
                     show_settings_window = false;
                 }
-                
+
+                ImGui::Separator();
+                    // License information from license_runtime_end and license_features
+                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
+                    
+                    if (ImGui::Button("Activate a License")) {
+                    show_settings_window = false;
+                    show_license_window = true;
+                    }
                     ImGui::End();
-                }
+            }
 
 
             if (show_main_window) {
@@ -415,14 +428,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     PostQuitMessage(0);
                 }
 
-                // close the window if the user clicks the close button
-                if (!mainWindowIsOpen) {
-                    SaveSettings();
-                    PostQuitMessage(0);
-                }
+                if (setting_enableRainbow) {
+                    UpdateRainbowColor(setting_rainbowSpeed);
+                }      
 
                 if (isAdmin) {
-                    if (ImGui::CollapsingHeader("Admins", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (ImGui::CollapsingHeader("Admins")) {
                         static float fastflyValue = 250.0f; // Default moonjump value
                         static bool prevflyState = false; // Track previous state of the checkbox
                         ImGui::BeginDisabled(!featureFastfly);
@@ -444,15 +455,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             }
                         }
                         ImGui::SameLine();
-                        ShowHelpMarker("Only shown for Admins");
                         if (!featureFastfly) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                         }
                     }
                 } 
 
-                if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader("View")) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
 
@@ -481,7 +491,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::Spacing();
 
-                if (ImGui::CollapsingHeader("Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader("Movement")) {
 
                     ImGui::BeginDisabled(!featureSpeedhack);
                     if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
@@ -495,18 +505,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureSpeedhack) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
 
                     ImGui::BeginDisabled(!featureGravity);
                     if (ImGui::Checkbox("Flyhack", &optionGravity)) {
                         MemoryManipulation("gravity");
                     }
+                    
                     ImGui::EndDisabled();
                     if (!featureGravity) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
+
                     static float moonjumpValue = 4.0f; // Default moonjump value
                     static bool prevjumpState = false; // Track previous state of the checkbox
                     ImGui::BeginDisabled(!featureMoonjump);
@@ -531,7 +543,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureMoonjump) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
                     }
 
                     ImGui::BeginDisabled(!featureMoonwalk);
@@ -542,7 +554,23 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndDisabled();
                     if (!featureMoonwalk) {
                         ImGui::SameLine();
-                        ShowHelpMarker("This feature is not available in your current license.");
+                        ShowLicenseMarker();
+                    }
+
+                    ImGui::BeginDisabled(!featureFakelag);
+                    if (ImGui::Checkbox("fakelag", &optionFakelag)) {
+                        if (optionFakelag) {
+                            float newValue = 0.0f;
+                            MemoryManipulation("fakelag", newValue);
+                            MemoryManipulation("fakelagg", newValue);
+                            std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
+                        }
+                    }
+                    
+                    ImGui::EndDisabled();
+                    if (!featureFakelag) {
+                        ImGui::SameLine();
+                        ShowLicenseMarker();
                     }
 
                     // Check for global key press and release events using Windows API
@@ -555,39 +583,47 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 }
 
-                // ImGui::Spacing();
-// 
-                // if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
-                //     std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
-                //     if (values.size() == 3) {
-                //         ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
-                //     } else {
-                //         ImGui::Text("Failed to read position values.");
-                //     }
-                // } 
+                ImGui::Spacing();
+ 
+                if (IsProcessOpen("ROClientGame.exe")) {
+                    if (ImGui::CollapsingHeader("Player")) {
+                        std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
+                        if (values.size() == 3) {
+                            ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
+                        } else {
+                            ImGui::Text("Failed to read position values.");
+                        }
+                    }
+                }
 
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
 
-                // button to open the regnum settings window
                 if (ImGui::Button("Regnum Settings")) {
                     show_regnum_settings_window = true;
                 }
 
-                // button to configure the Regnum Online accounts
+                ImGui::SameLine();
                 if (ImGui::Button("Regnum Accounts")) {
                     show_regnum_accounts_window = true;
                 }
 
-                // regnumLoginUser and regnumLoginPassword are the username and password for the Regnum Online client, respectively
-                static char regnumLoginUser[128] = "";
-                static char regnumLoginPassword[128] = "";
+                ImGui::SameLine();
+                static int selectedAccount = -1;
+                const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
+                if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
+                    for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
+                        bool isSelected = (selectedAccount == i);
+                        if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
+                            selectedAccount = i;
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
 
-                ImGui::InputText("Regnum User", regnumLoginUser, IM_ARRAYSIZE(regnumLoginUser));
-                ImGui::InputText("Regnum Pass", regnumLoginPassword, IM_ARRAYSIZE(regnumLoginPassword), ImGuiInputTextFlags_Password);
-
-                if (ImGui::Button("Run Regnum Online")) {
+                ImGui::SameLine();
+                if (ImGui::Button("Play")) {
                     runRoClientGame(regnumLoginUser, regnumLoginPassword);
                 }
 
@@ -598,11 +634,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 if (ImGui::Button("Chat")) {
                     show_chat_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Activate License")) {
-                show_license_window = true;
                 }
 
                 ImGui::SameLine();
@@ -629,15 +660,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
 
                     ShowAdminPanel(&show_admin_window);
-                    
-                    ImGui::SameLine();
-                    if (ImGui::Checkbox("Debug", &setting_debugLog)) {
-                        if (setting_debugLog) {
-                            Log("Debug logging enabled");
-                        } else {
-                            Log("Debug logging disabled");
-                        }
-                    }
                 }
 
                 ImGui::SameLine();
@@ -699,6 +721,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
                 ImGui::Text("Regnum Accounts");
+
+                // display a table with 
 
                 ImGui::End();
             }

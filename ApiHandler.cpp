@@ -1,24 +1,4 @@
-#include "includes/Utils.h"
-#include <stdexcept>
-#include <sstream>
-#include <regex>
-#include "ui/admin/AdminPanel.h"
-
-#pragma once //added for register in sylent-x.cpp maybe check it 
-
-extern HWND hwnd; // Declare the handle to the main window
-
-extern bool featureZoom;
-extern bool featureGravity;
-extern bool featureMoonjump;
-extern bool featureMoonwalk;
-extern bool featureFov;
-extern bool featureSpeedhack;
-extern bool featureFreecam;
-extern bool featureFastfly;
-
-std::string login;
-std::string password;
+#include "Apihandler.h"
 
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
@@ -63,7 +43,6 @@ std::string ReadResponse(HINTERNET hRequest) {
     }
     return response;
 }
-
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/user.php?action=login&username=" + login + "&password=" + password;
@@ -74,46 +53,75 @@ bool Login(const std::string& login, const std::string& password) {
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
 
-        if (status == "success") {
-            LogDebug("User " + login + " logged in successfully");
+        // Check if status and message are not null
+        if (jsonResponse.contains("status") && !jsonResponse["status"].is_null() &&
+            jsonResponse.contains("message") && !jsonResponse["message"].is_null()) {
+            std::string status = jsonResponse["status"];
+            std::string message = jsonResponse["message"];
 
-            auto licensedFeatures = jsonResponse["licensed_features"];
-            featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
-            featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
-            featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
-            featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
-            featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
-            featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
-            featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
-            featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
+            if (status == "success") {
+                LogDebug("User " + login + " logged in successfully");
 
-            Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
-                std::string(featureGravity ? ", Gravity" : "") + 
-                std::string(featureMoonjump ? ", Moonjump" : "") + 
-                std::string(featureMoonwalk ? ", Moonwalk" : "") + 
-                std::string(featureFov ? ", Field of View" : "") + 
-                std::string(featureSpeedhack ? ", Speedhack" : "") + 
-                std::string(featureFastfly ? ", Fastfly" : "") + 
-                std::string(featureFreecam ? ", Freecam" : ""));
-                
-            // Parse role and set isAdmin
-            std::string role = jsonResponse["role"];
-            isAdmin = (role == "admin");
-            Log("Role: " + role);
+                auto licensedFeatures = jsonResponse["licensed_features"];
+                featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
+                featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
+                featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
+                featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
+                featureFakelag = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fakelag") != licensedFeatures.end();
+                featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
+                featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
+                featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
+                featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
 
-            g_pointers = InitializePointers();
-            GetMagnatCurrency();
+                Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
+                    std::string(featureGravity ? ", Gravity" : "") + 
+                    std::string(featureMoonjump ? ", Moonjump" : "") + 
+                    std::string(featureMoonwalk ? ", Moonwalk" : "") + 
+                    std::string(featureFov ? ", Field of View" : "") + 
+                    std::string(featureSpeedhack ? ", Speedhack" : "") + 
+                    std::string(featureFastfly ? ", Fastfly" : "") + 
+                    std::string(featureFakelag ? ", fakelag" : "") + 
+                    std::string(featureFreecam ? ", Freecam" : ""));
+                    
+                // Check if role is not null
+                if (jsonResponse.contains("role") && !jsonResponse["role"].is_null()) {
+                    std::string role = jsonResponse["role"];
+                    isAdmin = (role == "admin");
+                    Log("Role: " + role);
+                } else {
+                    isAdmin = false;
+                    Log("Role: unknown");
+                }
 
-            // Start the CheckChatMessages process in a new thread
-            std::thread chatThread(CheckChatMessages);
-            chatThread.detach(); // Detach the thread to run independently
+                // Check if runtime_end is not null
+                if (jsonResponse.contains("runtime_end") && !jsonResponse["runtime_end"].is_null()) {
+                    license_runtime_end = jsonResponse["runtime_end"];
+                } else {
+                    license_runtime_end = "";
+                }
 
-            return true;
+                // Convert the licensed_features array to a comma-separated string
+                std::ostringstream oss;
+                for (const auto& feature : jsonResponse["licensed_features"]) {
+                    if (oss.tellp() > 0) oss << ", ";
+                    oss << feature.get<std::string>();
+                }
+                license_features = oss.str();
+
+                g_pointers = InitializePointers();
+                GetMagnatCurrency();
+
+                // Start the CheckChatMessages process in a new thread
+                std::thread chatThread(CheckChatMessages);
+                chatThread.detach(); // Detach the thread to run independently
+
+                return true;
+            } else {
+                return false;
+            }
         } else {
-            MessageBox(NULL, ("Failed to login: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            Log("Invalid response: missing status or message");
             return false;
         }
     } catch (const std::exception& e) {
@@ -202,11 +210,13 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
-        settingsJson["debugLog"] = setting_debugLog;
+        settingsJson["logDebug"] = setting_log_debug;
+        settingsJson["logMaxMessages"] = setting_log_maxMessages; // Corrected line
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = setting_fontSize;
         settingsJson["enableRainbow"] = setting_enableRainbow;
         settingsJson["rainbowSpeed"] = setting_rainbowSpeed;
+        settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
 
         std::string settingsStr = settingsJson.dump();
         std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
@@ -253,7 +263,9 @@ void LoadSettings() {
                     setting_fontSize = settingsJson.value("fontSize", 1.0f);
                     setting_enableRainbow = settingsJson.value("enableRainbow", false);
                     setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
-                    setting_debugLog = settingsJson.value("debugLog", false);
+                    setting_log_debug = settingsJson.value("logDebug", false);
+                    setting_log_maxMessages = settingsJson.value("logMaxMessages", 100);
+                    setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
                         textColor.x = settingsJson["textColor"][0];
@@ -276,33 +288,6 @@ void LoadSettings() {
         }
     } catch (const std::exception& e) {
         Log("Settings load failed with Exception: " + std::string(e.what()));
-    }
-}
-
-void SaveRegnumAccounts(const std::vector<std::string>& accounts) {
-    std::string path = std::string(appDataPath) + "\\Sylent-X\\regnum_accounts.txt";
-    std::ofstream file(path);
-    if (file.is_open()) {
-        for (const auto& acc : accounts) {
-            file << acc << std::endl;
-        }
-        file.close();
-    } else {
-        Log("Failed to open regnum accounts file for writing");
-    }
-}
-
-void LoadRegnumAccounts(std::vector<std::string>& accounts) {
-    std::string path = std::string(appDataPath) + "\\Sylent-X\\regnum_accounts.txt";
-    std::ifstream file(path);
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            accounts.push_back(line);
-        }
-        file.close();
-    } else {
-        Log("Failed to open regnum accounts file for reading");
     }
 }
 
@@ -371,6 +356,7 @@ std::string FetchDataFromAPI(const std::string& url) {
         return "";
     }
 }
+
 std::vector<Pointer> InitializePointers() {
     std::vector<Pointer> pointers;
     std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
@@ -417,8 +403,6 @@ std::vector<Pointer> InitializePointers() {
     return pointers;
 }
 
-std::vector<Pointer> g_pointers;
-
 void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
     try {
         HINTERNET hSession = OpenInternetConnection();
@@ -441,7 +425,6 @@ void RegisterUser(const std::string& username, const std::string& email, const s
         MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
     }
 }
-std::vector<std::string> g_chatMessages;
 
 void SendChatMessage(const std::string& message) {
     try {
@@ -525,8 +508,6 @@ void CheckChatMessages() {
 // ADMIN FUNCTIONS
 // only available if isAdmin is true
 
-std::string GetAllUsersRawJson;
-
 void GetAllUsers() {
     try {
         std::string path = "/admin.php?action=getUsers&username=" + login + "&password=" + password;
@@ -544,8 +525,6 @@ void GetAllUsers() {
         Log("Exception: " + std::string(e.what()));
     }
 }
-
-std::string GetAllLicensesRawJson;
 
 void GetAllLicenses() {
     try {
@@ -640,7 +619,6 @@ void ToggleUserActivation(int userId) {
     }
 }
 
-// function to fetch amount of Magnat currency for the user
 void GetMagnatCurrency() {
     try {
         std::string path = "/magnat.php?action=getWallet&username=" + login + "&password=" + password;
@@ -671,7 +649,6 @@ void SendFeedback(const std::string& type, const std::string& feedback, bool fee
         if (feedback_includeLogfile) {
             for (const auto& logMessage : logMessages) {
                 logContent += logMessage + "\n";
-                Log("Log message: " + logMessage);
             }
         }
 
@@ -816,7 +793,6 @@ void GenerateNewLicense(const std::string& licensedFeatures, const std::string& 
     }
 }
 
-// function to expire a license by id
 void ExpireLicense(int licenseId) {
     try {
         std::string path = "/admin.php?action=expireLicense&username=" + login + "&password=" + password + "&licenseId=" + std::to_string(licenseId);
