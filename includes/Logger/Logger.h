@@ -1,20 +1,18 @@
 #pragma once
 
-#include "../Utils.h"
 #include <string>
 #include <deque>
 #include <mutex>
 #include <fstream>
 #include <iostream>
-#include <ctime>
-#include <iomanip>
+#include <chrono>
 #include <locale>
 #include <codecvt>
+#include "../Utils.h"
 
 // External variables
 extern bool setting_log_debug; ///< Flag to enable or disable debug logging
 extern int setting_log_maxMessages; ///< Maximum number of log messages to keep in memory
-extern const char* appDataPath; ///< Path to the application data directory
 
 /**
  * @brief Writes a log message to a file.

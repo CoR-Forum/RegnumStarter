@@ -1,12 +1,5 @@
 #include "Logger.h"
-#include <iostream>
-#include <fstream>
-#include <deque>
-#include <mutex>
-#include <ctime>
-#include <string>
-#include <locale>
-#include <codecvt>
+#include <filesystem>
 
 namespace {
     const size_t MAX_LOG_MESSAGES = setting_log_maxMessages; ///< Maximum number of log messages to keep in memory.
@@ -21,11 +14,11 @@ namespace {
  * @param logMessage The log message to write.
  */
 void WriteLogToFile(const std::string& logMessage) {
-    std::ofstream logFile(std::string(appDataPath) + LOG_FILE_PATH, std::ios_base::app);
+    std::ofstream logFile(std::filesystem::path(appDataPath) / LOG_FILE_PATH, std::ios_base::app);
     if (logFile.is_open()) {
         logFile << logMessage << std::endl;
     } else {
-        std::cerr << "Failed to open log file: " << std::string(appDataPath) + LOG_FILE_PATH << std::endl;
+        std::cerr << "Failed to open log file: " << std::filesystem::path(appDataPath) / LOG_FILE_PATH << std::endl;
     }
 }
 
@@ -35,9 +28,10 @@ void WriteLogToFile(const std::string& logMessage) {
  * @return The current timestamp as a string.
  */
 std::string GetCurrentTimestamp() {
-    std::time_t now = std::time(nullptr);
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     char timestamp[20];
-    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&now_c));
     return std::string(timestamp);
 }
 
