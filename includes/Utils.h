@@ -75,14 +75,19 @@ extern void ActivateLicense(const std::string& licenseKey);
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
 
 struct RegnumAccount {
+    int id;
     std::string username;
     std::string password;
     std::string server;
     std::string referrer;
 };
 
-extern void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer);
-std::vector<RegnumAccount> LoadRegnumAccounts();
+extern void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
+extern void LoadRegnumAccounts();
+extern void DeleteRegnumAccount(int id);
+
+// global variable to store the loaded regnum accounts
+extern std::vector<RegnumAccount> regnumAccounts;
 
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;

@@ -606,6 +606,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 if (ImGui::Button("Regnum Accounts")) {
+                    LoadRegnumAccounts();
                     show_regnum_accounts_window = true;
                 }
 
@@ -734,8 +735,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::Text("Actions");
                 ImGui::NextColumn();
                 ImGui::Separator();
+                
+                // Declare the static character arrays at the beginning of the function
+                static char regnumId[128] = "";
+                static char regnumUsername[128] = "";
+                static char regnumPassword[128] = "";
+                static char regnumServer[128] = "";
+                static char regnumReferrer[128] = "";
 
-                std::vector<RegnumAccount> regnumAccounts = LoadRegnumAccounts();
                 for (const auto& account : regnumAccounts) {
                     ImGui::Text("%s", account.username.c_str());
                     ImGui::NextColumn();
@@ -743,36 +750,51 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::NextColumn();
                     ImGui::Text("%s", account.referrer.c_str());
                     ImGui::NextColumn();
-                    if (ImGui::Button("Play")) {
-                        runRoClientGame(account.username, account.password);
+
+                    // button to edit the account, this will load the account details into the input fields
+                    std::string editButtonLabel = "Edit##" + std::to_string(account.id);
+                    if (ImGui::Button(editButtonLabel.c_str())) {
+                        // Load the account details into the input fields
+                        snprintf(regnumId, IM_ARRAYSIZE(regnumId), "%d", account.id);
+                        snprintf(regnumUsername, IM_ARRAYSIZE(regnumUsername), "%s", account.username.c_str());
+                        snprintf(regnumPassword, IM_ARRAYSIZE(regnumPassword), "%s", account.password.c_str());
+                        snprintf(regnumServer, IM_ARRAYSIZE(regnumServer), "%s", account.server.c_str());
+                        snprintf(regnumReferrer, IM_ARRAYSIZE(regnumReferrer), "%s", account.referrer.c_str());
                     }
+
+                    ImGui::SameLine();
+                    // button to delete the account using the DeleteRegnumAccount function
+                    std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
+                    if (ImGui::Button(deleteButtonLabel.c_str())) {
+                        DeleteRegnumAccount(account.id);
+                    }
+
                     ImGui::NextColumn();
-                }
+                    }
 
-                ImGui::Columns(1);
-                ImGui::Separator();
+                    ImGui::Columns(1);
+                    ImGui::Separator();
 
+                    // Input fields to save a Regnum Account using the SaveRegnumAccount function
+                    ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
+                    ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
+                    ImGui::InputText("Server", regnumServer, IM_ARRAYSIZE(regnumServer));
+                    ImGui::InputText("Referrer", regnumReferrer, IM_ARRAYSIZE(regnumReferrer));
 
-
-                // Input fields to save a new Regnum Account using the SaveRegnumAccount function
-                static char regnumUsername[128] = "";
-                static char regnumPassword[128] = "";
-                static char regnumServer[128] = "";
-                static char regnumReferrer[128] = "";
-
-                ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
-                ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
-                ImGui::InputText("Server", regnumServer, IM_ARRAYSIZE(regnumServer));
-                ImGui::InputText("Referrer", regnumReferrer, IM_ARRAYSIZE(regnumReferrer));
-
-                if (ImGui::Button("Save Account")) {
-                    SaveRegnumAccount(regnumUsername, regnumPassword, regnumServer, regnumReferrer);
-                }
+                    if (ImGui::Button("Save Account")) {
+                        SaveRegnumAccount(
+                            regnumUsername, 
+                            regnumPassword, 
+                            regnumServer, 
+                            regnumReferrer, 
+                            regnumId[0] == '\0' ? 0 : atoi(regnumId)
+                        );
+                    }
 
                 ImGui::Separator();
 
                 ImGui::End();
-            }
+                }
 
             if (show_regnum_settings_window) {
                 ImGui::Begin("Regnum Settings", &show_regnum_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);

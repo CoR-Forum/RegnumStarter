@@ -342,9 +342,8 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
     }
 }
 
-// Function to save a Regnum account to regnum-accounts.json appdata file with username, password, server and referrer
-// if a Regnum account with the same username already exists, it will be overwritten
-void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer) {
+// Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
+void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
@@ -354,19 +353,31 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
         file.close();
     }
 
-    bool accountFound = false;
-    for (auto& account : accountsJson) {
-        if (account["username"] == username) {
-            account["password"] = password;
-            account["server"] = server;
-            account["referrer"] = referrer;
-            accountFound = true;
-            break;
+    bool accountUpdated = false;
+
+    if (id != -1) {
+        // Try to find and update the existing account with the given ID
+        for (auto& account : accountsJson) {
+            if (account["id"].get<int>() == id) {
+                account["username"] = username;
+                account["password"] = password;
+                account["server"] = server;
+                account["referrer"] = referrer;
+                accountUpdated = true;
+                break;
+            }
         }
     }
 
-    if (!accountFound) {
+    if (!accountUpdated) {
+        // Generate a new ID for the account
+        int newId = 1;
+        if (!accountsJson.empty()) {
+            newId = accountsJson.back()["id"].get<int>() + 1;
+        }
+
         nlohmann::json newAccount;
+        newAccount["id"] = newId;
         newAccount["username"] = username;
         newAccount["password"] = password;
         newAccount["server"] = server;
@@ -377,30 +388,59 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
     std::ofstream outFile(configFilePath);
     outFile << accountsJson.dump(4);
     outFile.close();
+
+    LoadRegnumAccounts();
 }
 
+std::vector<RegnumAccount> regnumAccounts;
+
 // Function to load all Regnum accounts from regnum-accounts.json appdata file
-std::vector<RegnumAccount> LoadRegnumAccounts() {
+void LoadRegnumAccounts() {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
-    std::vector<RegnumAccount> accounts;
 
     if (file.is_open()) {
         file >> accountsJson;
         file.close();
     }
 
+    regnumAccounts.clear();
     for (const auto& account : accountsJson) {
         RegnumAccount regnumAccount;
+        regnumAccount.id = account["id"];
         regnumAccount.username = account["username"];
         regnumAccount.password = account["password"];
         regnumAccount.server = account["server"];
         regnumAccount.referrer = account["referrer"];
-        accounts.push_back(regnumAccount);
+        regnumAccounts.push_back(regnumAccount);
+    }
+    Log("Loaded " + std::to_string(regnumAccounts.size()) + " Regnum accounts");
+}
+
+// delete regnum account by id
+void DeleteRegnumAccount(int id) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::ifstream file(configFilePath);
+    nlohmann::json accountsJson;
+
+    if (file.is_open()) {
+        file >> accountsJson;
+        file.close();
     }
 
-    return accounts;
+    for (auto it = accountsJson.begin(); it != accountsJson.end(); ++it) {
+        if ((*it)["id"].get<int>() == id) {
+            accountsJson.erase(it);
+            break;
+        }
+    }
+
+    std::ofstream outFile(configFilePath);
+    outFile << accountsJson.dump(4);
+    outFile.close();
+
+    LoadRegnumAccounts();
 }
 
 std::string FetchDataFromAPI(const std::string& url) {
