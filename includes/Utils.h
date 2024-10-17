@@ -62,7 +62,6 @@ extern void SaveLoginCredentials(const std::string& login, const std::string& en
 extern void SendChatMessage(const std::string& login, const std::string& password, const std::string& message);
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
-extern bool ResetPasswordRequest(const std::string& email);
 extern void CheckChatMessages();
 extern void GetAllUsers();
 extern void DisplayUsersTable();
