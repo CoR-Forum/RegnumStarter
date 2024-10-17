@@ -86,6 +86,16 @@ extern void SaveRegnumAccount(const std::string& username, const std::string& pa
 extern void LoadRegnumAccounts();
 extern void DeleteRegnumAccount(int id);
 
+struct ServerOption {
+    const char* id;
+    const char* name;
+};
+
+struct ReferrerOption {
+    const char* id;
+    const char* name;
+};
+
 // global variable to store the loaded regnum accounts
 extern std::vector<RegnumAccount> regnumAccounts;
 
