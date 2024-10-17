@@ -380,10 +380,11 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
 }
 
 // Function to load all Regnum accounts from regnum-accounts.json appdata file
-void LoadRegnumAccounts() {
+std::vector<RegnumAccount> LoadRegnumAccounts() {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
+    std::vector<RegnumAccount> accounts;
 
     if (file.is_open()) {
         file >> accountsJson;
@@ -391,12 +392,15 @@ void LoadRegnumAccounts() {
     }
 
     for (const auto& account : accountsJson) {
-        std::string username = account["username"];
-        std::string password = account["password"];
-        std::string server = account["server"];
-        std::string referrer = account["referrer"];
-        Log("Regnum account loaded: " + username + ", " + password + ", " + server + ", " + referrer);
+        RegnumAccount regnumAccount;
+        regnumAccount.username = account["username"];
+        regnumAccount.password = account["password"];
+        regnumAccount.server = account["server"];
+        regnumAccount.referrer = account["referrer"];
+        accounts.push_back(regnumAccount);
     }
+
+    return accounts;
 }
 
 std::string FetchDataFromAPI(const std::string& url) {

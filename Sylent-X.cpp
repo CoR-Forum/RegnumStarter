@@ -722,7 +722,54 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::Text("Regnum Accounts");
 
-                // display a table with 
+                // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
+                ImGui::Columns(4, "RegnumAccounts");
+                ImGui::Separator();
+                ImGui::Text("Username");
+                ImGui::NextColumn();
+                ImGui::Text("Server");
+                ImGui::NextColumn();
+                ImGui::Text("Referrer");
+                ImGui::NextColumn();
+                ImGui::Text("Actions");
+                ImGui::NextColumn();
+                ImGui::Separator();
+
+                std::vector<RegnumAccount> regnumAccounts = LoadRegnumAccounts();
+                for (const auto& account : regnumAccounts) {
+                    ImGui::Text("%s", account.username.c_str());
+                    ImGui::NextColumn();
+                    ImGui::Text("%s", account.server.c_str());
+                    ImGui::NextColumn();
+                    ImGui::Text("%s", account.referrer.c_str());
+                    ImGui::NextColumn();
+                    if (ImGui::Button("Play")) {
+                        runRoClientGame(account.username, account.password);
+                    }
+                    ImGui::NextColumn();
+                }
+
+                ImGui::Columns(1);
+                ImGui::Separator();
+
+
+
+                // Input fields to save a new Regnum Account using the SaveRegnumAccount function
+                static char regnumUsername[128] = "";
+                static char regnumPassword[128] = "";
+                static char regnumServer[128] = "";
+                static char regnumReferrer[128] = "";
+
+                ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
+                ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
+                ImGui::InputText("Server", regnumServer, IM_ARRAYSIZE(regnumServer));
+                ImGui::InputText("Referrer", regnumReferrer, IM_ARRAYSIZE(regnumReferrer));
+
+                if (ImGui::Button("Save Account")) {
+                    SaveRegnumAccount(regnumUsername, regnumPassword, regnumServer, regnumReferrer);
+                }
+
+                ImGui::Separator();
 
                 ImGui::End();
             }
