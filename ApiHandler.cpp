@@ -342,6 +342,63 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
     }
 }
 
+// Function to save a Regnum account to regnum-accounts.json appdata file with username, password, server and referrer
+// if a Regnum account with the same username already exists, it will be overwritten
+void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::ifstream file(configFilePath);
+    nlohmann::json accountsJson;
+
+    if (file.is_open()) {
+        file >> accountsJson;
+        file.close();
+    }
+
+    bool accountFound = false;
+    for (auto& account : accountsJson) {
+        if (account["username"] == username) {
+            account["password"] = password;
+            account["server"] = server;
+            account["referrer"] = referrer;
+            accountFound = true;
+            break;
+        }
+    }
+
+    if (!accountFound) {
+        nlohmann::json newAccount;
+        newAccount["username"] = username;
+        newAccount["password"] = password;
+        newAccount["server"] = server;
+        newAccount["referrer"] = referrer;
+        accountsJson.push_back(newAccount);
+    }
+
+    std::ofstream outFile(configFilePath);
+    outFile << accountsJson.dump(4);
+    outFile.close();
+}
+
+// Function to load all Regnum accounts from regnum-accounts.json appdata file
+void LoadRegnumAccounts() {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::ifstream file(configFilePath);
+    nlohmann::json accountsJson;
+
+    if (file.is_open()) {
+        file >> accountsJson;
+        file.close();
+    }
+
+    for (const auto& account : accountsJson) {
+        std::string username = account["username"];
+        std::string password = account["password"];
+        std::string server = account["server"];
+        std::string referrer = account["referrer"];
+        Log("Regnum account loaded: " + username + ", " + password + ", " + server + ", " + referrer);
+    }
+}
+
 std::string FetchDataFromAPI(const std::string& url) {
     try {
         HINTERNET hInternet = OpenInternetConnection();
