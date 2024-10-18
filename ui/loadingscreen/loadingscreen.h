@@ -7,6 +7,7 @@
 
 // Function to display the loading screen
 void ShowLoadingScreen(bool& show_loading_screen, const std::string& statusMessage, bool& loginSuccess);
+void UpdateProgressBar(float value);
 
 // Function to save settings (externally defined)
 extern void SaveSettings();
