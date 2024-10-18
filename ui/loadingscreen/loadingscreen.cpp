@@ -10,8 +10,8 @@ static float progress = 0.0f; // Move progress to global scope
 // Function to display the loading screen
 void ShowLoadingScreen(bool& show_loading_screen, const std::string& statusMessage, bool& loginSuccess) {
     static bool loadingWindowIsOpen = true;
-    static bool showResult = false;
     static bool closeWindow = false;
+    static std::string loginResultMessage = ""; // Add static variable for login result message
 
     // Set the size of the ImGui window
     ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_Always);
@@ -29,7 +29,6 @@ void ShowLoadingScreen(bool& show_loading_screen, const std::string& statusMessa
     ImVec2 windowSize = ImGui::GetWindowSize();
     ImVec2 textSize = ImGui::CalcTextSize("Loading...");
     ImVec2 statusTextSize = ImGui::CalcTextSize(statusMessage.c_str());
-    ImVec2 resultTextSize = ImGui::CalcTextSize(loginSuccess ? "Login successful!" : "Login failed. Please try again.");
 
     // Center the loading text vertically and horizontally
     ImGui::SetCursorPos(ImVec2((windowSize.x - textSize.x) * 0.5f, (windowSize.y - textSize.y) * 0.5f - 20));
@@ -48,29 +47,28 @@ void ShowLoadingScreen(bool& show_loading_screen, const std::string& statusMessa
     ImGui::SetCursorPos(ImVec2((windowSize.x - 200) * 0.5f, (windowSize.y - 20) * 0.5f + 40));
     ImGui::ProgressBar(progress, ImVec2(200, 20));
 
-    // If login is successful or failed, display the result
-    if (showResult) {
-        ImGui::SetCursorPos(ImVec2((windowSize.x - resultTextSize.x) * 0.5f, (windowSize.y - resultTextSize.y) * 0.5f + 60));
+    // Display the login result message based on the progress bar value
+    if (progress >= 1.0f) {
         if (loginSuccess) {
+            loginResultMessage = "Login successful!";
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f)); // Green color
-            ImGui::Text("Login successful!");
-            ImGui::PopStyleColor();
-            closeWindow = true;
         } else {
+            loginResultMessage = "Login failed. Please try again.";
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f)); // Red color
-            ImGui::Text("Login failed. Please try again.");
-            ImGui::PopStyleColor();
-            closeWindow = true;
         }
+        ImVec2 resultTextSize = ImGui::CalcTextSize(loginResultMessage.c_str());
+        ImGui::SetCursorPos(ImVec2((windowSize.x - resultTextSize.x) * 0.5f, (windowSize.y - resultTextSize.y) * 0.5f + 60));
+        ImGui::Text("%s", loginResultMessage.c_str());
+        ImGui::PopStyleColor();
     }
 
     // Close the window after showing the result
     if (closeWindow) {
         show_loading_screen = false;
         loadingWindowIsOpen = false;
-        showResult = false; // Reset showResult for the next login attempt
         closeWindow = false; // Reset closeWindow for the next login attempt
         progress = 0.0f; // Reset progress for the next login attempt
+        loginResultMessage = ""; // Reset login result message for the next login attempt
     }
 
     // End the ImGui window
