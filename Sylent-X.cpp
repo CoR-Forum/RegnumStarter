@@ -552,9 +552,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
  
                 if (IsProcessOpen("ROClientGame.exe")) {
                     if (ImGui::CollapsingHeader("Player")) {
-                        std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
+                        std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
                         if (values.size() == 3) {
-                            ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
+                            ImGui::Text("Position - X: %.2f, Y: %.2f, Z: %.2f", values[0], values[1], values[2]);
                         } else {
                             ImGui::Text("Failed to read position values.");
                         }
