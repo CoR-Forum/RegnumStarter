@@ -25,7 +25,7 @@ Now
 3. Create bin folder.
 4. Run the build command:
 ```
-windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp ui/admin/AdminPanelTables.cpp ui/ForgotPasswordWindow.cpp ui/PasswordResetWindow.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp ui/helper/UpdateRainbowColor.cpp ui/helper/Markers/LicenseMarker.cpp ui/helper/Markers/LicenseMarker.cpp includes/streamproof/streamproof.cpp includes/chrono/chrono.cpp includes/process/process.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
+windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/DirectX/DirectXInit.cpp ui/admin/AdminPanel.cpp ui/admin/AdminPanelTables.cpp ui/ForgotPasswordWindow.cpp ui/PasswordResetWindow.cpp libs/imgui/imgui_impl_dx9.cpp libs/imgui/imgui_impl_win32.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp ui/helper/UpdateRainbowColor.cpp ui/helper/Markers/HelpMarker.cpp ui/helper/Markers/LicenseMarker.cpp includes/streamproof/streamproof.cpp includes/chrono/chrono.cpp includes/process/process.cpp resource.o -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
 
 
 ```
