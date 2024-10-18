@@ -43,9 +43,15 @@ void ShowLoadingScreen(bool& show_loading_screen, const std::string& statusMessa
     ImGui::SetCursorPos(ImVec2((windowSize.x - statusTextSize.x) * 0.5f, (windowSize.y - statusTextSize.y) * 0.5f));
     ImGui::Text("%s", statusMessage.c_str());
 
-    // Display the progress bar
+    // Display the progress bar with custom style
     ImGui::SetCursorPos(ImVec2((windowSize.x - 200) * 0.5f, (windowSize.y - 20) * 0.5f + 40));
-    ImGui::ProgressBar(progress, ImVec2(200, 20));
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Custom color for progress bar
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f)); // Background color
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f); // Border size
+    std::string progressText = std::to_string(int(progress * 100)) + "%";
+    ImGui::ProgressBar(progress, ImVec2(200, 20), progressText.c_str()); // Show percentage inside the progress bar
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(2);
 
     // Display the login result message based on the progress bar value
     if (progress >= 1.0f) {
