@@ -508,9 +508,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::BeginDisabled(!featureMoonwalk);
                     if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                        float newValue = optionMoonwalk ? 9.219422856E-41f : 0.0f;
-                        MemoryManipulation("moonwalk", newValue);
+                        if (optionMoonjump) {
+                            float newValue = 9.219422856E-41f;
+                            MemoryManipulation("moonwalk", newValue);
+                            MemoryManipulation("moonwalk", newValue);
+                            std::thread(UncheckMoonwalkAfterDelay, std::ref(optionMoonwalk)).detach();
+                        }
                     }
+
                     ImGui::EndDisabled();
                     if (!featureMoonwalk) {
                         ImGui::SameLine();
@@ -518,7 +523,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
 
                     ImGui::BeginDisabled(!featureFakelag);
-                    if (ImGui::Checkbox("fakelag", &optionFakelag)) {
+                    if (ImGui::Checkbox("Fakelag", &optionFakelag)) {
                         if (optionFakelag) {
                             float newValue = 0.0f;
                             MemoryManipulation("fakelag", newValue);
