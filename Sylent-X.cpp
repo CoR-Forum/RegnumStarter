@@ -508,7 +508,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::BeginDisabled(!featureMoonwalk);
                     if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                        if (optionMoonjump) {
+                        if (optionMoonwalk) {
                             float newValue = 9.219422856E-41f;
                             MemoryManipulation("moonwalk", newValue);
                             MemoryManipulation("moonwalk", newValue);
