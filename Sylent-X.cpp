@@ -206,6 +206,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         SaveLoginCredentials(username, password);
                         show_login_window = false;
                         show_main_window = true;
+
+                        // Reapply color settings after manual login
+                        ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+                        ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
                     } else {
                         Log("Login failed");
                     }
