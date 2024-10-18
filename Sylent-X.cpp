@@ -210,12 +210,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_login_window = false; // Hide the login window
 
                     std::thread loginThread([&]() {
+                        for (int i = 0; i <= 100; ++i) {
+                            std::this_thread::sleep_for(std::chrono::milliseconds(30)); // Simulate progress over 3 seconds
+                            UpdateProgressBar(i / 100.0f);
+                        }
+
                         loginSuccess = Login(username, password);
                         if (loginSuccess) {
                             Log("Login successful");
                             SaveLoginCredentials(username, password);
-                            // Delay setting show_loading_screen to false to allow the loading screen to display the result
-                            std::this_thread::sleep_for(std::chrono::seconds(2));
                             show_main_window = true;
 
                             // Reapply color settings after manual login
@@ -223,8 +226,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
                         } else {
                             Log("Login failed");
-                            // Delay setting show_loading_screen to false to allow the loading screen to display the result
-                            std::this_thread::sleep_for(std::chrono::seconds(4));
                             show_login_window = true; // Show the login window again if login fails
                         }
                         show_loading_screen = false;
