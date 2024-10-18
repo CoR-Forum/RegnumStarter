@@ -55,12 +55,16 @@ void ShowLoadingScreen(bool& show_loading_screen, const std::string& statusMessa
     if (showResult) {
         ImGui::SetCursorPos(ImVec2((windowSize.x - resultTextSize.x) * 0.5f, (windowSize.y - resultTextSize.y) * 0.5f + 20));
         if (loginSuccess) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f)); // Green color
             ImGui::Text("Login successful!");
+            ImGui::PopStyleColor();
             if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - resultTime).count() >= 2) {
                 closeWindow = true;
             }
         } else {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f)); // Red color
             ImGui::Text("Login failed. Please try again.");
+            ImGui::PopStyleColor();
             if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - resultTime).count() >= 4) {
                 closeWindow = true;
             }
