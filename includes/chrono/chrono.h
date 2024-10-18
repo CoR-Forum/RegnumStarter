@@ -2,6 +2,6 @@
 #define CHRONO_H
 
 void UncheckFakelagAfterDelay(bool& optionFakelag);
-void UncheckMoonwalkAfterDelay(bool& optionMoonwalk)
+void UncheckMoonwalkAfterDelay(bool& optionMoonwalk);
 
 #endif // CHRONO_H
