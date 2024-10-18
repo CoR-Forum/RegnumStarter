@@ -13,6 +13,7 @@
 #include "includes/streamproof/streamproof.h"
 #include "includes/chrono/chrono.h"
 #include "includes/process/process.h"
+#include "ui/loadingscreen/LoadingScreen.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -42,6 +43,9 @@ bool show_info_window = false;
 bool show_regnum_settings_window = false;
 bool show_regnum_accounts_window = false;
 bool g_ShowUI = true;
+bool show_loading_screen = false;
+std::string statusMessage = "";
+bool loginSuccess = false;
 
 extern bool featureZoom;
 extern bool featureFov;
@@ -200,19 +204,33 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
                 
                 if (ImGui::Button("Login")) {
-                    loginSuccess = Login(username, password);
-                    if (loginSuccess) {
-                        Log("Login successful");
-                        SaveLoginCredentials(username, password);
-                        show_login_window = false;
-                        show_main_window = true;
+                    show_loading_screen = true;
+                    statusMessage = "Logging in...";
+                    loginSuccess = false;
+                    show_login_window = false; // Hide the login window
 
-                        // Reapply color settings after manual login
-                        ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
-                        ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
-                    } else {
-                        Log("Login failed");
-                    }
+                    std::thread loginThread([&]() {
+                        loginSuccess = Login(username, password);
+                        if (loginSuccess) {
+                            Log("Login successful");
+                            SaveLoginCredentials(username, password);
+                            // Delay setting show_loading_screen to false to allow the loading screen to display the result
+                            std::this_thread::sleep_for(std::chrono::seconds(2));
+                            show_main_window = true;
+
+                            // Reapply color settings after manual login
+                            ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+                            ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
+                        } else {
+                            Log("Login failed");
+                            // Delay setting show_loading_screen to false to allow the loading screen to display the result
+                            std::this_thread::sleep_for(std::chrono::seconds(4));
+                            show_login_window = true; // Show the login window again if login fails
+                        }
+                        show_loading_screen = false;
+                    });
+
+                    loginThread.detach();
                 }
 
                 if (loginSuccess) {
@@ -888,6 +906,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::End();
             }
+        }
+
+        if (show_loading_screen) {
+            ShowLoadingScreen(show_loading_screen, statusMessage, loginSuccess);
         }
 
         // Rendering
