@@ -397,6 +397,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 } 
 
+                ImGui::Spacing();
+                
                 if (ImGui::CollapsingHeader("View")) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
