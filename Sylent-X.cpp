@@ -398,7 +398,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 } 
 
                 ImGui::Spacing();
-                
+
                 if (ImGui::CollapsingHeader("View")) {
                     static float zoomValue = 15.0f; // Default zoom value
                     static bool prevZoomState = false; // Track previous state of the checkbox
@@ -655,127 +655,125 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::End();
             }
 
-if (show_regnum_accounts_window) {
-    ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+            if (show_regnum_accounts_window) {
+                ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-    ImGui::Text("Regnum Accounts");
+                // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
+                ImGui::Columns(4, "RegnumAccounts");
+                ImGui::Separator();
+                ImGui::Text("Username");
+                ImGui::NextColumn();
+                ImGui::Text("Server");
+                ImGui::NextColumn();
+                ImGui::Text("Referrer");
+                ImGui::NextColumn();
+                ImGui::Text("Actions");
+                ImGui::NextColumn();
+                ImGui::Separator();
 
-    // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
-    ImGui::Columns(4, "RegnumAccounts");
-    ImGui::Separator();
-    ImGui::Text("Username");
-    ImGui::NextColumn();
-    ImGui::Text("Server");
-ImGui::NextColumn();
-ImGui::Text("Referrer");
-ImGui::NextColumn();
-ImGui::Text("Actions");
-ImGui::NextColumn();
-ImGui::Separator();
+                // Declare the static character arrays at the beginning of the function
+                static char regnumId[128] = "";
+                static char regnumUsername[128] = "";
+                static char regnumPassword[128] = "";
+                static char regnumServer[128] = "";
+                static char regnumReferrer[128] = "";
 
-// Declare the static character arrays at the beginning of the function
-static char regnumId[128] = "";
-static char regnumUsername[128] = "";
-static char regnumPassword[128] = "";
-static char regnumServer[128] = "";
-static char regnumReferrer[128] = "";
+                // Example server and referrer options
+                ServerOption serverOptions[] = { {"val", "Valhalla"}, {"ra", "Ra"} };
+                ReferrerOption referrerOptions[] = { {"nge", "NGE"}, {"gmg", "Gamigo"}, {"boa", "Boacompra"} };
+                static int currentServer = 0;
+                static int currentReferrer = 0;
 
-// Example server and referrer options
-ServerOption serverOptions[] = { {"val", "Valhalla"}, {"ra", "Ra"} };
-ReferrerOption referrerOptions[] = { {"nge", "NGE"}, {"gmg", "Gamigo"}, {"boa", "Boacompra"} };
-static int currentServer = 0;
-static int currentReferrer = 0;
+                for (const auto& account : regnumAccounts) {
+                    ImGui::Text("%s", account.username.c_str());
+                    ImGui::NextColumn();
 
-for (const auto& account : regnumAccounts) {
-    ImGui::Text("%s", account.username.c_str());
-    ImGui::NextColumn();
+                    // Find and display the server name
+                    const char* serverName = account.server.c_str();
+                    for (const auto& serverOption : serverOptions) {
+                        if (strcmp(serverOption.id, account.server.c_str()) == 0) {
+                            serverName = serverOption.name;
+                            break;
+                        }
+                    }
+                    ImGui::Text("%s", serverName);
+                    ImGui::NextColumn();
 
-    // Find and display the server name
-    const char* serverName = account.server.c_str();
-    for (const auto& serverOption : serverOptions) {
-        if (strcmp(serverOption.id, account.server.c_str()) == 0) {
-            serverName = serverOption.name;
-            break;
-        }
-    }
-    ImGui::Text("%s", serverName);
-    ImGui::NextColumn();
+                    // Find and display the referrer name
+                    const char* referrerName = account.referrer.c_str();
+                    for (const auto& referrerOption : referrerOptions) {
+                        if (strcmp(referrerOption.id, account.referrer.c_str()) == 0) {
+                            referrerName = referrerOption.name;
+                            break;
+                        }
+                    }
+                    ImGui::Text("%s", referrerName);
+                    ImGui::NextColumn();
 
-    // Find and display the referrer name
-    const char* referrerName = account.referrer.c_str();
-    for (const auto& referrerOption : referrerOptions) {
-        if (strcmp(referrerOption.id, account.referrer.c_str()) == 0) {
-            referrerName = referrerOption.name;
-            break;
-        }
-    }
-    ImGui::Text("%s", referrerName);
-    ImGui::NextColumn();
+                    // button to edit the account, this will load the account details into the input fields
+                    std::string editButtonLabel = "Edit##" + std::to_string(account.id);
+                    if (ImGui::Button(editButtonLabel.c_str())) {
+                        // Load the account details into the input fields
+                        snprintf(regnumId, IM_ARRAYSIZE(regnumId), "%d", account.id);
+                        snprintf(regnumUsername, IM_ARRAYSIZE(regnumUsername), "%s", account.username.c_str());
+                        snprintf(regnumPassword, IM_ARRAYSIZE(regnumPassword), "%s", account.password.c_str());
+                        snprintf(regnumServer, IM_ARRAYSIZE(regnumServer), "%s", account.server.c_str());
+                        snprintf(regnumReferrer, IM_ARRAYSIZE(regnumReferrer), "%s", account.referrer.c_str());
 
-    // button to edit the account, this will load the account details into the input fields
-    std::string editButtonLabel = "Edit##" + std::to_string(account.id);
-    if (ImGui::Button(editButtonLabel.c_str())) {
-        // Load the account details into the input fields
-        snprintf(regnumId, IM_ARRAYSIZE(regnumId), "%d", account.id);
-        snprintf(regnumUsername, IM_ARRAYSIZE(regnumUsername), "%s", account.username.c_str());
-        snprintf(regnumPassword, IM_ARRAYSIZE(regnumPassword), "%s", account.password.c_str());
-        snprintf(regnumServer, IM_ARRAYSIZE(regnumServer), "%s", account.server.c_str());
-        snprintf(regnumReferrer, IM_ARRAYSIZE(regnumReferrer), "%s", account.referrer.c_str());
+                        // Set the current server and referrer indices
+                        for (int i = 0; i < IM_ARRAYSIZE(serverOptions); ++i) {
+                            if (strcmp(serverOptions[i].id, account.server.c_str()) == 0) {
+                                currentServer = i;
+                                break;
+                            }
+                        }
+                        for (int i = 0; i < IM_ARRAYSIZE(referrerOptions); ++i) {
+                            if (strcmp(referrerOptions[i].id, account.referrer.c_str()) == 0) {
+                                currentReferrer = i;
+                                break;
+                            }
+                        }
+                    }
 
-        // Set the current server and referrer indices
-        for (int i = 0; i < IM_ARRAYSIZE(serverOptions); ++i) {
-            if (strcmp(serverOptions[i].id, account.server.c_str()) == 0) {
-                currentServer = i;
-                break;
+                    ImGui::SameLine();
+                    // button to delete the account using the DeleteRegnumAccount function
+                    std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
+                    if (ImGui::Button(deleteButtonLabel.c_str())) {
+                        DeleteRegnumAccount(account.id);
+                    }
+
+                    ImGui::NextColumn();
+                }
+
+                ImGui::Columns(1);
+                ImGui::Separator();
+
+                // Input fields to save a Regnum Account using the SaveRegnumAccount function
+                ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
+                ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
+                ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
+                    *out_text = ((ServerOption*)data)[idx].name;
+                    return true;
+                }, serverOptions, IM_ARRAYSIZE(serverOptions));
+                ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
+                    *out_text = ((ReferrerOption*)data)[idx].name;
+                    return true;
+                }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
+
+                if (ImGui::Button("Save Account")) {
+                    SaveRegnumAccount(
+                        regnumUsername, 
+                        regnumPassword, 
+                        serverOptions[currentServer].id, 
+                        referrerOptions[currentReferrer].id, 
+                        regnumId[0] == '\0' ? 0 : atoi(regnumId)
+                    );
+                }
+
+                ImGui::Separator();
+
+                ImGui::End();
             }
-        }
-        for (int i = 0; i < IM_ARRAYSIZE(referrerOptions); ++i) {
-            if (strcmp(referrerOptions[i].id, account.referrer.c_str()) == 0) {
-                currentReferrer = i;
-                break;
-            }
-        }
-    }
-
-    ImGui::SameLine();
-    // button to delete the account using the DeleteRegnumAccount function
-    std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
-    if (ImGui::Button(deleteButtonLabel.c_str())) {
-        DeleteRegnumAccount(account.id);
-    }
-
-    ImGui::NextColumn();
-}
-
-    ImGui::Columns(1);
-    ImGui::Separator();
-
-    // Input fields to save a Regnum Account using the SaveRegnumAccount function
-    ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
-    ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
-    ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
-        *out_text = ((ServerOption*)data)[idx].name;
-        return true;
-    }, serverOptions, IM_ARRAYSIZE(serverOptions));
-    ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
-        *out_text = ((ReferrerOption*)data)[idx].name;
-        return true;
-    }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
-
-    if (ImGui::Button("Save Account")) {
-        SaveRegnumAccount(
-            regnumUsername, 
-            regnumPassword, 
-            serverOptions[currentServer].id, 
-            referrerOptions[currentReferrer].id, 
-            regnumId[0] == '\0' ? 0 : atoi(regnumId)
-        );
-    }
-
-    ImGui::Separator();
-
-    ImGui::End();
-}
 
             if (show_regnum_settings_window) {
                 ImGui::Begin("Regnum Settings", &show_regnum_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
