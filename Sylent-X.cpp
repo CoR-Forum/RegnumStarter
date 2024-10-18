@@ -371,6 +371,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
+                // Reapply color settings after manual login
+                ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+                ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
+
                 ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
                 ImGui::Text("Status: %s", currentStatus.c_str());
                 ImGui::SameLine();
