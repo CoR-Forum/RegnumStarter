@@ -42,6 +42,7 @@ bool show_settings_content = false;
 bool show_info_window = false;
 bool show_regnum_settings_window = false;
 bool show_regnum_accounts_window = false;
+bool show_Regnumstarter = false;
 bool g_ShowUI = true;
 bool show_loading_screen = false;
 std::string statusMessage = "";
@@ -337,6 +338,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
+                    show_Regnumstarter = false;
                 }
                 if (isAdmin) {
                     if (ImGui::Button("Admin", buttonSize)) {
@@ -357,19 +359,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
+                    show_Regnumstarter = false;
                 }
-                if (ImGui::Button("Regnum Accounts", buttonSize)) {
-                    show_settings_content = false;
-                    show_regnum_accounts_window = true;
-                    show_regnum_settings_window = false;
-                    show_feedback_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                }
-                if (ImGui::Button("Regnum Settings", buttonSize)) {
+                if (ImGui::Button("RegnumStarter", buttonSize)) {
+                    show_Regnumstarter = true;
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
-                    show_regnum_settings_window = true;
+                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -381,6 +377,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_feedback_window = true;
                     show_license_window = false;
                     show_info_window = false;
+                    show_Regnumstarter = false;
                 }
                 if (ImGui::Button("License", buttonSize)) {
                     show_settings_content = false;
@@ -389,6 +386,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_feedback_window = false;
                     show_license_window = true;
                     show_info_window = false;
+                    show_Regnumstarter = false;
                 }
                 if (ImGui::Button("Info", buttonSize)) {
                     show_settings_content = false;
@@ -397,6 +395,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = true;
+                    show_Regnumstarter = false;
                 }
                 if (ImGui::Button("Logout", buttonSize)) {
                     Logout(); // Use the logic from ApiHandler.cpp
@@ -447,7 +446,69 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
                     }
 
-                } else if (show_regnum_accounts_window) {
+            } else if (show_feedback_window) {
+
+                    static int feedbackType = 0;
+                    static bool feedback_includeLogfile = true;
+                    const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
+                    static char feedbackText[1024] = "";
+                    static std::string feedbackMessage = "";
+
+                    ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
+
+                    ImGui::SameLine();
+                    ImGui::Checkbox("Include Log File", &feedback_includeLogfile);
+
+                    ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
+
+
+                    if (ImGui::Button("Submit")) {
+                        try {
+                            SendFeedback(feedbackTypes[feedbackType], feedbackText, feedback_includeLogfile);
+                            feedbackMessage = "Feedback sent successfully!";
+                            feedbackText[0] = '\0'; // Clear the feedback text
+                        } catch (const std::exception& e) {
+                            feedbackMessage = "Failed to send feedback: " + std::string(e.what());
+                        }
+                    }
+
+                    if (!feedbackMessage.empty()) {
+                        ImGui::Text("%s", feedbackMessage.c_str());
+                    }
+            } else if (show_license_window) {
+             
+                    static char licenseKey[128] = "";
+
+                    // Display the input text field for the license key
+                    ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
+
+                    // Display the submit button
+                    if (ImGui::Button("Submit")) {
+                        try {
+                            ActivateLicense(licenseKey);
+                            ImGui::Text("License activated successfully!");
+                        } catch (const std::exception& e) {
+                            Log("Failed to activate license: " + std::string(e.what()));
+                            ImGui::Text("Failed to activate license: %s", e.what());
+                        }
+                    }
+                    ImGui::Separator();
+                    // License information from license_runtime_end and license_features
+                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
+            } else if (show_info_window) {
+
+                    ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
+                    ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
+                    ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
+                    ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
+                    
+            } else if (show_Regnumstarter) {
+
+                    // large info that indiciates that those settings are not working yet
+                    ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
 
                     // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
                     ImGui::Columns(4, "RegnumAccounts");
@@ -561,10 +622,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         );
                     }
 
+                    ImGui::Spacing();
                     ImGui::Separator();
-                } else if (show_regnum_settings_window) {
-                    // large info that indiciates that those settings are not working yet
-                    ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
+                    ImGui::Spacing();
+
+                    static int selectedAccount = -1;
+                    const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
+                    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
+                        for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
+                            bool isSelected = (selectedAccount == i);
+                            if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
+                                selectedAccount = i;
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Play")) {
+                        runRoClientGame(regnumLoginUser, regnumLoginPassword);
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
 
                     // slider to set sound volume
                     static float soundVolume = 0.5f;
@@ -583,61 +664,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         // Implement the logic to save the settings
                     }
 
-            } else if (show_feedback_window) {
-
-                    static int feedbackType = 0;
-                    static bool feedback_includeLogfile = true;
-                    const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
-                    static char feedbackText[1024] = "";
-                    static std::string feedbackMessage = "";
-
-                    ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
-
-                    ImGui::SameLine();
-                    ImGui::Checkbox("Include Log File", &feedback_includeLogfile);
-
-                    ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
-
-
-                    if (ImGui::Button("Submit")) {
-                        try {
-                            SendFeedback(feedbackTypes[feedbackType], feedbackText, feedback_includeLogfile);
-                            feedbackMessage = "Feedback sent successfully!";
-                            feedbackText[0] = '\0'; // Clear the feedback text
-                        } catch (const std::exception& e) {
-                            feedbackMessage = "Failed to send feedback: " + std::string(e.what());
-                        }
-                    }
-
-                    if (!feedbackMessage.empty()) {
-                        ImGui::Text("%s", feedbackMessage.c_str());
-                    }
-            } else if (show_license_window) {
-             
-                    static char licenseKey[128] = "";
-
-                    // Display the input text field for the license key
-                    ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
-
-                    // Display the submit button
-                    if (ImGui::Button("Submit")) {
-                        try {
-                            ActivateLicense(licenseKey);
-                            ImGui::Text("License activated successfully!");
-                        } catch (const std::exception& e) {
-                            Log("Failed to activate license: " + std::string(e.what()));
-                            ImGui::Text("Failed to activate license: %s", e.what());
-                        }
-                    }
-                    ImGui::Separator();
-                    // License information from license_runtime_end and license_features
-                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
-            } else if (show_info_window) {
-
-                    ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
-                    ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
-                    ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-                    ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
@@ -815,31 +841,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             }
                         }
                     }
-
-                    ImGui::Spacing();
-                    ImGui::Separator();
-                    ImGui::Spacing();
-
-                    static int selectedAccount = -1;
-                    const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
-                    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
-                        for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
-                            bool isSelected = (selectedAccount == i);
-                            if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
-                                selectedAccount = i;
-                            }
-                        }
-                        ImGui::EndCombo();
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Play")) {
-                        runRoClientGame(regnumLoginUser, regnumLoginPassword);
-                    }
-
-                    ImGui::Spacing();
-                    ImGui::Separator();
-                    ImGui::Spacing();
 
                     ImGui::Spacing();
                     ImGui::Separator();
