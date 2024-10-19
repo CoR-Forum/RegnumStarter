@@ -299,6 +299,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (show_main_window) {
                 std::string windowTitle = "Sylent-X " + currentVersion;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
+                ImGui::SetNextWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
                 // close the window if the user clicks the close button
@@ -306,6 +307,71 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveSettings();
                     PostQuitMessage(0);
                 }
+
+                // Create a child window for the navigation buttons
+                ImGui::BeginChild("Navigation", ImVec2(150, 0), true);
+                if (ImGui::Button("Sylent-X")) {
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                }
+                if (ImGui::Button("Settings")) {
+                    show_settings_content = true;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                }
+                if (ImGui::Button("Regnum Accounts")) {
+                    show_settings_content = false;
+                    show_regnum_accounts_window = true;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                }
+                if (ImGui::Button("Regnum Settings")) {
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = true;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                }
+                if (ImGui::Button("Feedback")) {
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = true;
+                    show_license_window = false;
+                    show_info_window = false;
+                }
+                if (ImGui::Button("License")) {
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = true;
+                    show_info_window = false;
+                }
+                if (ImGui::Button("Info")) {
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = true;
+                }
+                ImGui::EndChild();
+
+                ImGui::SameLine();
+
+                // Main content area
+                ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
 
                 if (show_settings_content) {
                     // Settings content
@@ -834,7 +900,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         }
                     }
                 }
-
+                ImGui::EndChild();
                 ImGui::End();
             }
         }
@@ -863,7 +929,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     chatInput[0] = '\0'; // Clear input field
                 }
             }
-
             ImGui::End();
         }
 
