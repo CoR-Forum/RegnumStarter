@@ -299,8 +299,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (show_main_window) {
                 std::string windowTitle = "Sylent-X " + currentVersion;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
-                ImGui::SetNextWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
+                ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+                ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+                ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
+
+                if (setting_enableRainbow) {
+                    UpdateRainbowColor(setting_rainbowSpeed);
+                }
 
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
@@ -404,17 +411,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     if (ImGui::Button("Save Settings")) {
                         SaveSettings();
-                        show_settings_content = false; // Switch back to main content
                     }
 
                     ImGui::SameLine();
                     if (ImGui::Button("Create Ticket")) {
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Password Reset")) {
-                        show_forgot_password_window = true;
-                        show_settings_content = false; // Switch back to main content
                     }
 
                     ImGui::Separator();
@@ -422,8 +423,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
 
                     if (ImGui::Button("Activate a License")) {
-                        show_settings_content = false; // Switch back to main content
                         show_license_window = true;
+                        show_settings_content = false;
                     }
                 } else if (show_regnum_accounts_window) {
 
@@ -615,7 +616,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
                     ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
             } else {
-                    // Main window content
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
 
@@ -623,10 +623,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Text("Status: %s", currentStatus.c_str());
                     ImGui::SameLine();
                     ImGui::Text("Magnat: %d", magnatCurrency);
-
-                    if (setting_enableRainbow) {
-                        UpdateRainbowColor(setting_rainbowSpeed);
-                    }
 
                     if (isAdmin) {
                         if (ImGui::CollapsingHeader("Admins")) {
