@@ -314,10 +314,23 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveSettings();
                     PostQuitMessage(0);
                 }
+                
+
+                // Calculate the size of the largest button
+                ImVec2 buttonSize = ImVec2(0, 0);
+                const char* buttonLabels[] = {
+                    "Sylent-X", "Admin", "Chat", "Settings", "Regnum Accounts", 
+                    "Regnum Settings", "Feedback", "License", "Info", "Logout"
+                };
+                for (const char* label : buttonLabels) {
+                    ImVec2 size = ImGui::CalcTextSize(label);
+                    buttonSize.x = std::max(buttonSize.x, size.x + ImGui::GetStyle().FramePadding.x * 2.0f);
+                    buttonSize.y = std::max(buttonSize.y, size.y + ImGui::GetStyle().FramePadding.y * 2.0f);
+                }
 
                 // Create a child window for the navigation buttons
                 ImGui::BeginChild("Navigation", ImVec2(150, 0), true);
-                if (ImGui::Button("Sylent-X")) {
+                if (ImGui::Button("Sylent-X", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -326,7 +339,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                 }
                 if (isAdmin) {
-                    if (ImGui::Button("Admin")) {
+                    if (ImGui::Button("Admin", buttonSize)) {
                         GetAllUsers();
                         GetAllLicenses();
                         show_admin_window = true; // Show the admin window
@@ -334,10 +347,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ShowAdminPanel(&show_admin_window);
                 }
-                if (ImGui::Button("Chat")) {
+                if (ImGui::Button("Chat", buttonSize)) {
                     show_chat_window = true;
                 }
-                if (ImGui::Button("Settings")) {
+                if (ImGui::Button("Settings", buttonSize)) {
                     show_settings_content = true;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -345,7 +358,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = false;
                 }
-                if (ImGui::Button("Regnum Accounts")) {
+                if (ImGui::Button("Regnum Accounts", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = true;
                     show_regnum_settings_window = false;
@@ -353,7 +366,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = false;
                 }
-                if (ImGui::Button("Regnum Settings")) {
+                if (ImGui::Button("Regnum Settings", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = true;
@@ -361,7 +374,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = false;
                 }
-                if (ImGui::Button("Feedback")) {
+                if (ImGui::Button("Feedback", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -369,7 +382,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = false;
                 }
-                if (ImGui::Button("License")) {
+                if (ImGui::Button("License", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -377,7 +390,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = true;
                     show_info_window = false;
                 }
-                if (ImGui::Button("Info")) {
+                if (ImGui::Button("Info", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -385,7 +398,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = true;
                 }
-                if (ImGui::Button("Logout")) {
+                if (ImGui::Button("Logout", buttonSize)) {
                     Logout(); // Use the logic from ApiHandler.cpp
                 }
 
