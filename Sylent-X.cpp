@@ -38,7 +38,7 @@ bool show_chat_window = false;
 bool show_forgot_password_window = false;
 bool show_password_reset_window = false;
 bool show_admin_window = false;
-bool show_settings_window = false;
+bool show_settings_content = false; 
 bool show_info_window = false;
 bool show_regnum_settings_window = false;
 bool show_regnum_accounts_window = false;
@@ -294,91 +294,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             if (show_password_reset_window) {
                 ShowPasswordResetWindow(show_password_reset_window, show_login_window, show_forgot_password_window);
-            }
-
-            if (show_info_window) {
-                ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            ImGui::Text("Sylent-X %s", currentVersion.c_str());
-            ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
-            ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
-            ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-            ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
-            ImGui::End();
-            }
-
-            if (show_settings_window) {
-                ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-        
-
-                ImGui::Text("Appearance Settings");
-
-                ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
-                ImGui::SameLine();
-                ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
-                
-                // Show the color wheel
-                ImGui::ShowColorWheel(textColor);
-
-                // Slider to adjust the font size
-                ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
-
-                ImGui::Separator();
-
-                ImGui::Text("Advanced Settings");
-
-                if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture))
-                    {
-                        SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
-                    }
-
-                ImGui::InputInt("Max Log Messages to store", &setting_log_maxMessages);
-                
-                ImGui::SameLine();
-                ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
-
-                ImGui::Separator();
-
-                if (ImGui::Button("Save Settings")) {
-                    SaveSettings();
-                    show_settings_window = false;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Create Ticket")) {
-                    ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Password Reset")) {
-                    show_forgot_password_window = true;
-                    show_settings_window = false;
-                }
-
-                ImGui::Separator();
-                    // License information from license_runtime_end and license_features
-                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
-                    
-                    if (ImGui::Button("Activate a License")) {
-                    show_settings_window = false;
-                    show_license_window = true;
-                    }
-                    ImGui::End();
-            }
-
+            } 
 
             if (show_main_window) {
                 std::string windowTitle = "Sylent-X " + currentVersion;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
-
-                // Reapply color settings after manual login
-                ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
-                ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
-
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
-                ImGui::Text("Status: %s", currentStatus.c_str());
-                ImGui::SameLine();
-                ImGui::Text("Magnat: %d", magnatCurrency);
 
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
@@ -386,47 +307,298 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     PostQuitMessage(0);
                 }
 
-                if (setting_enableRainbow) {
-                    UpdateRainbowColor(setting_rainbowSpeed);
-                }      
+                if (show_settings_content) {
+                    // Settings content
+                    ImGui::Text("Appearance Settings");
 
-                if (isAdmin) {
-                    if (ImGui::CollapsingHeader("Admins")) {
-                        static float fastflyValue = 250.0f; // Default moonjump value
-                        static bool prevflyState = false; // Track previous state of the checkbox
-                        ImGui::BeginDisabled(!featureFastfly);
-                        if (ImGui::Checkbox("FastFly", &optionFastFly)) {
-                            if (optionFastFly) {
-                                prevflyState = true;
-                            } else if (prevflyState) {
-                                // Reset fly value to 4.8f when checkbox is unchecked
-                                fastflyValue = 4.8f;
-                                MemoryManipulation("fastfly", fastflyValue);
-                                prevflyState = false;
+                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
+                    ImGui::SameLine();
+                    ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
+
+                    // Show the color wheel
+                    ImGui::ShowColorWheel(textColor);
+
+                    // Slider to adjust the font size
+                    ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
+
+                    ImGui::Separator();
+
+                    ImGui::Text("Advanced Settings");
+
+                    if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture)) {
+                        SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+                    }
+
+                    ImGui::InputInt("Max Log Messages to store", &setting_log_maxMessages);
+
+                    ImGui::SameLine();
+                    ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
+
+                    ImGui::Separator();
+
+                    if (ImGui::Button("Save Settings")) {
+                        SaveSettings();
+                        show_settings_content = false; // Switch back to main content
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Create Ticket")) {
+                        ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Password Reset")) {
+                        show_forgot_password_window = true;
+                        show_settings_content = false; // Switch back to main content
+                    }
+
+                    ImGui::Separator();
+                    // License information from license_runtime_end and license_features
+                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
+
+                    if (ImGui::Button("Activate a License")) {
+                        show_settings_content = false; // Switch back to main content
+                        show_license_window = true;
+                    }
+                } else if (show_regnum_accounts_window) {
+
+                    // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
+                    ImGui::Columns(4, "RegnumAccounts");
+                    ImGui::Separator();
+                    ImGui::Text("Username");
+                    ImGui::NextColumn();
+                    ImGui::Text("Server");
+                    ImGui::NextColumn();
+                    ImGui::Text("Referrer");
+                    ImGui::NextColumn();
+                    ImGui::Text("Actions");
+                    ImGui::NextColumn();
+                    ImGui::Separator();
+
+                    // Declare the static character arrays at the beginning of the function
+                    static char regnumId[128] = "";
+                    static char regnumUsername[128] = "";
+                    static char regnumPassword[128] = "";
+                    static char regnumServer[128] = "";
+                    static char regnumReferrer[128] = "";
+
+                    // Example server and referrer options
+                    ServerOption serverOptions[] = { {"val", "Valhalla"}, {"ra", "Ra"} };
+                    ReferrerOption referrerOptions[] = { {"nge", "NGE"}, {"gmg", "Gamigo"}, {"boa", "Boacompra"} };
+                    static int currentServer = 0;
+                    static int currentReferrer = 0;
+
+                    for (const auto& account : regnumAccounts) {
+                        ImGui::Text("%s", account.username.c_str());
+                        ImGui::NextColumn();
+
+                        // Find and display the server name
+                        const char* serverName = account.server.c_str();
+                        for (const auto& serverOption : serverOptions) {
+                            if (strcmp(serverOption.id, account.server.c_str()) == 0) {
+                                serverName = serverOption.name;
+                                break;
                             }
                         }
-                        ImGui::EndDisabled();
-                        if (optionFastFly) {
-                            ImGui::SameLine();
-                            if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
-                                MemoryManipulation("fastfly", fastflyValue);
+                        ImGui::Text("%s", serverName);
+                        ImGui::NextColumn();
+
+                        // Find and display the referrer name
+                        const char* referrerName = account.referrer.c_str();
+                        for (const auto& referrerOption : referrerOptions) {
+                            if (strcmp(referrerOption.id, account.referrer.c_str()) == 0) {
+                                referrerName = referrerOption.name;
+                                break;
                             }
                         }
+                        ImGui::Text("%s", referrerName);
+                        ImGui::NextColumn();
+
+                        // button to edit the account, this will load the account details into the input fields
+                        std::string editButtonLabel = "Edit##" + std::to_string(account.id);
+                        if (ImGui::Button(editButtonLabel.c_str())) {
+                            // Load the account details into the input fields
+                            snprintf(regnumId, IM_ARRAYSIZE(regnumId), "%d", account.id);
+                            snprintf(regnumUsername, IM_ARRAYSIZE(regnumUsername), "%s", account.username.c_str());
+                            snprintf(regnumPassword, IM_ARRAYSIZE(regnumPassword), "%s", account.password.c_str());
+                            snprintf(regnumServer, IM_ARRAYSIZE(regnumServer), "%s", account.server.c_str());
+                            snprintf(regnumReferrer, IM_ARRAYSIZE(regnumReferrer), "%s", account.referrer.c_str());
+
+                            // Set the current server and referrer indices
+                            for (int i = 0; i < IM_ARRAYSIZE(serverOptions); ++i) {
+                                if (strcmp(serverOptions[i].id, account.server.c_str()) == 0) {
+                                    currentServer = i;
+                                    break;
+                                }
+                            }
+                            for (int i = 0; i < IM_ARRAYSIZE(referrerOptions); ++i) {
+                                if (strcmp(referrerOptions[i].id, account.referrer.c_str()) == 0) {
+                                    currentReferrer = i;
+                                    break;
+                                }
+                            }
+                        }
+
                         ImGui::SameLine();
-                        if (!featureFastfly) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
+                        // button to delete the account using the DeleteRegnumAccount function
+                        std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
+                        if (ImGui::Button(deleteButtonLabel.c_str())) {
+                            DeleteRegnumAccount(account.id);
+                        }
+
+                        ImGui::NextColumn();
+                    }
+
+                    ImGui::Columns(1);
+                    ImGui::Separator();
+
+                    // Input fields to save a Regnum Account using the SaveRegnumAccount function
+                    ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
+                    ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
+                    ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
+                        *out_text = ((ServerOption*)data)[idx].name;
+                        return true;
+                    }, serverOptions, IM_ARRAYSIZE(serverOptions));
+                    ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
+                        *out_text = ((ReferrerOption*)data)[idx].name;
+                        return true;
+                    }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
+
+                    if (ImGui::Button("Save Account")) {
+                        SaveRegnumAccount(
+                            regnumUsername, 
+                            regnumPassword, 
+                            serverOptions[currentServer].id, 
+                            referrerOptions[currentReferrer].id, 
+                            regnumId[0] == '\0' ? 0 : atoi(regnumId)
+                        );
+                    }
+
+                    ImGui::Separator();
+                } else if (show_regnum_settings_window) {
+                    // large info that indiciates that those settings are not working yet
+                    ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
+
+                    // slider to set sound volume
+                    static float soundVolume = 0.5f;
+                    ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 1.0f);
+
+                    // checkbox to enable/disable music
+                    static bool enableMusic = true;
+                    ImGui::Checkbox("Enable Music", &enableMusic);
+
+                    // checkbox to enable/disable sound effects
+                    static bool enableSoundEffects = true;
+                    ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
+
+                    // button to save the settings
+                    if (ImGui::Button("Save Settings")) {
+                        // Implement the logic to save the settings
+                    }
+
+            } else if (show_feedback_window) {
+
+                    static int feedbackType = 0;
+                    static bool feedback_includeLogfile = true;
+                    const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
+                    static char feedbackText[1024] = "";
+                    static std::string feedbackMessage = "";
+
+                    ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
+
+                    ImGui::SameLine();
+                    ImGui::Checkbox("Include Log File", &feedback_includeLogfile);
+
+                    ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
+
+
+                    if (ImGui::Button("Submit")) {
+                        try {
+                            SendFeedback(feedbackTypes[feedbackType], feedbackText, feedback_includeLogfile);
+                            feedbackMessage = "Feedback sent successfully!";
+                            feedbackText[0] = '\0'; // Clear the feedback text
+                        } catch (const std::exception& e) {
+                            feedbackMessage = "Failed to send feedback: " + std::string(e.what());
                         }
                     }
-                } 
 
-                ImGui::Spacing();
+                    if (!feedbackMessage.empty()) {
+                        ImGui::Text("%s", feedbackMessage.c_str());
+                    }
+            } else if (show_license_window) {
+             
+                    static char licenseKey[128] = "";
 
-                if (ImGui::CollapsingHeader("View")) {
-                    static float zoomValue = 15.0f; // Default zoom value
-                    static bool prevZoomState = false; // Track previous state of the checkbox
+                    // Display the input text field for the license key
+                    ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
 
-                    ImGui::Checkbox("Enable Zoom", &optionZoom);               
+                    // Display the submit button
+                    if (ImGui::Button("Submit")) {
+                        try {
+                            ActivateLicense(licenseKey);
+                            ImGui::Text("License activated successfully!");
+                        } catch (const std::exception& e) {
+                            Log("Failed to activate license: " + std::string(e.what()));
+                            ImGui::Text("Failed to activate license: %s", e.what());
+                        }
+                    }
+            } else if (show_info_window) {
+
+                    ImGui::Text("Sylent-X %s", currentVersion.c_str());
+                    ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
+                    ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
+                    ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
+                    ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
+            } else {
+                    // Main window content
+                    ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+                    ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
+
+                    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
+                    ImGui::Text("Status: %s", currentStatus.c_str());
+                    ImGui::SameLine();
+                    ImGui::Text("Magnat: %d", magnatCurrency);
+
+                    if (setting_enableRainbow) {
+                        UpdateRainbowColor(setting_rainbowSpeed);
+                    }
+
+                    if (isAdmin) {
+                        if (ImGui::CollapsingHeader("Admins")) {
+                            static float fastflyValue = 250.0f; // Default moonjump value
+                            static bool prevflyState = false; // Track previous state of the checkbox
+                            ImGui::BeginDisabled(!featureFastfly);
+                            if (ImGui::Checkbox("FastFly", &optionFastFly)) {
+                                if (optionFastFly) {
+                                    prevflyState = true;
+                                } else if (prevflyState) {
+                                    // Reset fly value to 4.8f when checkbox is unchecked
+                                    fastflyValue = 4.8f;
+                                    MemoryManipulation("fastfly", fastflyValue);
+                                    prevflyState = false;
+                                }
+                            }
+                            ImGui::EndDisabled();
+                            if (optionFastFly) {
+                                ImGui::SameLine();
+                                if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
+                                    MemoryManipulation("fastfly", fastflyValue);
+                                }
+                            }
+                            ImGui::SameLine();
+                            if (!featureFastfly) {
+                                ImGui::SameLine();
+                                ShowLicenseMarker();
+                            }
+                        }
+                    }
+
+                    ImGui::Spacing();
+
+                    if (ImGui::CollapsingHeader("View")) {
+                        static float zoomValue = 15.0f; // Default zoom value
+                        static bool prevZoomState = false; // Track previous state of the checkbox
+
+                        ImGui::Checkbox("Enable Zoom", &optionZoom);
                         if (optionZoom) {
                             ImGui::SameLine();
                             if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
@@ -438,468 +610,261 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             MemoryManipulation("zoom", zoomValue);
                         }
 
-                    prevZoomState = optionZoom; // Update previous state
+                        prevZoomState = optionZoom; // Update previous state
 
-                    ImGui::BeginDisabled(!featureFov);
-                    if (ImGui::Checkbox("Field of View", &optionFov)) {
-                        float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
-                        MemoryManipulation("fov", newValue);
-                    }
-                    ImGui::EndDisabled();
-
-                }
-
-                ImGui::Spacing();
-
-                if (ImGui::CollapsingHeader("Movement")) {
-
-                    ImGui::BeginDisabled(!featureSpeedhack);
-                    if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
-                        float newValue = optionSpeedHack ? 5.6f : 4.8f;
-                        MemoryManipulation("speedhack", newValue);
-                    }
-                    if (featureSpeedhack) {
-                        ImGui::SameLine();
-                        ShowHelpMarker("Use at own risk");
-                    }
-                    ImGui::EndDisabled();
-                    if (!featureSpeedhack) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
+                        ImGui::BeginDisabled(!featureFov);
+                        if (ImGui::Checkbox("Field of View", &optionFov)) {
+                            float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
+                            MemoryManipulation("fov", newValue);
+                        }
+                        ImGui::EndDisabled();
                     }
 
-                    ImGui::BeginDisabled(!featureGravity);
-                    if (ImGui::Checkbox("Flyhack", &optionGravity)) {
-                        MemoryManipulation("gravity");
-                    }
-                    
-                    ImGui::EndDisabled();
-                    if (!featureGravity) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
+                    ImGui::Spacing();
 
-                    static float moonjumpValue = 4.0f; // Default moonjump value
-                    static bool prevjumpState = false; // Track previous state of the checkbox
-                    ImGui::BeginDisabled(!featureMoonjump);
-                    if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
+                    if (ImGui::CollapsingHeader("Movement")) {
+                        ImGui::BeginDisabled(!featureSpeedhack);
+                        if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
+                            float newValue = optionSpeedHack ? 5.6f : 4.8f;
+                            MemoryManipulation("speedhack", newValue);
+                        }
+                        if (featureSpeedhack) {
+                            ImGui::SameLine();
+                            ShowHelpMarker("Use at own risk");
+                        }
+                        ImGui::EndDisabled();
+                        if (!featureSpeedhack) {
+                            ImGui::SameLine();
+                            ShowLicenseMarker();
+                        }
+
+                        ImGui::BeginDisabled(!featureGravity);
+                        if (ImGui::Checkbox("Flyhack", &optionGravity)) {
+                            MemoryManipulation("gravity");
+                        }
+
+                        ImGui::EndDisabled();
+                        if (!featureGravity) {
+                            ImGui::SameLine();
+                            ShowLicenseMarker();
+                        }
+
+                        static float moonjumpValue = 4.0f; // Default moonjump value
+                        static bool prevjumpState = false; // Track previous state of the checkbox
+                        ImGui::BeginDisabled(!featureMoonjump);
+                        if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
+                            if (optionMoonjump) {
+                                prevjumpState = true;
+                            } else if (prevjumpState) {
+                                // Reset zoom value to 4.0f when checkbox is unchecked
+                                moonjumpValue = 4.0f;
+                                MemoryManipulation("moonjump", moonjumpValue);
+                                prevjumpState = false;
+                            }
+                        }
                         if (optionMoonjump) {
-                            prevjumpState = true;
-                        } else if (prevjumpState) {
-                            // Reset zoom value to 4.0f when checkbox is unchecked
-                            moonjumpValue = 4.0f;
-                            MemoryManipulation("moonjump", moonjumpValue);
-                            prevjumpState = false;
+                            ImGui::SameLine();
+                            if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
+                                MemoryManipulation("moonjump", moonjumpValue);
+                            }
+                            ImGui::SameLine();
+                            ShowHelpMarker("We recommend value 1.00");
                         }
-                    }
-                    if (optionMoonjump) {
-                        ImGui::SameLine();
-                        if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
-                            MemoryManipulation("moonjump", moonjumpValue);
+                        ImGui::EndDisabled();
+                        if (!featureMoonjump) {
+                            ImGui::SameLine();
+                            ShowLicenseMarker();
                         }
-                        ImGui::SameLine();
-                        ShowHelpMarker("We recommend value 1.00");
-                    }
-                    ImGui::EndDisabled();
-                    if (!featureMoonjump) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
 
-                    ImGui::BeginDisabled(!featureMoonwalk);
-                    if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                        if (optionMoonwalk) {
-                            float newValue = 9.219422856E-41f;
-                            MemoryManipulation("moonwalk", newValue);
-                            MemoryManipulation("moonwalk", newValue);
-                            std::thread(UncheckMoonwalkAfterDelay, std::ref(optionMoonwalk)).detach();
-                        }
-                    }
-
-                    ImGui::EndDisabled();
-                    if (!featureMoonwalk) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
-
-                    ImGui::BeginDisabled(!featureFakelag);
-                    if (ImGui::Checkbox("Fakelag", &optionFakelag)) {
-                        if (optionFakelag) {
-                            float newValue = 0.0f;
-                            MemoryManipulation("fakelag", newValue);
-                            MemoryManipulation("fakelagg", newValue);
-                            std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
-                        }
-                    }
-                    
-                    ImGui::EndDisabled();
-                    if (!featureFakelag) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
-
-                    // Check for global key press and release events using Windows API
-                    if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
-                        MemoryManipulation("gravity", -8.0f);
-                    }
-
-                    if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
-                        MemoryManipulation("gravity", 8.0f);
-                    }
-                }
-
-                ImGui::Spacing();
- 
-                if (IsProcessOpen("ROClientGame.exe")) {
-                    if (ImGui::CollapsingHeader("Player")) {
-                        std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
-                        if (values.size() == 3) {
-                            ImGui::Text("Position - X: %.2f, Y: %.2f, Z: %.2f", values[0], values[1], values[2]);
-                        } else {
-                            ImGui::Text("Failed to read position values.");
-                        }
-                    }
-                }
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                if (ImGui::Button("Regnum Settings")) {
-                    show_regnum_settings_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Regnum Accounts")) {
-                    LoadRegnumAccounts();
-                    show_regnum_accounts_window = true;
-                }
-
-                ImGui::SameLine();
-                static int selectedAccount = -1;
-                const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
-                if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
-                    for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
-                        bool isSelected = (selectedAccount == i);
-                        if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
-                            selectedAccount = i;
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Play")) {
-                    runRoClientGame(regnumLoginUser, regnumLoginPassword);
-                }
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                ImGui::SameLine();
-                if (ImGui::Button("Chat")) {
-                    show_chat_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Settings")) {
-                    show_settings_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Credits")) {
-                    show_info_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Feedback")) {
-                    show_feedback_window = true;
-                }
-
-                if (isAdmin) {
-                    ImGui::SameLine();
-                    if (ImGui::Button("Admin")) {
-                        GetAllUsers();
-                        GetAllLicenses();
-                        show_admin_window = true; // Show the admin window
-                    }
-
-                    ShowAdminPanel(&show_admin_window);
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Logout")) {
-                    Logout(); // Use the logic from ApiHandler.cpp
-                }
-                
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                // Log and chat display box at the bottom
-                ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-                for (const auto& msg : logMessages) {
-                    ImGui::TextWrapped("%s", msg.c_str());
-                }
-                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-                }
-                ImGui::EndChild();
-
-                // input field and button to send chat messages using sendChatMessage function
-                ImGui::PushItemWidth(360); // Set the width of the input field
-                if (ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    if (strlen(chatInput) > 0) {
-                        SendChatMessage(chatInput);
-                        chatInput[0] = '\0'; // Clear input field
-                    }
-                }
-                ImGui::PopItemWidth(); // Reset the item width to default
-                ImGui::SameLine();
-                if (ImGui::Button("Send") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
-                    if (strlen(chatInput) > 0) {
-                        SendChatMessage(chatInput);
-                        chatInput[0] = '\0'; // Clear input field
-                    }
-                }
-
-                ImGui::End();
-            }
-
-            if (show_regnum_accounts_window) {
-                ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
-                ImGui::Columns(4, "RegnumAccounts");
-                ImGui::Separator();
-                ImGui::Text("Username");
-                ImGui::NextColumn();
-                ImGui::Text("Server");
-                ImGui::NextColumn();
-                ImGui::Text("Referrer");
-                ImGui::NextColumn();
-                ImGui::Text("Actions");
-                ImGui::NextColumn();
-                ImGui::Separator();
-
-                // Declare the static character arrays at the beginning of the function
-                static char regnumId[128] = "";
-                static char regnumUsername[128] = "";
-                static char regnumPassword[128] = "";
-                static char regnumServer[128] = "";
-                static char regnumReferrer[128] = "";
-
-                // Example server and referrer options
-                ServerOption serverOptions[] = { {"val", "Valhalla"}, {"ra", "Ra"} };
-                ReferrerOption referrerOptions[] = { {"nge", "NGE"}, {"gmg", "Gamigo"}, {"boa", "Boacompra"} };
-                static int currentServer = 0;
-                static int currentReferrer = 0;
-
-                for (const auto& account : regnumAccounts) {
-                    ImGui::Text("%s", account.username.c_str());
-                    ImGui::NextColumn();
-
-                    // Find and display the server name
-                    const char* serverName = account.server.c_str();
-                    for (const auto& serverOption : serverOptions) {
-                        if (strcmp(serverOption.id, account.server.c_str()) == 0) {
-                            serverName = serverOption.name;
-                            break;
-                        }
-                    }
-                    ImGui::Text("%s", serverName);
-                    ImGui::NextColumn();
-
-                    // Find and display the referrer name
-                    const char* referrerName = account.referrer.c_str();
-                    for (const auto& referrerOption : referrerOptions) {
-                        if (strcmp(referrerOption.id, account.referrer.c_str()) == 0) {
-                            referrerName = referrerOption.name;
-                            break;
-                        }
-                    }
-                    ImGui::Text("%s", referrerName);
-                    ImGui::NextColumn();
-
-                    // button to edit the account, this will load the account details into the input fields
-                    std::string editButtonLabel = "Edit##" + std::to_string(account.id);
-                    if (ImGui::Button(editButtonLabel.c_str())) {
-                        // Load the account details into the input fields
-                        snprintf(regnumId, IM_ARRAYSIZE(regnumId), "%d", account.id);
-                        snprintf(regnumUsername, IM_ARRAYSIZE(regnumUsername), "%s", account.username.c_str());
-                        snprintf(regnumPassword, IM_ARRAYSIZE(regnumPassword), "%s", account.password.c_str());
-                        snprintf(regnumServer, IM_ARRAYSIZE(regnumServer), "%s", account.server.c_str());
-                        snprintf(regnumReferrer, IM_ARRAYSIZE(regnumReferrer), "%s", account.referrer.c_str());
-
-                        // Set the current server and referrer indices
-                        for (int i = 0; i < IM_ARRAYSIZE(serverOptions); ++i) {
-                            if (strcmp(serverOptions[i].id, account.server.c_str()) == 0) {
-                                currentServer = i;
-                                break;
+                        ImGui::BeginDisabled(!featureMoonwalk);
+                        if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
+                            if (optionMoonwalk) {
+                                float newValue = 9.219422856E-41f;
+                                MemoryManipulation("moonwalk", newValue);
+                                MemoryManipulation("moonwalk", newValue);
+                                std::thread(UncheckMoonwalkAfterDelay, std::ref(optionMoonwalk)).detach();
                             }
                         }
-                        for (int i = 0; i < IM_ARRAYSIZE(referrerOptions); ++i) {
-                            if (strcmp(referrerOptions[i].id, account.referrer.c_str()) == 0) {
-                                currentReferrer = i;
-                                break;
+
+                        ImGui::EndDisabled();
+                        if (!featureMoonwalk) {
+                            ImGui::SameLine();
+                            ShowLicenseMarker();
+                        }
+
+                        ImGui::BeginDisabled(!featureFakelag);
+                        if (ImGui::Checkbox("Fakelag", &optionFakelag)) {
+                            if (optionFakelag) {
+                                float newValue = 0.0f;
+                                MemoryManipulation("fakelag", newValue);
+                                MemoryManipulation("fakelagg", newValue);
+                                std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
+                            }
+                        }
+
+                        ImGui::EndDisabled();
+                        if (!featureFakelag) {
+                            ImGui::SameLine();
+                            ShowLicenseMarker();
+                        }
+
+                        // Check for global key press and release events using Windows API
+                        if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
+                            MemoryManipulation("gravity", -8.0f);
+                        }
+
+                        if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
+                            MemoryManipulation("gravity", 8.0f);
+                        }
+                    }
+
+                    ImGui::Spacing();
+
+                    if (IsProcessOpen("ROClientGame.exe")) {
+                        if (ImGui::CollapsingHeader("Player")) {
+                            std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
+                            if (values.size() == 3) {
+                                ImGui::Text("Position - X: %.2f, Y: %.2f, Z: %.2f", values[0], values[1], values[2]);
+                            } else {
+                                ImGui::Text("Failed to read position values.");
                             }
                         }
                     }
 
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    if (ImGui::Button("Regnum Settings")) {
+                        show_regnum_settings_window = true;
+                    }
+
                     ImGui::SameLine();
-                    // button to delete the account using the DeleteRegnumAccount function
-                    std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
-                    if (ImGui::Button(deleteButtonLabel.c_str())) {
-                        DeleteRegnumAccount(account.id);
+                    if (ImGui::Button("Regnum Accounts")) {
+                        LoadRegnumAccounts();
+                        show_regnum_accounts_window = true;
                     }
 
-                    ImGui::NextColumn();
-                }
-
-                ImGui::Columns(1);
-                ImGui::Separator();
-
-                // Input fields to save a Regnum Account using the SaveRegnumAccount function
-                ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
-                ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
-                ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
-                    *out_text = ((ServerOption*)data)[idx].name;
-                    return true;
-                }, serverOptions, IM_ARRAYSIZE(serverOptions));
-                ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
-                    *out_text = ((ReferrerOption*)data)[idx].name;
-                    return true;
-                }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
-
-                if (ImGui::Button("Save Account")) {
-                    SaveRegnumAccount(
-                        regnumUsername, 
-                        regnumPassword, 
-                        serverOptions[currentServer].id, 
-                        referrerOptions[currentReferrer].id, 
-                        regnumId[0] == '\0' ? 0 : atoi(regnumId)
-                    );
-                }
-
-                ImGui::Separator();
-
-                ImGui::End();
-            }
-
-            if (show_regnum_settings_window) {
-                ImGui::Begin("Regnum Settings", &show_regnum_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                // large info that indiciates that those settings are not working yet
-                ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
-
-                // slider to set sound volume
-                static float soundVolume = 0.5f;
-                ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 1.0f);
-
-                // checkbox to enable/disable music
-                static bool enableMusic = true;
-                ImGui::Checkbox("Enable Music", &enableMusic);
-
-                // checkbox to enable/disable sound effects
-                static bool enableSoundEffects = true;
-                ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
-
-                // button to save the settings
-                if (ImGui::Button("Save Settings")) {
-                    // Implement the logic to save the settings
-                }
-
-                ImGui::End();
-
-            }
-        
-            if (show_feedback_window) {
-                ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-
-                static int feedbackType = 0;
-                static bool feedback_includeLogfile = true;
-                const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
-                static char feedbackText[1024] = "";
-                static std::string feedbackMessage = "";
-
-                ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
-
-                ImGui::SameLine();
-                ImGui::Checkbox("Include Log File", &feedback_includeLogfile);
-
-                ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
-
-
-                if (ImGui::Button("Submit")) {
-                    try {
-                        SendFeedback(feedbackTypes[feedbackType], feedbackText, feedback_includeLogfile);
-                        feedbackMessage = "Feedback sent successfully!";
-                        feedbackText[0] = '\0'; // Clear the feedback text
-                    } catch (const std::exception& e) {
-                        feedbackMessage = "Failed to send feedback: " + std::string(e.what());
+                    ImGui::SameLine();
+                    static int selectedAccount = -1;
+                    const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
+                    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
+                        for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
+                            bool isSelected = (selectedAccount == i);
+                            if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
+                                selectedAccount = i;
+                            }
+                        }
+                        ImGui::EndCombo();
                     }
-                }
 
-                if (!feedbackMessage.empty()) {
-                    ImGui::Text("%s", feedbackMessage.c_str());
+                    ImGui::SameLine();
+                    if (ImGui::Button("Play")) {
+                        runRoClientGame(regnumLoginUser, regnumLoginPassword);
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Chat")) {
+                        show_chat_window = true;
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Settings")) {
+                        show_settings_content = true; // Switch to settings content
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Credits")) {
+                        show_info_window = true;
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Feedback")) {
+                        show_feedback_window = true;
+                    }
+
+                    if (isAdmin) {
+                        ImGui::SameLine();
+                        if (ImGui::Button("Admin")) {
+                            GetAllUsers();
+                            GetAllLicenses();
+                            show_admin_window = true; // Show the admin window
+                        }
+
+                        ShowAdminPanel(&show_admin_window);
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Logout")) {
+                        Logout(); // Use the logic from ApiHandler.cpp
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    // Log and chat display box at the bottom
+                    ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                    for (const auto& msg : logMessages) {
+                        ImGui::TextWrapped("%s", msg.c_str());
+                    }
+                    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                        ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                    }
+                    ImGui::EndChild();
+
+                    // input field and button to send chat messages using sendChatMessage function
+                    ImGui::PushItemWidth(360); // Set the width of the input field
+                    if (ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        if (strlen(chatInput) > 0) {
+                            SendChatMessage(chatInput);
+                            chatInput[0] = '\0'; // Clear input field
+                        }
+                    }
+                    ImGui::PopItemWidth(); // Reset the item width to default
+                    ImGui::SameLine();
+                    if (ImGui::Button("Send") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+                        if (strlen(chatInput) > 0) {
+                            SendChatMessage(chatInput);
+                            chatInput[0] = '\0'; // Clear input field
+                        }
+                    }
                 }
 
                 ImGui::End();
             }
         }
         
-            if (show_chat_window) {
-                ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+        if (show_chat_window) {
+            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-                // Log display box at the bottom
-                ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-                for (const auto& msg : g_chatMessages) {
-                    ImGui::TextWrapped("%s", msg.c_str());
-                }
-                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-                }
-
-                ImGui::EndChild();
-
-                ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-
-                ImGui::SameLine();
-                
-                if (ImGui::Button("Send Message")) {
-                    if (strlen(chatInput) > 0) {
-                        SendChatMessage(chatInput);
-                        chatInput[0] = '\0'; // Clear input field
-                    }
-                }
-
-                ImGui::End();
+            // Log display box at the bottom
+            ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            for (const auto& msg : g_chatMessages) {
+                ImGui::TextWrapped("%s", msg.c_str());
             }
-        if (g_ShowUI)
-        {
-
-            if (show_license_window) {
-                ImGui::Begin("Activate License", &show_license_window, ImGuiWindowFlags_AlwaysAutoResize);
-                
-                static char licenseKey[128] = "";
-
-                // Display the input text field for the license key
-                ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
-
-                // Display the submit button
-                if (ImGui::Button("Submit")) {
-                    try {
-                        ActivateLicense(licenseKey);
-                        ImGui::Text("License activated successfully!");
-                    } catch (const std::exception& e) {
-                        Log("Failed to activate license: " + std::string(e.what()));
-                        ImGui::Text("Failed to activate license: %s", e.what());
-                    }
-                }
-
-                ImGui::End();
+            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
             }
+
+            ImGui::EndChild();
+
+            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
+
+            ImGui::SameLine();
+            
+            if (ImGui::Button("Send Message")) {
+                if (strlen(chatInput) > 0) {
+                    SendChatMessage(chatInput);
+                    chatInput[0] = '\0'; // Clear input field
+                }
+            }
+
+            ImGui::End();
         }
 
         if (show_loading_screen) {
