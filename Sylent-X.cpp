@@ -626,7 +626,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
             } else if (show_info_window) {
 
-                    ImGui::Text("Sylent-X %s", currentVersion.c_str());
                     ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
                     ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
                     ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
@@ -813,17 +812,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if (ImGui::Button("Regnum Settings")) {
-                        show_regnum_settings_window = true;
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Regnum Accounts")) {
-                        LoadRegnumAccounts();
-                        show_regnum_accounts_window = true;
-                    }
-
-                    ImGui::SameLine();
                     static int selectedAccount = -1;
                     const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
                     if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
