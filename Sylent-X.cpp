@@ -329,7 +329,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(150, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
                 if (ImGui::Button("Sylent-X", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
