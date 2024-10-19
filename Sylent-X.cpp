@@ -434,14 +434,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
                     }
 
-                    ImGui::Separator();
-                    // License information from license_runtime_end and license_features
-                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
-
-                    if (ImGui::Button("Activate a License")) {
-                        show_license_window = true;
-                        show_settings_content = false;
-                    }
                 } else if (show_regnum_accounts_window) {
 
                     // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
@@ -624,6 +616,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             ImGui::Text("Failed to activate license: %s", e.what());
                         }
                     }
+                    ImGui::Separator();
+                    // License information from license_runtime_end and license_features
+                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
             } else if (show_info_window) {
 
                     ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
