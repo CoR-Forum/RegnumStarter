@@ -325,6 +325,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = false;
                 }
+                if (isAdmin) {
+                    if (ImGui::Button("Admin")) {
+                        GetAllUsers();
+                        GetAllLicenses();
+                        show_admin_window = true; // Show the admin window
+                    }
+
+                    ShowAdminPanel(&show_admin_window);
+                }
+                if (ImGui::Button("Chat")) {
+                    show_chat_window = true;
+                }
                 if (ImGui::Button("Settings")) {
                     show_settings_content = true;
                     show_regnum_accounts_window = false;
@@ -373,6 +385,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = true;
                 }
+                if (ImGui::Button("Logout")) {
+                    Logout(); // Use the logic from ApiHandler.cpp
+                }
+
                 ImGui::EndChild();
 
                 ImGui::SameLine();
@@ -828,42 +844,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Spacing();
                     ImGui::Separator();
                     ImGui::Spacing();
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Chat")) {
-                        show_chat_window = true;
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Settings")) {
-                        show_settings_content = true; // Switch to settings content
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Credits")) {
-                        show_info_window = true;
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Feedback")) {
-                        show_feedback_window = true;
-                    }
-
-                    if (isAdmin) {
-                        ImGui::SameLine();
-                        if (ImGui::Button("Admin")) {
-                            GetAllUsers();
-                            GetAllLicenses();
-                            show_admin_window = true; // Show the admin window
-                        }
-
-                        ShowAdminPanel(&show_admin_window);
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Logout")) {
-                        Logout(); // Use the logic from ApiHandler.cpp
-                    }
 
                     ImGui::Spacing();
                     ImGui::Separator();
