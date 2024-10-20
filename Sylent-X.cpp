@@ -51,6 +51,9 @@ bool show_loading_screen = false;
 std::string statusMessage = "";
 bool loginSuccess = false;
 bool show_texture_window = false;
+bool show_View_window = false;
+bool show_Movement_window = false;
+bool show_Player_window = false;
 
 LPDIRECT3DTEXTURE9 myTexture = nullptr;
 
@@ -331,19 +334,94 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
                 
                 // Create a child window for the texture
-                ImGui::BeginChild("TextureChild", ImVec2(130, 120), true);
+                ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
                 if (myTexture) {
-                    ImGui::Image((void*)myTexture, ImVec2(100, 100)); // Adjust the size as needed
+                    // Calculate the available space
+                    ImVec2 availableSpace = ImGui::GetContentRegionAvail();
+                    ImVec2 imageSize = ImVec2(70, 60); // Adjust the size as needed
+
+                    // Calculate the padding to center the image
+                    ImVec2 padding = ImVec2((availableSpace.x - imageSize.x) * 0.5f, (availableSpace.y - imageSize.y) * 0.5f);
+
+                    // Add padding
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + padding.x);
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding.y);
+
+                    // Draw the image
+                    ImGui::Image((void*)myTexture, imageSize);
                 } else {
                     ImGui::Text("Texture is null");
                 }
                 ImGui::EndChild();
 
+                ImGui::SameLine();
+                // Create a child window for the texture
+                ImGui::BeginChild("Menu", ImVec2(615, 80), true);
+                float buttonWidth = 150.0f; // Assuming each button has a width of 150
+                float buttonHeight = 30.0f; // Assuming each button has a height of 40
+                float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
+
+                // Calculate total width of all buttons and spacing
+                float totalWidth = 3 * buttonWidth + 6 * spacing;
+
+                // Calculate starting X position to center buttons horizontally
+                float startX = (615 - totalWidth) / 2.0f;
+
+                // Calculate starting Y position to center buttons vertically
+                float startY = (80 - buttonHeight) / 2.0f;
+
+                ImGui::SetCursorPosX(startX);
+                ImGui::SetCursorPosY(startY);
+                if (ImGui::Button("View", ImVec2(buttonWidth, buttonHeight))) {
+                    show_Movement_window = false;
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_Regnumstarter = false;
+                    show_Player_window = false;
+                    show_View_window = true;
+                }
+
+                ImGui::SameLine();
+                ImGui::SetCursorPosY(startY);
+                if (ImGui::Button("Movement", ImVec2(buttonWidth, buttonHeight))) {
+                    show_View_window = false;
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_Regnumstarter = false;
+                    show_Player_window = false;
+                    show_Movement_window = true;
+                }
+
+                ImGui::SameLine();
+                ImGui::SetCursorPosY(startY);
+                if (ImGui::Button("Player", ImVec2(buttonWidth, buttonHeight))) {
+                    show_Movement_window = false;
+                    show_settings_content = false;
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_Regnumstarter = false;
+                    show_View_window = false;
+                    show_Player_window = true;
+                }
+
+                ImGui::EndChild();
+
                 // Calculate the size of the largest button
                 ImVec2 buttonSize = ImVec2(0, 0);
                 const char* buttonLabels[] = {
-                    "Sylent-X", "Admin", "Chat", "Settings", "Regnum Accounts", 
-                    "Regnum Settings", "Feedback", "License", "Info", "Logout"
+                    "Sylent-X", "Admin", "Chat", "Settings", "RegnumStarter", 
+                    "Feedback", "License", "Info", "Logout"
                 };
                 for (const char* label : buttonLabels) {
                     ImVec2 size = ImGui::CalcTextSize(label);
@@ -361,6 +439,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = false;
                     show_Regnumstarter = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
                 }
                 if (isAdmin) {
                     if (ImGui::Button("Admin", buttonSize)) {
@@ -375,40 +456,52 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_chat_window = true;
                 }
                 if (ImGui::Button("Settings", buttonSize)) {
-                    show_settings_content = true;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_Regnumstarter = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
+                    show_settings_content = true;
                 }
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
-                    show_Regnumstarter = true;
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
+                    show_Regnumstarter = true;
                 }
                 if (ImGui::Button("Feedback", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
-                    show_feedback_window = true;
                     show_license_window = false;
                     show_info_window = false;
                     show_Regnumstarter = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
+                    show_feedback_window = true;
                 }
                 if (ImGui::Button("License", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
                     show_feedback_window = false;
-                    show_license_window = true;
                     show_info_window = false;
                     show_Regnumstarter = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
+                    show_license_window = true;
                 }
                 if (ImGui::Button("Info", buttonSize)) {
                     show_settings_content = false;
@@ -416,8 +509,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
-                    show_info_window = true;
                     show_Regnumstarter = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
+                    show_info_window = true;
                 }
                 if (ImGui::Button("Logout", buttonSize)) {
                     Logout(); // Use the logic from ApiHandler.cpp
@@ -524,6 +620,175 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
                     ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
                     
+            } else if (show_View_window) {
+                static float zoomValue = 15.0f; // Default zoom value
+                static bool prevZoomState = false; // Track previous state of the checkbox
+
+                ImGui::Checkbox("Enable Zoom", &optionZoom);
+                if (optionZoom) {
+                    ImGui::SameLine();
+                    if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+                        MemoryManipulation("zoom", zoomValue);
+                    }
+                } else if (prevZoomState) {
+                    // Reset zoom value to 15.0f when checkbox is unchecked
+                    zoomValue = 15.0f;
+                    MemoryManipulation("zoom", zoomValue);
+                }
+
+                prevZoomState = optionZoom; // Update previous state
+
+                ImGui::BeginDisabled(!featureFov);
+                if (ImGui::Checkbox("Field of View", &optionFov)) {
+                    float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
+                    MemoryManipulation("fov", newValue);
+                }
+                ImGui::EndDisabled();   
+                if (!featureFov) {
+                    ImGui::SameLine();
+                    ShowLicenseMarker();
+                }    
+            } else if (show_Movement_window) {
+
+                ImGui::BeginDisabled(!featureSpeedhack);
+                if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
+                    float newValue = optionSpeedHack ? 5.6f : 4.8f;
+                    MemoryManipulation("speedhack", newValue);
+                }
+                if (featureSpeedhack) {
+                    ImGui::SameLine();
+                    ShowHelpMarker("Use at own risk");
+                }
+                ImGui::EndDisabled();
+                if (!featureSpeedhack) {
+                    ImGui::SameLine();
+                    ShowLicenseMarker();
+                }
+
+                ImGui::BeginDisabled(!featureGravity);
+                if (ImGui::Checkbox("Flyhack", &optionGravity)) {
+                    MemoryManipulation("gravity");
+                }
+
+                ImGui::EndDisabled();
+                if (!featureGravity) {
+                    ImGui::SameLine();
+                    ShowLicenseMarker();
+                }
+
+                static float moonjumpValue = 4.0f; // Default moonjump value
+                static bool prevjumpState = false; // Track previous state of the checkbox
+                ImGui::BeginDisabled(!featureMoonjump);
+                if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
+                    if (optionMoonjump) {
+                        prevjumpState = true;
+                    } else if (prevjumpState) {
+                        // Reset zoom value to 4.0f when checkbox is unchecked
+                        moonjumpValue = 4.0f;
+                        MemoryManipulation("moonjump", moonjumpValue);
+                        prevjumpState = false;
+                    }
+                }
+                if (optionMoonjump) {
+                    ImGui::SameLine();
+                    if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
+                        MemoryManipulation("moonjump", moonjumpValue);
+                    }
+                    ImGui::SameLine();
+                    ShowHelpMarker("We recommend value 1.00");
+                }
+                ImGui::EndDisabled();
+                if (!featureMoonjump) {
+                    ImGui::SameLine();
+                    ShowLicenseMarker();
+                }
+
+                ImGui::BeginDisabled(!featureMoonwalk);
+                if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
+                    if (optionMoonwalk) {
+                        float newValue = 9.219422856E-41f;
+                        MemoryManipulation("moonwalk", newValue);
+                        MemoryManipulation("moonwalk", newValue);
+                        std::thread(UncheckMoonwalkAfterDelay, std::ref(optionMoonwalk)).detach();
+                    }
+                }
+
+                ImGui::EndDisabled();
+                if (!featureMoonwalk) {
+                    ImGui::SameLine();
+                    ShowLicenseMarker();
+                }
+
+                ImGui::BeginDisabled(!featureFakelag);
+                if (ImGui::Checkbox("Fakelag", &optionFakelag)) {
+                    if (optionFakelag) {
+                        float newValue = 0.0f;
+                        MemoryManipulation("fakelag", newValue);
+                        MemoryManipulation("fakelagg", newValue);
+                        std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
+                    }
+                }
+
+                ImGui::EndDisabled();
+                if (!featureFakelag) {
+                    ImGui::SameLine();
+                    ShowLicenseMarker();
+                }
+
+                // Check for global key press and release events using Windows API
+                if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
+                    MemoryManipulation("gravity", -8.0f);
+                }
+
+                if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
+                    MemoryManipulation("gravity", 8.0f);
+                }
+
+                if (isAdmin) {
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+                        ImGui::Text("Admin Options:");
+                        ImGui::Spacing();
+                        static float fastflyValue = 250.0f; // Default moonjump value
+                        static bool prevflyState = false; // Track previous state of the checkbox
+                        ImGui::BeginDisabled(!featureFastfly);
+                        if (ImGui::Checkbox("FastFly", &optionFastFly)) {
+                            if (optionFastFly) {
+                                prevflyState = true;
+                            } else if (prevflyState) {
+                                // Reset fly value to 4.8f when checkbox is unchecked
+                                fastflyValue = 4.8f;
+                                MemoryManipulation("fastfly", fastflyValue);
+                                prevflyState = false;
+                            }
+                        }
+                        ImGui::EndDisabled();
+                        if (optionFastFly) {
+                            ImGui::SameLine();
+                            if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
+                                MemoryManipulation("fastfly", fastflyValue);
+                            }
+                        }
+                        ImGui::SameLine();
+                        if (!featureFastfly) {
+                            ImGui::SameLine();
+                            ShowLicenseMarker();
+                        }
+                    }
+                    
+            } else if (show_Player_window) {
+
+                if (IsProcessOpen("ROClientGame.exe")) {
+
+                    std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
+                    if (values.size() == 3) {
+                        ImGui::Text("Position - X: %.2f, Y: %.2f, Z: %.2f", values[0], values[1], values[2]);
+                    } else {
+                        ImGui::Text("Failed to read position values.");
+                    }
+                }
+      
             } else if (show_Regnumstarter) {
 
                     // large info that indiciates that those settings are not working yet
@@ -694,175 +959,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Text("Status: %s", currentStatus.c_str());
                     ImGui::SameLine();
                     ImGui::Text("Magnat: %d", magnatCurrency);
-
-                    if (isAdmin) {
-                        if (ImGui::CollapsingHeader("Admins")) {
-                            static float fastflyValue = 250.0f; // Default moonjump value
-                            static bool prevflyState = false; // Track previous state of the checkbox
-                            ImGui::BeginDisabled(!featureFastfly);
-                            if (ImGui::Checkbox("FastFly", &optionFastFly)) {
-                                if (optionFastFly) {
-                                    prevflyState = true;
-                                } else if (prevflyState) {
-                                    // Reset fly value to 4.8f when checkbox is unchecked
-                                    fastflyValue = 4.8f;
-                                    MemoryManipulation("fastfly", fastflyValue);
-                                    prevflyState = false;
-                                }
-                            }
-                            ImGui::EndDisabled();
-                            if (optionFastFly) {
-                                ImGui::SameLine();
-                                if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
-                                    MemoryManipulation("fastfly", fastflyValue);
-                                }
-                            }
-                            ImGui::SameLine();
-                            if (!featureFastfly) {
-                                ImGui::SameLine();
-                                ShowLicenseMarker();
-                            }
-                        }
-                    }
-
-                    ImGui::Spacing();
-
-                    if (ImGui::CollapsingHeader("View")) {
-                        static float zoomValue = 15.0f; // Default zoom value
-                        static bool prevZoomState = false; // Track previous state of the checkbox
-
-                        ImGui::Checkbox("Enable Zoom", &optionZoom);
-                        if (optionZoom) {
-                            ImGui::SameLine();
-                            if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
-                                MemoryManipulation("zoom", zoomValue);
-                            }
-                        } else if (prevZoomState) {
-                            // Reset zoom value to 15.0f when checkbox is unchecked
-                            zoomValue = 15.0f;
-                            MemoryManipulation("zoom", zoomValue);
-                        }
-
-                        prevZoomState = optionZoom; // Update previous state
-
-                        ImGui::BeginDisabled(!featureFov);
-                        if (ImGui::Checkbox("Field of View", &optionFov)) {
-                            float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
-                            MemoryManipulation("fov", newValue);
-                        }
-                        ImGui::EndDisabled();
-                    }
-
-                    ImGui::Spacing();
-
-                    if (ImGui::CollapsingHeader("Movement")) {
-                        ImGui::BeginDisabled(!featureSpeedhack);
-                        if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
-                            float newValue = optionSpeedHack ? 5.6f : 4.8f;
-                            MemoryManipulation("speedhack", newValue);
-                        }
-                        if (featureSpeedhack) {
-                            ImGui::SameLine();
-                            ShowHelpMarker("Use at own risk");
-                        }
-                        ImGui::EndDisabled();
-                        if (!featureSpeedhack) {
-                            ImGui::SameLine();
-                            ShowLicenseMarker();
-                        }
-
-                        ImGui::BeginDisabled(!featureGravity);
-                        if (ImGui::Checkbox("Flyhack", &optionGravity)) {
-                            MemoryManipulation("gravity");
-                        }
-
-                        ImGui::EndDisabled();
-                        if (!featureGravity) {
-                            ImGui::SameLine();
-                            ShowLicenseMarker();
-                        }
-
-                        static float moonjumpValue = 4.0f; // Default moonjump value
-                        static bool prevjumpState = false; // Track previous state of the checkbox
-                        ImGui::BeginDisabled(!featureMoonjump);
-                        if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
-                            if (optionMoonjump) {
-                                prevjumpState = true;
-                            } else if (prevjumpState) {
-                                // Reset zoom value to 4.0f when checkbox is unchecked
-                                moonjumpValue = 4.0f;
-                                MemoryManipulation("moonjump", moonjumpValue);
-                                prevjumpState = false;
-                            }
-                        }
-                        if (optionMoonjump) {
-                            ImGui::SameLine();
-                            if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
-                                MemoryManipulation("moonjump", moonjumpValue);
-                            }
-                            ImGui::SameLine();
-                            ShowHelpMarker("We recommend value 1.00");
-                        }
-                        ImGui::EndDisabled();
-                        if (!featureMoonjump) {
-                            ImGui::SameLine();
-                            ShowLicenseMarker();
-                        }
-
-                        ImGui::BeginDisabled(!featureMoonwalk);
-                        if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                            if (optionMoonwalk) {
-                                float newValue = 9.219422856E-41f;
-                                MemoryManipulation("moonwalk", newValue);
-                                MemoryManipulation("moonwalk", newValue);
-                                std::thread(UncheckMoonwalkAfterDelay, std::ref(optionMoonwalk)).detach();
-                            }
-                        }
-
-                        ImGui::EndDisabled();
-                        if (!featureMoonwalk) {
-                            ImGui::SameLine();
-                            ShowLicenseMarker();
-                        }
-
-                        ImGui::BeginDisabled(!featureFakelag);
-                        if (ImGui::Checkbox("Fakelag", &optionFakelag)) {
-                            if (optionFakelag) {
-                                float newValue = 0.0f;
-                                MemoryManipulation("fakelag", newValue);
-                                MemoryManipulation("fakelagg", newValue);
-                                std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
-                            }
-                        }
-
-                        ImGui::EndDisabled();
-                        if (!featureFakelag) {
-                            ImGui::SameLine();
-                            ShowLicenseMarker();
-                        }
-
-                        // Check for global key press and release events using Windows API
-                        if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
-                            MemoryManipulation("gravity", -8.0f);
-                        }
-
-                        if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
-                            MemoryManipulation("gravity", 8.0f);
-                        }
-                    }
-
-                    ImGui::Spacing();
-
-                    if (IsProcessOpen("ROClientGame.exe")) {
-                        if (ImGui::CollapsingHeader("Player")) {
-                            std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
-                            if (values.size() == 3) {
-                                ImGui::Text("Position - X: %.2f, Y: %.2f, Z: %.2f", values[0], values[1], values[2]);
-                            } else {
-                                ImGui::Text("Failed to read position values.");
-                            }
-                        }
-                    }
 
                     ImGui::Spacing();
                     ImGui::Separator();
