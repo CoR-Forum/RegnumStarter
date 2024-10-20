@@ -317,7 +317,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (show_main_window) {
                 std::string windowTitle = "Sylent-X " + currentVersion;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
-                ImGui::SetNextWindowSize(ImVec2(770, 580), ImGuiCond_FirstUseEver);
+                ImGui::SetNextWindowSize(ImVec2(770, 450), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
@@ -332,6 +332,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveSettings();
                     PostQuitMessage(0);
                 }
+                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
+                ImGui::Text("Status: %s", currentStatus.c_str());
+                ImGui::SameLine();
+                ImGui::Text("Magnat: %d", magnatCurrency);
                 
                 // Create a child window for the texture
                 ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
@@ -954,15 +958,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
-
-                    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
-                    ImGui::Text("Status: %s", currentStatus.c_str());
-                    ImGui::SameLine();
-                    ImGui::Text("Magnat: %d", magnatCurrency);
-
-                    ImGui::Spacing();
-                    ImGui::Separator();
-                    ImGui::Spacing();
 
                     // Log and chat display box at the bottom
                     ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
