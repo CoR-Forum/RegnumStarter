@@ -13,3 +13,5 @@
 #define ICON_FA_EYE "\uf06e"
 #define ICON_FA_PERSON_RUNNING "\uf70c"
 #define ICON_FA_USER_REGULAR "\uf007"
+#define ICON_FA_WHEELCHAIR_MOVE "\uf2e2"
+#define ICON_FA_WHEELCHAIR "\uf193"
