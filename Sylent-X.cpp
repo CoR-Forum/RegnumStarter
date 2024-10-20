@@ -16,10 +16,12 @@
 #include "ui/loadingscreen/LoadingScreen.h"
 #include "includes/ImageLoader/ImageLoader.h"
 #include <filesystem> // C++17 or later
+#include "includes/ImageLoader/FontAwesomeIcons.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
+
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -375,7 +377,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(startX);
                 ImGui::SetCursorPosY(startY);
-                if (ImGui::Button("View", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
                     show_Movement_window = false;
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -390,7 +392,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 ImGui::SetCursorPosY(startY);
-                if (ImGui::Button("Movement", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button(ICON_FA_PERSON_RUNNING " Movement", ImVec2(buttonWidth, buttonHeight))) {
                     show_View_window = false;
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -405,7 +407,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 ImGui::SetCursorPosY(startY);
-                if (ImGui::Button("Player", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
                     show_Movement_window = false;
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -440,7 +442,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 float buttonPadding = (childWidth - buttonSize.x) / 2.0f;
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("Sylent-X", buttonSize)) {
+                if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -455,7 +457,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 if (isAdmin) {
                     ImGui::SetCursorPosX(buttonPadding);
-                    if (ImGui::Button("Admin", buttonSize)) {
+                    if (ImGui::Button(ICON_FA_USER_REGULAR " Admin", buttonSize)) {
                         GetAllUsers();
                         GetAllLicenses();
                         show_admin_window = true; // Show the admin window
@@ -465,12 +467,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("Chat", buttonSize)) {
+                if (ImGui::Button(ICON_FA_COMMENTS " Chat", buttonSize)) {
                     show_chat_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("RegnumStarter", buttonSize)) {
+                if (ImGui::Button(ICON_FA_FORWARD_FAST " RegnumStarter", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -484,7 +486,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("Feedback", buttonSize)) {
+                if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -498,7 +500,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("License", buttonSize)) {
+                if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -512,7 +514,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("Settings", buttonSize)) {
+                if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
                     show_feedback_window = false;
@@ -526,7 +528,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("Info", buttonSize)) {
+                if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -540,7 +542,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("Logout", buttonSize)) {
+                if (ImGui::Button(ICON_FA_RIGHT_FROM_BRACKET " Logout", buttonSize)) {
                     Logout(); // Use the logic from ApiHandler.cpp
                 }
 
