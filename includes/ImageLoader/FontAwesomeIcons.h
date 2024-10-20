@@ -1,0 +1,15 @@
+#pragma once
+
+#define ICON_FA_HOME "\uf015"
+#define ICON_FA_USER "\uf007"
+#define ICON_FA_COG "\uf013"
+#define ICON_FA_KEY "\uf084"
+#define ICON_FA_USER_TIE "\uf508"
+#define ICON_FA_COMMENT "\uf075"
+#define ICON_FA_FORWARD_FAST "\uf050"
+#define ICON_FA_COMMENTS "\uf086"
+#define ICON_FA_CIRCLE_INFO "\uf05a"
+#define ICON_FA_RIGHT_FROM_BRACKET "\uf2f5"
+#define ICON_FA_EYE "\uf06e"
+#define ICON_FA_PERSON_RUNNING "\uf70c"
+#define ICON_FA_USER_REGULAR "\uf007"
