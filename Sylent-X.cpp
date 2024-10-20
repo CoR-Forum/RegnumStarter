@@ -471,20 +471,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("Settings", buttonSize)) {
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
-                    show_feedback_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
-                    show_settings_content = true;
-                }
-
-                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -524,6 +510,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_Movement_window = false;
                     show_Player_window = false;
                     show_license_window = true;
+                }
+
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button("Settings", buttonSize)) {
+                    show_regnum_accounts_window = false;
+                    show_regnum_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_Regnumstarter = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
+                    show_settings_content = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
