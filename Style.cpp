@@ -68,4 +68,23 @@ void ApplyCustomStyle()
             }
         }
     }
+    // Load FontAwesome font
+    HRSRC hResourceAwesome = FindResource(NULL, MAKEINTRESOURCE(IDR_FONT_AWESOME), RT_FONT);
+    if (hResourceAwesome)
+    {
+        HGLOBAL hMemoryAwesome = LoadResource(NULL, hResourceAwesome);
+        if (hMemoryAwesome)
+        {
+            void* pDataAwesome = LockResource(hMemoryAwesome);
+            DWORD sizeAwesome = SizeofResource(NULL, hResourceAwesome);
+            if (pDataAwesome && sizeAwesome > 0)
+            {
+                static const ImWchar icons_ranges[] = { 0xf000, 0xf3ff, 0 };
+                ImFontConfig icons_config;
+                icons_config.MergeMode = true;
+                icons_config.PixelSnapH = true;
+                io.Fonts->AddFontFromMemoryTTF(pDataAwesome, sizeAwesome, 14.0f, &icons_config, icons_ranges);
+            }
+        }
+    }
 }
