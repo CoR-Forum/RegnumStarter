@@ -14,7 +14,6 @@
 #include "includes/chrono/chrono.h"
 #include "includes/process/process.h"
 #include "ui/loadingscreen/LoadingScreen.h"
-#include "resource.h"
 #include "includes/ImageLoader/ImageLoader.h"
 #include <filesystem> // C++17 or later
 
