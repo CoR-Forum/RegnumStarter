@@ -2,3 +2,4 @@
 #define IDR_FONT_TANNENBERG_BOLD 102
 #define IDI_APP_ICON 103
 #define IDR_PNG_SYLENT 104
+#define IDR_FONT_AWESOME 105 // Add this line
