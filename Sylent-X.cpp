@@ -317,7 +317,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (show_main_window) {
                 std::string windowTitle = "Sylent-X " + currentVersion;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
-                ImGui::SetNextWindowSize(ImVec2(770, 450), ImGuiCond_FirstUseEver);
+                ImGui::SetNextWindowSize(ImVec2(770, 600), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
@@ -435,6 +435,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 // Create a child window for the navigation buttons
                 ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
+
+                // Calculate the padding to center the buttons
+                float childWidth = ImGui::GetWindowWidth();
+                float buttonPadding = (childWidth - buttonSize.x) / 2.0f;
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("Sylent-X", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -447,7 +453,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_Movement_window = false;
                     show_Player_window = false;
                 }
+
                 if (isAdmin) {
+                    ImGui::SetCursorPosX(buttonPadding);
                     if (ImGui::Button("Admin", buttonSize)) {
                         GetAllUsers();
                         GetAllLicenses();
@@ -456,9 +464,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ShowAdminPanel(&show_admin_window);
                 }
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("Chat", buttonSize)) {
                     show_chat_window = true;
                 }
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("Settings", buttonSize)) {
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
@@ -471,6 +483,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_Player_window = false;
                     show_settings_content = true;
                 }
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -483,6 +497,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_Player_window = false;
                     show_Regnumstarter = true;
                 }
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("Feedback", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -495,6 +511,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_Player_window = false;
                     show_feedback_window = true;
                 }
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("License", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -507,6 +525,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_Player_window = false;
                     show_license_window = true;
                 }
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("Info", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -519,6 +539,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_Player_window = false;
                     show_info_window = true;
                 }
+
+                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("Logout", buttonSize)) {
                     Logout(); // Use the logic from ApiHandler.cpp
                 }
