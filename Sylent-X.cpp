@@ -392,7 +392,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 ImGui::SetCursorPosY(startY);
-                if (ImGui::Button(ICON_FA_PERSON_RUNNING " Movement", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
                     show_View_window = false;
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
@@ -472,7 +472,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_FORWARD_FAST " RegnumStarter", buttonSize)) {
+                if (ImGui::Button("RegnumStarter", buttonSize)) {
                     show_settings_content = false;
                     show_regnum_accounts_window = false;
                     show_regnum_settings_window = false;
