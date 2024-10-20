@@ -14,6 +14,10 @@
 #include "includes/chrono/chrono.h"
 #include "includes/process/process.h"
 #include "ui/loadingscreen/LoadingScreen.h"
+#include "resource.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#include <filesystem> // C++17 or later
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -47,6 +51,9 @@ bool g_ShowUI = true;
 bool show_loading_screen = false;
 std::string statusMessage = "";
 bool loginSuccess = false;
+bool show_texture_window = false;
+
+LPDIRECT3DTEXTURE9 myTexture = nullptr;
 
 extern bool featureZoom;
 extern bool featureFov;
@@ -63,6 +70,50 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
+
+LPDIRECT3DTEXTURE9 LoadTextureFromResource(LPDIRECT3DDEVICE9 device, int resourceID) {
+    HRSRC hResource = FindResource(NULL, MAKEINTRESOURCE(resourceID), RT_RCDATA);
+    if (!hResource) {
+        MessageBox(NULL, "Failed to find resource", "Error", MB_ICONERROR | MB_OK);
+        return nullptr;
+    }
+
+    HGLOBAL hLoadedResource = LoadResource(NULL, hResource);
+    if (!hLoadedResource) {
+        MessageBox(NULL, "Failed to load resource", "Error", MB_ICONERROR | MB_OK);
+        return nullptr;
+    }
+
+    void* pResourceData = LockResource(hLoadedResource);
+    DWORD resourceSize = SizeofResource(NULL, hResource);
+    if (!pResourceData || resourceSize == 0) {
+        MessageBox(NULL, "Failed to lock resource", "Error", MB_ICONERROR | MB_OK);
+        return nullptr;
+    }
+
+    int width, height, channels;
+    unsigned char* data = stbi_load_from_memory((unsigned char*)pResourceData, resourceSize, &width, &height, &channels, 4);
+    if (!data) {
+        MessageBox(NULL, "Failed to load texture from memory", "Error", MB_ICONERROR | MB_OK);
+        return nullptr;
+    }
+
+    LPDIRECT3DTEXTURE9 texture = nullptr;
+    if (FAILED(device->CreateTexture(width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texture, nullptr))) {
+        stbi_image_free(data);
+        MessageBox(NULL, "Failed to create texture", "Error", MB_ICONERROR | MB_OK);
+        return nullptr;
+    }
+
+    D3DLOCKED_RECT rect;
+    if (SUCCEEDED(texture->LockRect(0, &rect, nullptr, 0))) {
+        memcpy(rect.pBits, data, width * height * 4);
+        texture->UnlockRect(0);
+    }
+
+    stbi_image_free(data);
+    return texture;
+}
 
 void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
     STARTUPINFO si;
@@ -120,6 +171,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     if (!CreateDeviceD3D(hwnd)) {
         CleanupDeviceD3D();
         ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+        return 1;
+    }
+
+
+    myTexture = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT);
+    if (!myTexture) {
+        MessageBox(NULL, "Failed to load texture", "Error", MB_ICONERROR | MB_OK);
         return 1;
     }
 
@@ -316,6 +374,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     PostQuitMessage(0);
                 }
                 
+                // Create a child window for the texture
+                ImGui::BeginChild("TextureChild", ImVec2(130, 120), true);
+                if (myTexture) {
+                    ImGui::Image((void*)myTexture, ImVec2(100, 100)); // Adjust the size as needed
+                } else {
+                    ImGui::Text("Texture is null");
+                }
+                ImGui::EndChild();
 
                 // Calculate the size of the largest button
                 ImVec2 buttonSize = ImVec2(0, 0);
@@ -929,6 +995,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplDX9_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+
+    if (myTexture) {
+        myTexture->Release();
+        myTexture = nullptr;
+    }
 
     CleanupDeviceD3D();
     ::DestroyWindow(hwnd);
