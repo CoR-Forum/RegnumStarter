@@ -74,6 +74,15 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
 
+// Define a variable to store the user-defined hotkey
+int userDefinedHotkey = 0;
+bool waitingForHotkey = false;
+bool fovToggled = false; // Track the state of the FOV toggle
+
+// Function to check if the hotkey is pressed
+bool IsHotkeyPressed(int hotkey) {
+    return GetAsyncKeyState(hotkey) & 0x8000;
+}
 
 void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
     STARTUPINFO si;
@@ -665,16 +674,48 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 prevZoomState = optionZoom; // Update previous state
 
+                // Check if the checkbox is checked
                 ImGui::BeginDisabled(!featureFov);
                 if (ImGui::Checkbox("Field of View", &optionFov)) {
-                    float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
-                    MemoryManipulation("fov", newValue);
+                    if (!optionFov) {
+                        // If the checkbox is unchecked, reset the FOV value
+                        MemoryManipulation("fov", 0.01745329238f);
+                    }
                 }
-                ImGui::EndDisabled();   
+                ImGui::EndDisabled();
+                ImGui::SameLine();
+
+                // Only allow users to set the hotkey if the checkbox is checked
+                if (optionFov) {
+                    if (ImGui::Button("Set Hotkey")) {
+                        waitingForHotkey = true;
+                    }
+                    ImGui::SameLine();
+                    if (waitingForHotkey) {
+                        ImGui::Text("Press any key...");
+                        for (int key = 0x08; key <= 0xFF; key++) {
+                            if (GetAsyncKeyState(key) & 0x8000) {
+                                userDefinedHotkey = key;
+                                waitingForHotkey = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Only process the hotkey if the checkbox is checked
+                if (optionFov && userDefinedHotkey != 0 && IsHotkeyPressed(userDefinedHotkey)) {
+                    fovToggled = !fovToggled; // Toggle the FOV state
+                    float newValue = fovToggled ? 0.02999999933f : 0.01745329238f;
+                    MemoryManipulation("fov", newValue);
+                    // Add a small delay to prevent rapid toggling
+                    Sleep(200);
+                }
+
                 if (!featureFov) {
                     ImGui::SameLine();
                     ShowLicenseMarker();
-                }    
+                }  
             } else if (show_Movement_window) {
 
                 ImGui::BeginDisabled(!featureSpeedhack);
