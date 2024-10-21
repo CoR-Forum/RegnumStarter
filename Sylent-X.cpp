@@ -720,15 +720,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 }
 
-                // Only process the hotkey if the checkbox is checked
-                if (optionFov && userDefinedHotkey != 0 && IsHotkeyPressed(userDefinedHotkey)) {
-                    fovToggled = !fovToggled; // Toggle the FOV state
-                    float newValue = fovToggled ? 0.02999999933f : 0.01745329238f;
-                    MemoryManipulation("fov", newValue);
-                    // Add a small delay to prevent rapid toggling
-                    Sleep(200);
-                }
-
                 if (!featureFov) {
                     ImGui::SameLine();
                     ShowLicenseMarker();
@@ -1071,7 +1062,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::End();
             }
         }
-        
+        // Only process the hotkey if the checkbox is checked
+        if (optionFov && userDefinedHotkey != 0 && IsHotkeyPressed(userDefinedHotkey)) {
+            fovToggled = !fovToggled; // Toggle the FOV state
+            float newValue = fovToggled ? 0.02999999933f : 0.01745329238f;
+            MemoryManipulation("fov", newValue);
+            // Add a small delay to prevent rapid toggling
+            Sleep(200);
+        }
         if (show_chat_window) {
             ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
