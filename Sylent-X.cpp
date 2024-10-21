@@ -222,6 +222,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             // Add a small delay to prevent rapid toggling
             Sleep(200);
         }
+        // Check for global key press and release events using Windows API
+        if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
+            MemoryManipulation("gravity", -8.0f);
+        }
+
+        if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
+            MemoryManipulation("gravity", 8.0f);
+        }
 
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -809,15 +817,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (!featureFakelag) {
                     ImGui::SameLine();
                     ShowLicenseMarker();
-                }
-
-                // Check for global key press and release events using Windows API
-                if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
-                    MemoryManipulation("gravity", -8.0f);
-                }
-
-                if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
-                    MemoryManipulation("gravity", 8.0f);
                 }
 
                 if (isAdmin) {
