@@ -55,6 +55,10 @@ bool show_texture_window = false;
 bool show_View_window = false;
 bool show_Movement_window = false;
 bool show_Player_window = false;
+// Define a variable to store the user-defined hotkey
+int userDefinedHotkey = 0;
+bool waitingForHotkey = false;
+bool fovToggled = false; // Track the state of the FOV toggle
 
 LPDIRECT3DTEXTURE9 myTexture = nullptr;
 
@@ -74,10 +78,15 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
 
-// Define a variable to store the user-defined hotkey
-int userDefinedHotkey = 0;
-bool waitingForHotkey = false;
-bool fovToggled = false; // Track the state of the FOV toggle
+// Function to get the key name from the virtual key code
+std::string GetKeyName(int virtualKey) {
+    UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
+    char keyName[128];
+    if (GetKeyNameText(scanCode << 16, keyName, sizeof(keyName)) > 0) {
+        return std::string(keyName);
+    }
+    return "Unknown";
+}
 
 // Function to check if the hotkey is pressed
 bool IsHotkeyPressed(int hotkey) {
@@ -687,12 +696,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 // Only allow users to set the hotkey if the checkbox is checked
                 if (optionFov) {
-                    if (ImGui::Button("Set Hotkey")) {
+                    std::string buttonLabel;
+                    if (waitingForHotkey) {
+                        buttonLabel = "Press any key...";
+                    } else if (userDefinedHotkey == 0) {
+                        buttonLabel = "Set Hotkey";
+                    } else {
+                        buttonLabel = "Hotkey: " + GetKeyName(userDefinedHotkey);
+                    }
+
+                    if (ImGui::Button(buttonLabel.c_str())) {
                         waitingForHotkey = true;
                     }
-                    ImGui::SameLine();
+
                     if (waitingForHotkey) {
-                        ImGui::Text("Press any key...");
                         for (int key = 0x08; key <= 0xFF; key++) {
                             if (GetAsyncKeyState(key) & 0x8000) {
                                 userDefinedHotkey = key;
