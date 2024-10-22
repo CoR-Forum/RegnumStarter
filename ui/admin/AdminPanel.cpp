@@ -12,7 +12,7 @@ void ShowAdminPanel(bool* show_admin_window) {
     static std::string selected_key_runtime_str = "1h"; // Default runtime string
 
     static const char* key_features[] = { "zoom", "fov", "gravity", "moonjump", "moonwalk", "fakelag", "fakelagg", "freecam", "speedhack" };
-    static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true };
+    static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true, true };
 
     static const char* statuses[] = { "Undetected", "Updating", "Detected", "Offline" };
     static int selected_status = 1; // Default to "Online"
