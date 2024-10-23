@@ -922,3 +922,29 @@ void ExpireLicense(int licenseId) {
         GetAllLicenses();
     }
 }
+
+void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue) {
+    try {
+        std::string path = "/admin.php?action=modifyGlobalSettings&username=" + login + "&password=" + password + "&setting=" + settingName + "&value=" + settingValue;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            LogDebug("System setting updated successfully: " + message);
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+        } else {
+            LogDebug("Failed to update system setting: " + message);
+            MessageBox(NULL, message.c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+    }
+}

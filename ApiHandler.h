@@ -29,3 +29,5 @@ std::string GetAllLicensesRawJson;
 std::string GetAllUsersRawJson;
 std::vector<Pointer> g_pointers;
 std::vector<std::string> g_chatMessages; 
+
+void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);

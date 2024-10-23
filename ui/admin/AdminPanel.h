@@ -13,6 +13,8 @@
 
 using json = nlohmann::json;
 
+static char statusInput[11] = ""; // 10 characters + null terminator
+
 // Global variables
 extern std::string currentStatus; // Current status message
 extern std::string GetAllUsersRawJson; // Raw JSON string of all users
@@ -32,6 +34,7 @@ void DisplayLicensesTable();
 
 // Function to generate a new license
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
+extern void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
 
 // Functions to toggle user states
 extern void ToggleUserBan(int userId);

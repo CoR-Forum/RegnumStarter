@@ -14,7 +14,6 @@ void ShowAdminPanel(bool* show_admin_window) {
     static const char* key_features[] = { "zoom", "fov", "gravity", "moonjump", "moonwalk", "fakelag", "fakelagg", "freecam", "speedhack" };
     static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true, true };
 
-    static const char* statuses[] = { "Undetected", "Updating", "Detected", "Offline" };
     static int selected_status = 1; // Default to "Online"
 
     if (*show_admin_window) {
@@ -96,9 +95,13 @@ void ShowAdminPanel(bool* show_admin_window) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Dropdown menu for status selection
-        if (ImGui::Combo("Current Status", &selected_status, statuses, IM_ARRAYSIZE(statuses))) {
-            currentStatus = statuses[selected_status];
+        ImGui::InputText("Current Status", statusInput, IM_ARRAYSIZE(statusInput));
+
+        // Save button
+        ImGui::SameLine();
+        if (ImGui::Button("Save Status")) {
+            std::string currentStatus(statusInput);
+            ModifyGlobalSettings("status", currentStatus);
         }
 
         // Checkbox for debug logging
