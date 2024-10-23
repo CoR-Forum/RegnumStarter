@@ -18,7 +18,26 @@ void WriteLogToFile(const std::string& logMessage) {
     std::ofstream logFile(logFilePath, std::ios_base::app);
     
     if (logFile.is_open()) {
-        logFile << logMessage << std::endl;
+        // Read the current log file into a deque
+        std::deque<std::string> fileLines;
+        std::ifstream inFile(logFilePath);
+        std::string line;
+        while (std::getline(inFile, line)) {
+            fileLines.push_back(line);
+        }
+        inFile.close();
+
+        // If the log file exceeds 1000 lines, remove the oldest lines
+        while (fileLines.size() >= 1000) {
+            fileLines.pop_front();
+        }
+
+        // Write the updated log lines back to the file
+        std::ofstream outFile(logFilePath, std::ios_base::trunc);
+        for (const auto& logLine : fileLines) {
+            outFile << logLine << std::endl;
+        }
+        outFile << logMessage << std::endl;
     } else {
         std::cerr << "Failed to open log file: " << logFilePath << std::endl;
     }
