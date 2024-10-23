@@ -56,3 +56,5 @@ std::string WStringToStringForLog(const std::wstring& wstr);
  * @param message The wide string debug message to be logged.
  */
 void LogDebug(const std::wstring& message);
+
+extern const char* appDataPath;

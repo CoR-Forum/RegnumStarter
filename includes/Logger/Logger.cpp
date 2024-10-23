@@ -14,11 +14,13 @@ namespace {
  * @param logMessage The log message to write.
  */
 void WriteLogToFile(const std::string& logMessage) {
-    std::ofstream logFile(std::filesystem::path(appDataPath) / LOG_FILE_PATH, std::ios_base::app);
+    std::string logFilePath = std::string(appDataPath) + LOG_FILE_PATH;
+    std::ofstream logFile(logFilePath, std::ios_base::app);
+    
     if (logFile.is_open()) {
         logFile << logMessage << std::endl;
     } else {
-        std::cerr << "Failed to open log file: " << std::filesystem::path(appDataPath) / LOG_FILE_PATH << std::endl;
+        std::cerr << "Failed to open log file: " << logFilePath << std::endl;
     }
 }
 
