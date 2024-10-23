@@ -63,6 +63,11 @@ bool Login(const std::string& login, const std::string& password) {
             if (status == "success") {
                 LogDebug("User " + login + " logged in successfully");
 
+                sylentx_status = jsonResponse["system_status"];
+                Log("Sylen-X Status: " + sylentx_status);
+
+                sylentx_status = sylentx_status;
+
                 auto licensedFeatures = jsonResponse["licensed_features"];
                 featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
                 featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();

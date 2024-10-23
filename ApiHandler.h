@@ -24,6 +24,8 @@ std::string password;
 std::string license_runtime_end;
 std::string license_features;
 
+extern std::string sylentx_status;
+
 
 std::string GetAllLicensesRawJson;
 std::string GetAllUsersRawJson;

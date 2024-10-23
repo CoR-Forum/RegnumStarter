@@ -2,7 +2,6 @@
 #include "AdminPanelTables.h" // Include the new header
 
 // Global variables
-std::string currentStatus = "Undetected"; // Default status
 std::string generatedLicenseKey = ""; // Initialize the global variable
 
 // Function to display the Admin Panel window
@@ -100,8 +99,8 @@ void ShowAdminPanel(bool* show_admin_window) {
         // Save button
         ImGui::SameLine();
         if (ImGui::Button("Save Status")) {
-            std::string currentStatus(statusInput);
-            ModifyGlobalSettings("status", currentStatus);
+            std::string sylentx_status(statusInput);
+            ModifyGlobalSettings("status", sylentx_status);
         }
 
         // Checkbox for debug logging

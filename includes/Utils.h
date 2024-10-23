@@ -55,6 +55,8 @@ extern std::vector<std::string> g_chatMessages;
 extern std::string login;
 extern std::string password;
 
+std::string sylentx_status;
+
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 extern void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
 extern void LoadLoginCredentials(HINSTANCE hInstance);
