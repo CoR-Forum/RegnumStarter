@@ -854,6 +854,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Separator();
                     ImGui::Spacing();
 
+                    // Regnum Online Installation Path selection based on ImGui::FileBrowser
+                    static ImGui::FileBrowser fileDialog;
+                    static bool showFileDialog = false;
+
+                    // Open the file dialog when the button is clicked
+                    if (ImGui::Button("Select Regnum Online Installation Path")) {
+                        showFileDialog = true;
+                    }
+
+                    // Show the file dialog
+                    if (showFileDialog) {
+                        fileDialog.Display();
+                    }
+
+                    // Process the selected file
+                    if (fileDialog.HasSelected()) {
+                        setting_regnumInstallPath = fileDialog.GetSelected().string();
+                        fileDialog.ClearSelected();
+                        showFileDialog = false;
+                    }
+
+                    // Display the selected path
+                    ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
+
                     // A table to display the saved Regnum Accounts using the GetRegnumAccounts function
                     ImGui::Columns(4, "RegnumAccounts");
                     ImGui::Separator();
