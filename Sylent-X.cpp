@@ -15,9 +15,9 @@
 #include "includes/chrono/chrono.h"
 #include "includes/process/process.h"
 #include "ui/loadingscreen/LoadingScreen.h"
-#include "includes/ImageLoader/ImageLoader.h"
+#include "libs/ImageLoader/ImageLoader.h"
+#include "libs/ImageLoader/FontAwesomeIcons.h"
 #include <filesystem> // C++17 or later
-#include "includes/ImageLoader/FontAwesomeIcons.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
