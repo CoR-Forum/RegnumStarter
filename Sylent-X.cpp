@@ -25,7 +25,6 @@
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
 
-
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static bool g_DeviceLost = false;
@@ -74,7 +73,7 @@ std::string GetKeyName(int virtualKey) {
     return "Unknown";
 }
 
-// Function to check if the hotkey is pressed
+// Function to check if a hotkey is pressed
 bool IsHotkeyPressed(int hotkey) {
     return GetAsyncKeyState(hotkey) & 0x8000;
 }
@@ -244,7 +243,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     std::thread loginThread([&]() {
                         for (int i = 0; i <= 100; ++i) {
-                            std::this_thread::sleep_for(std::chrono::milliseconds(30)); // Simulate progress over 3 seconds
+                            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Simulate progress over 1s
                             UpdateProgressBar(i / 100.0f);
                         }
 
@@ -539,7 +538,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_RIGHT_FROM_BRACKET " Logout", buttonSize)) {
-                    Logout(); // Use the logic from ApiHandler.cpp
+                    Logout();
                 }
 
                 ImGui::EndChild();
@@ -550,17 +549,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
 
                 if (show_settings_content) {
-                    // Settings content
                     ImGui::Text("Appearance Settings");
 
                     ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
                     ImGui::SameLine();
                     ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
 
-                    // Show the color wheel
                     ImGui::ShowColorWheel(textColor);
 
-                    // Slider to adjust the font size
                     ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
 
                     ImGui::Separator();
