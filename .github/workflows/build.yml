@@ -1,0 +1,37 @@
+name: Build Sylent-X
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-binutils
+          mingw-w64-x86_64-urlmon
+          mingw-w64-x86_64-wininet
+          mingw-w64-x86_64-d3d9
+          mingw-w64-x86_64-dwmapi
+
+    - name: Add MSYS2 to PATH
+      run: echo "::add-path::C:\msys64\mingw64\bin"
+
+    - name: Build Sylent-X
+      run: |
+        windres resource.rc resource.o
+        g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -Iincludes -mwindows -lurlmon -lwininet -ld3d9 -ldwmapi -static
