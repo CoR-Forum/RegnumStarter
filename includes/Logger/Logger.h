@@ -42,14 +42,6 @@ void Log(const std::string& message);
 void LogDebug(const std::string& message);
 
 /**
- * @brief Converts a wide string to a standard string for logging purposes.
- * 
- * @param wstr The wide string to be converted.
- * @return A standard string representation of the wide string.
- */
-std::string WStringToStringForLog(const std::wstring& wstr);
-
-/**
  * @brief Logs a debug message in wide string format if debug logging is enabled.
  * 
  * @param message The wide string debug message to be logged.
