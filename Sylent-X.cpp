@@ -1056,7 +1056,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             ImGui::SameLine();
             
-            if (ImGui::Button("Send Message")) {
+            if (ImGui::Button("Send Message") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
                 if (strlen(chatInput) > 0) {
                     SendChatMessage(chatInput);
                     chatInput[0] = '\0'; // Clear input field
