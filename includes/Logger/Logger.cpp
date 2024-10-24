@@ -17,6 +17,16 @@ namespace {
     std::mutex logMutex; ///< Mutex to protect access to logMessages.
 }
 
+std::string GetCurrentTimestamp() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm;
+    localtime_s(&now_tm, &now_c); // Thread-safe version of localtime
+    std::ostringstream oss;
+    oss << std::put_time(&now_tm, "%Y-%m-%d %H:%M:%S");
+    return oss.str();
+}
+
 void WriteLogToFile(const std::string& logMessage) {
     std::filesystem::path logFilePath = std::filesystem::path(appDataPath) / LOG_FILE_PATH;
     
@@ -47,16 +57,6 @@ void WriteLogToFile(const std::string& logMessage) {
     } catch (const std::exception& e) {
         std::cerr << "Failed to write to log file: " << logFilePath << ". Error: " << e.what() << std::endl;
     }
-}
-
-std::string GetCurrentTimestamp() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm;
-    localtime_s(&now_tm, &now_c); // Thread-safe version of localtime
-    std::ostringstream oss;
-    oss << std::put_time(&now_tm, "%Y-%m-%d %H:%M:%S");
-    return oss.str();
 }
 
 void Log(const std::string& message) {
