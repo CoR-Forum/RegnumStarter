@@ -1,10 +1,9 @@
 #include "AdminPanel.h"
-#include "tables/AdminPanelTables.h" // Include the new header
+#include "tables/AdminPanelTables.h"
 
-// Function to display the Admin Panel window
 void ShowAdminPanel(bool* show_admin_window) {
-    static int selected_key_runtime = 0; // Default to the first runtime
-    static std::string selected_key_runtime_str = "1h"; // Default runtime string
+    static int selected_key_runtime = 0;
+    static std::string selected_key_runtime_str = "1h";
 
     static const char* key_features[] = { "zoom", "fov", "gravity", "moonjump", "moonwalk", "fakelag", "fakelagg", "freecam", "speedhack" };
     static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true, true };
@@ -32,7 +31,6 @@ void ShowAdminPanel(bool* show_admin_window) {
             }
         }
 
-        // Dropdown menu for key runtime selection
         const char* key_runtimes[] = { "1h", "1d", "7d", "1m", "3m", "10y" };
         if (ImGui::Combo("Runtime", &selected_key_runtime, key_runtimes, IM_ARRAYSIZE(key_runtimes))) {
             selected_key_runtime_str = key_runtimes[selected_key_runtime];
@@ -40,7 +38,6 @@ void ShowAdminPanel(bool* show_admin_window) {
 
         ImGui::SameLine();
 
-        // Dropdown to select features
         if (ImGui::BeginCombo("Features", "Select Features")) {
             static bool check_all = true;
             if (ImGui::Checkbox("Check/Uncheck All", &check_all)) {
@@ -58,7 +55,6 @@ void ShowAdminPanel(bool* show_admin_window) {
 
         ImGui::SameLine();
 
-        // Button to generate license key
         if (ImGui::Button("Generate License Key")) {
             std::string licensedFeatures;
             for (int i = 0; i < IM_ARRAYSIZE(key_features); i++) {
@@ -74,7 +70,6 @@ void ShowAdminPanel(bool* show_admin_window) {
             }
         }
 
-        // Display the generated license key
         if (!generated_license_key.empty()) {
             ImGui::InputText("Generated License Key", &generated_license_key[0], generated_license_key.size() + 1, ImGuiInputTextFlags_ReadOnly);
         }
@@ -85,14 +80,12 @@ void ShowAdminPanel(bool* show_admin_window) {
 
         ImGui::InputText("##CurrentStatus", statusInput, IM_ARRAYSIZE(statusInput));
 
-        // Save button
         ImGui::SameLine();
         if (ImGui::Button("Save Status")) {
             std::string sylentx_status(statusInput);
             ModifyGlobalSettings("status", sylentx_status);
         }
 
-        // Checkbox for debug logging
         if (ImGui::Checkbox("Debug Log", &setting_log_debug)) {
             SaveSettings();
         }

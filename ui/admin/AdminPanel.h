@@ -16,7 +16,6 @@ using json = nlohmann::json;
 
 static char statusInput[11] = ""; // 10 characters + null terminator
 
-// Global variables
 extern std::string sylentx_status;
 extern std::string GetAllUsersRawJson;
 extern std::string GetAllLicensesRawJson;
@@ -27,13 +26,9 @@ extern bool setting_log_debug;
 
 extern void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
 
-// Function to display the Admin Panel window
 void ShowAdminPanel(bool* show_admin_window);
 
-// Function to display the Users table in the Admin Panel
 void DisplayUsersTable();
-
-// Function to display the Licenses table in the Admin Panel
 void DisplayLicensesTable();
 
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
