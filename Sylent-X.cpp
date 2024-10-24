@@ -28,34 +28,20 @@
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static bool                     g_DeviceLost = false;
-static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
+static bool g_DeviceLost = false;
+static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static bool show_license_window = false;
-static char chatInput[256] = ""; // Declare chatInput as a static variable
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-bool show_login_window = true;
-bool show_main_window = false;
-bool show_register_window = false;
-bool show_feedback_window = false;
-bool show_chat_window = false;
-bool show_forgot_password_window = false;
-bool show_password_reset_window = false;
-bool show_admin_window = false;
-bool show_settings_content = false; 
-bool show_info_window = false;
-bool show_Regnumstarter = false;
+#include "ui/WindowStates.h"
+
 bool g_ShowUI = true;
-bool show_loading_screen = false;
 std::string statusMessage = "";
 bool loginSuccess = false;
-bool show_texture_window = false;
-bool show_View_window = false;
-bool show_Movement_window = false;
-bool show_Player_window = false;
+
 // Define a variable to store the user-defined hotkey
 int userDefinedHotkey = 0;
 bool waitingForHotkey = false;

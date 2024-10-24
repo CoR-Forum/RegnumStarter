@@ -66,3 +66,10 @@ std::string GetAllUsersRawJson;
 
 void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
 void GetAllLicenses();
+
+// global variables for chat input
+static char chatInput[256] = "";
+
+// global functions for chat
+void SendChatMessage(const std::string& message);
+void CheckChatMessages();
