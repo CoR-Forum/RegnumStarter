@@ -44,8 +44,6 @@ bool show_password_reset_window = false;
 bool show_admin_window = false;
 bool show_settings_content = false; 
 bool show_info_window = false;
-bool show_regnum_settings_window = false;
-bool show_regnum_accounts_window = false;
 bool show_Regnumstarter = false;
 bool g_ShowUI = true;
 bool show_loading_screen = false;
@@ -408,8 +406,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
                     show_Movement_window = false;
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -423,8 +419,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
                     show_View_window = false;
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -438,8 +432,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
                     show_Movement_window = false;
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -472,8 +464,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -502,8 +492,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -516,8 +504,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_Regnumstarter = false;
@@ -530,8 +516,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_info_window = false;
                     show_Regnumstarter = false;
@@ -543,8 +527,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -558,8 +540,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
                     show_settings_content = false;
-                    show_regnum_accounts_window = false;
-                    show_regnum_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_Regnumstarter = false;
