@@ -2,6 +2,7 @@
 #include "includes/Updater/Updater.cpp"
 #include "includes/Logger/Logger.cpp"
 #include "includes/API/ApiHandler.cpp"
+#include "includes/API/AdminApiHandler.cpp"
 #include "Style.cpp"
 #include "ui/admin/AdminPanel.h"
 #include "ui/ForgotPasswordWindow.h"

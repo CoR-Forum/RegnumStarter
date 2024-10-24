@@ -64,3 +64,4 @@ std::string GetAllLicensesRawJson;
 std::string GetAllUsersRawJson;
 
 void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
+void GetAllLicenses();
