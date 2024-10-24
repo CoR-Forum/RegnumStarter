@@ -19,7 +19,8 @@ static char statusInput[11] = ""; // 10 characters + null terminator
 extern std::string sylentx_status; // Current status message
 extern std::string GetAllUsersRawJson; // Raw JSON string of all users
 extern std::string GetAllLicensesRawJson; // Raw JSON string of all licenses
-extern std::string generatedLicenseKey; // Generated license key
+
+extern std::string generated_license_key; // Store the generated key returned by the API
 
 extern bool setting_log_debug; // Debug logging setting
 

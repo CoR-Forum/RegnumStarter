@@ -1,12 +1,8 @@
 #include "AdminPanel.h"
 #include "AdminPanelTables.h" // Include the new header
 
-// Global variables
-std::string generatedLicenseKey = ""; // Initialize the global variable
-
 // Function to display the Admin Panel window
 void ShowAdminPanel(bool* show_admin_window) {
-    extern std::string generatedLicenseKey;
     static int selected_key_runtime = 0; // Default to the first runtime
     static std::string selected_key_runtime_str = "1h"; // Default runtime string
 
@@ -86,8 +82,8 @@ void ShowAdminPanel(bool* show_admin_window) {
         }
 
         // Display the generated license key
-        if (!generatedLicenseKey.empty()) {
-            ImGui::InputText("Generated License Key", &generatedLicenseKey[0], generatedLicenseKey.size() + 1, ImGuiInputTextFlags_ReadOnly);
+        if (!generated_license_key.empty()) {
+            ImGui::InputText("Generated License Key", &generated_license_key[0], generated_license_key.size() + 1, ImGuiInputTextFlags_ReadOnly);
         }
 
         ImGui::Spacing();

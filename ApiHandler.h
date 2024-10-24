@@ -23,7 +23,7 @@ std::string password;
 std::string license_runtime_end;
 std::string license_features;
 
-extern std::string generatedLicenseKey;
+std::string generated_license_key;
 
 extern std::string sylentx_status;
 

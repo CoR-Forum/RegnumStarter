@@ -844,8 +844,8 @@ void GenerateNewLicense(const std::string& licensedFeatures, const std::string& 
             std::string message = jsonResponse.contains("message") ? jsonResponse["message"] : "";
 
             if (status == "success") {
-                generatedLicenseKey = jsonResponse["licenseKey"]["license_key"]; // Set the global variable
-                LogDebug("License generated successfully: " + generatedLicenseKey);
+                generated_license_key = jsonResponse["licenseKey"]["license_key"]; // Set the global variable
+                LogDebug("License generated successfully: " + generated_license_key);
                 GetAllLicenses();
                 return; // Exit the function after successfully generating the license
             } else {
