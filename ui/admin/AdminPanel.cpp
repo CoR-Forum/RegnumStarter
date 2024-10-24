@@ -9,8 +9,6 @@ void ShowAdminPanel(bool* show_admin_window) {
     static const char* key_features[] = { "zoom", "fov", "gravity", "moonjump", "moonwalk", "fakelag", "fakelagg", "freecam", "speedhack" };
     static bool default_key_features_selected[IM_ARRAYSIZE(key_features)] = { true, true, true, true, true, true, true, true, true };
 
-    static int selected_status = 1; // Default to "Online"
-
     if (*show_admin_window) {
         ImGui::Begin("Administration", show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
