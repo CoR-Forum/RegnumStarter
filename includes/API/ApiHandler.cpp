@@ -173,7 +173,6 @@ void SaveSettings() {
     try {
         nlohmann::json settingsJson;
         settingsJson["logDebug"] = setting_log_debug;
-        settingsJson["logMaxMessages"] = setting_log_maxMessages; // Corrected line
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = setting_fontSize;
         settingsJson["enableRainbow"] = setting_enableRainbow;
@@ -227,7 +226,6 @@ void LoadSettings() {
                     setting_enableRainbow = settingsJson.value("enableRainbow", false);
                     setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
                     setting_log_debug = settingsJson.value("logDebug", false);
-                    setting_log_maxMessages = settingsJson.value("logMaxMessages", 100);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "C:\\Games\\NGD Studios\\Champions of Regnum");
 

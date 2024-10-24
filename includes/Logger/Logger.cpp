@@ -12,7 +12,6 @@
 #include <codecvt>
 
 namespace {
-    const size_t MAX_LOG_MESSAGES = setting_log_maxMessages; ///< Maximum number of log messages to keep in memory.
     const std::filesystem::path LOG_FILE_PATH = "Sylent-X/log.txt"; ///< Path to the log file.
     std::deque<std::string> logMessages; ///< Deque to store log messages.
     std::mutex logMutex; ///< Mutex to protect access to logMessages.
@@ -81,7 +80,7 @@ void Log(const std::string& message) {
     {
         std::lock_guard<std::mutex> lock(logMutex);
         logMessages.push_back(logMessage);
-        if (logMessages.size() > MAX_LOG_MESSAGES) {
+        if (logMessages.size() > 1000) {
             logMessages.pop_front();
         }
     }

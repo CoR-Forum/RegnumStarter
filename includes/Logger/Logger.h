@@ -12,7 +12,6 @@
 
 // External variables
 extern bool setting_log_debug; ///< Flag to enable or disable debug logging
-extern int setting_log_maxMessages; ///< Maximum number of log messages to keep in memory
 
 /**
  * @brief Writes a log message to a file.

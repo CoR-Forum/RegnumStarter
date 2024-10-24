@@ -567,8 +567,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     }
 
-                    ImGui::InputInt("Max Log Messages to store", &setting_log_maxMessages);
-
                     ImGui::SameLine();
                     ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
 
