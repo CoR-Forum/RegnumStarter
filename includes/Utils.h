@@ -121,6 +121,7 @@ float setting_fontSize = 14.0f;
 bool setting_enableRainbow = false;
 float setting_rainbowSpeed = 0.1f;
 bool setting_excludeFromCapture = false;
+const char* setting_regnumInstallPath = "C:\\Games\\NGD Studios\\Champions of Regnum";
 
 // Global variables
 bool setting_log_debug = true;
