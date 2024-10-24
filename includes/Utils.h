@@ -118,39 +118,6 @@ const std::string appName = "Sylent-X";
 
 extern ImVec4 textColor;
 
-float setting_fontSize = 14.0f;
-bool setting_enableRainbow = false;
-float setting_rainbowSpeed = 0.1f;
-bool setting_excludeFromCapture = false;
-std::string setting_regnumInstallPath;
-
-// Global variables
-bool setting_log_debug = true;
-int setting_log_maxMessages = 10;
-bool isAdmin = false;
-
-// Checkboxes states
-bool optionGravity = false;
-bool optionMoonjump = false;
-bool optionZoom = false;
-bool optionFreecam = false;
-bool optionMoonwalk = false;
-bool optionFov = false;
-bool optionFastFly = false;
-bool optionSpeedHack = false;
-bool optionFakelag = false;
-
-// Feature states
-bool featureZoom = true;
-bool featureFov = false;
-bool featureGravity = false;
-bool featureFreecam = false;
-bool featureMoonwalk = false;
-bool featureFakelag = false;
-bool featureMoonjump = false;
-bool featureFastfly = false;
-bool featureSpeedhack = false;
-
 // Keydown states
 bool isGravityKeyPressed = false;
 

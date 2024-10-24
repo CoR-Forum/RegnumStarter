@@ -7,15 +7,34 @@
 
 extern HWND hwnd;
 
-extern bool featureZoom;
-extern bool featureGravity;
-extern bool featureMoonjump;
-extern bool featureMoonwalk;
-extern bool featureFov;
-extern bool featureSpeedhack;
-extern bool featureFreecam;
-extern bool featureFastfly;
-extern bool featureFakelag;
+bool featureZoom;
+bool featureGravity;
+bool featureMoonjump;
+bool featureMoonwalk;
+bool featureFov;
+bool featureSpeedhack;
+bool featureFreecam;
+bool featureFastfly;
+bool featureFakelag;
+
+bool optionGravity = false;
+bool optionMoonjump = false;
+bool optionZoom = false;
+bool optionFreecam = false;
+bool optionMoonwalk = false;
+bool optionFov = false;
+bool optionFastFly = false;
+bool optionSpeedHack = false;
+bool optionFakelag = false;
+
+float setting_fontSize = 14.0f;
+bool setting_enableRainbow = false;
+float setting_rainbowSpeed = 0.1f;
+bool setting_excludeFromCapture = false;
+std::string setting_regnumInstallPath;
+bool setting_log_debug = true;
+int setting_log_maxMessages = 10;
+bool isAdmin = false;
 
 std::string login;
 std::string password;
