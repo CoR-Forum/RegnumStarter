@@ -1,4 +1,4 @@
-#include "Apihandler.h"
+#include "ApiHandler.h"
 
 void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     if (hRequest) InternetCloseHandle(hRequest);
