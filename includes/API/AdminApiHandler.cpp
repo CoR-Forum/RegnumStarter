@@ -1,5 +1,4 @@
 #include "ApiHandler.h"
-#include "../InternetUtils/InternetUtils.h"
 
 void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue) {
     try {

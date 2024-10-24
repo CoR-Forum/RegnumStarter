@@ -1,5 +1,5 @@
 #include "AdminPanel.h"
-#include "AdminPanelTables.h" // Include the new header
+#include "tables/AdminPanelTables.h" // Include the new header
 
 // Function to display the Admin Panel window
 void ShowAdminPanel(bool* show_admin_window) {

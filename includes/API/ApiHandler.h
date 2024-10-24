@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../includes/Utils.h"
+#include "../InternetUtils/InternetUtils.cpp"
 #include <stdexcept>
 #include <sstream>
 #include <regex>

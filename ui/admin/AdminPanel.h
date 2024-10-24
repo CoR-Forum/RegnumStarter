@@ -10,6 +10,7 @@
 #include <iostream>
 #include <ctime>
 #include "../../libs/json.hpp"
+#include "tables/AdminPanelTables.cpp"
 
 using json = nlohmann::json;
 

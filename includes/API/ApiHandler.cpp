@@ -1,5 +1,4 @@
 #include "ApiHandler.h"
-#include "../InternetUtils/InternetUtils.h"
 
 bool Login(const std::string& login, const std::string& password) {
     try {
