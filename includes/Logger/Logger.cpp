@@ -84,3 +84,10 @@ void LogDebug(const std::string& message) {
         Log("DEBUG: " + message);
     }
 }
+
+// Overload for LogDebug that accepts std::wstring
+void LogDebug(const std::wstring& message) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string narrowMessage = converter.to_bytes(message);
+    LogDebug(narrowMessage);
+}
