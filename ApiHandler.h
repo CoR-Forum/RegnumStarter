@@ -11,8 +11,11 @@ extern HWND hwnd;
 std::string login;
 std::string password;
 
+// variable to store current amount of Magnat currency for the user
+int magnatCurrency;
+
 // global variables for sylent-x
-extern std::string sylentx_status;
+std::string sylentx_status;
 
 // global variables for user license information
 std::string license_runtime_end;
@@ -50,12 +53,14 @@ bool setting_log_debug = true;
 int setting_log_maxMessages = 10;
 bool isAdmin = false;
 
+// global variables for memory pointers and chat messages
+std::vector<Pointer> g_pointers;
+std::vector<std::string> g_chatMessages;
+
 // global variables for license key generation
 std::string generated_license_key;
 
 std::string GetAllLicensesRawJson;
 std::string GetAllUsersRawJson;
-std::vector<Pointer> g_pointers;
-std::vector<std::string> g_chatMessages; 
 
 void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);

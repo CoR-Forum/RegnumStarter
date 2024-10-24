@@ -51,12 +51,6 @@ struct Pointer {
 };
 
 extern std::vector<Pointer> InitializePointers(); // Updated declaration
-extern std::vector<Pointer> g_pointers;
-extern std::vector<std::string> g_chatMessages;
-extern std::string login;
-extern std::string password;
-
-std::string sylentx_status;
 
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 extern void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
@@ -100,16 +94,6 @@ struct ReferrerOption {
 
 // global variable to store the loaded regnum accounts
 extern std::vector<RegnumAccount> regnumAccounts;
-
-// variable to store current amount of Magnat currency for the user
-int magnatCurrency;
-
-// User settings
-extern std::string login;
-extern std::string password;
-
-extern std::string license_runtime_end;
-extern std::string license_features;
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
