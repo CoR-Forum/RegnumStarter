@@ -16,13 +16,15 @@ using json = nlohmann::json;
 static char statusInput[11] = ""; // 10 characters + null terminator
 
 // Global variables
-extern std::string sylentx_status; // Current status message
-extern std::string GetAllUsersRawJson; // Raw JSON string of all users
-extern std::string GetAllLicensesRawJson; // Raw JSON string of all licenses
+extern std::string sylentx_status;
+extern std::string GetAllUsersRawJson;
+extern std::string GetAllLicensesRawJson;
 
 extern std::string generated_license_key; // Store the generated key returned by the API
 
-extern bool setting_log_debug; // Debug logging setting
+extern bool setting_log_debug;
+
+extern void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
 
 // Function to display the Admin Panel window
 void ShowAdminPanel(bool* show_admin_window);
@@ -33,16 +35,12 @@ void DisplayUsersTable();
 // Function to display the Licenses table in the Admin Panel
 void DisplayLicensesTable();
 
-// Function to generate a new license
 extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
-extern void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
 
-// Functions to toggle user states
 extern void ToggleUserBan(int userId);
 extern void ToggleUserAdmin(int userId);
 extern void ToggleUserActivation(int userId);
 
-// Function to expire a license
 extern void ExpireLicense(int licenseId);
 
-#endif // ADMIN_PANEL_H
+#endif
