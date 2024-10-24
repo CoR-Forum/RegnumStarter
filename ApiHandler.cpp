@@ -222,6 +222,7 @@ void SaveSettings() {
         settingsJson["enableRainbow"] = setting_enableRainbow;
         settingsJson["rainbowSpeed"] = setting_rainbowSpeed;
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
+        settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
 
         std::string settingsStr = settingsJson.dump();
         std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
@@ -271,6 +272,7 @@ void LoadSettings() {
                     setting_log_debug = settingsJson.value("logDebug", false);
                     setting_log_maxMessages = settingsJson.value("logMaxMessages", 100);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
+                    setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "C:\\Games\\NGD Studios\\Champions of Regnum");
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
                         textColor.x = settingsJson["textColor"][0];
