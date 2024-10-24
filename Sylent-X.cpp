@@ -16,7 +16,6 @@
 #include "includes/process/process.cpp"
 #include "includes/chrono/chrono.cpp"
 #include "includes/streamproof/streamproof.cpp"
-#include "ui/helper/UpdateRainbowColor.cpp"
 #include "ui/admin/AdminPanel.cpp"
 #include "ui/ForgotPasswordWindow.cpp"
 #include "ui/PasswordResetWindow.cpp"
@@ -337,10 +336,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                 ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
 
-                if (setting_enableRainbow) {
-                    UpdateRainbowColor(setting_rainbowSpeed);
-                }
-
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
                     SaveSettings();
@@ -551,10 +546,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (show_settings_content) {
                     ImGui::Text("Appearance Settings");
 
-                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
-                    ImGui::SameLine();
-                    ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
-
                     ImGui::ShowColorWheel(textColor);
 
                     ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
@@ -610,8 +601,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (!feedbackMessage.empty()) {
                         ImGui::Text("%s", feedbackMessage.c_str());
                     }
+
             } else if (show_license_window) {
-             
                     static char licenseKey[128] = "";
 
                     // Display the input text field for the license key
@@ -631,7 +622,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     // License information from license_runtime_end and license_features
                     ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
             } else if (show_info_window) {
-
                     ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
                     ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
                     ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");

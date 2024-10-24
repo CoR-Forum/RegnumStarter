@@ -175,8 +175,6 @@ void SaveSettings() {
         settingsJson["logDebug"] = setting_log_debug;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = setting_fontSize;
-        settingsJson["enableRainbow"] = setting_enableRainbow;
-        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
         settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
 
@@ -223,8 +221,6 @@ void LoadSettings() {
                 if (jsonResponse.contains("settings") && jsonResponse["settings"].is_object()) {
                     auto settingsJson = jsonResponse["settings"];
                     setting_fontSize = settingsJson.value("fontSize", 1.0f);
-                    setting_enableRainbow = settingsJson.value("enableRainbow", false);
-                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
                     setting_log_debug = settingsJson.value("logDebug", false);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "C:\\Games\\NGD Studios\\Champions of Regnum");
