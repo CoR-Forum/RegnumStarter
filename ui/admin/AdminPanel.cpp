@@ -100,7 +100,9 @@ void ShowAdminPanel(bool* show_admin_window) {
         }
 
         // Checkbox for debug logging
-        ImGui::Checkbox("Debug Log", &setting_log_debug);
+        if (ImGui::Checkbox("Debug Log", &setting_log_debug)) {
+            SaveSettings();
+        }
 
         ImGui::End();
     }

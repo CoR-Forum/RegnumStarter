@@ -46,16 +46,6 @@ bool waitingForHotkey = false;
 
 LPDIRECT3DTEXTURE9 myTexture = nullptr;
 
-extern bool featureZoom;
-extern bool featureFov;
-extern bool featureGravity;
-extern bool featureMoonjump;
-extern bool featureMoonwalk;
-extern bool featureFreecam;
-extern bool featureFastfly;
-extern bool featureSpeedhack;
-extern bool featureFakelag;
-
 std::vector<Pointer> pointers;
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 

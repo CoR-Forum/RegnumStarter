@@ -44,4 +44,6 @@ extern void ToggleUserActivation(int userId);
 
 extern void ExpireLicense(int licenseId);
 
+extern void SaveSettings();
+
 #endif
