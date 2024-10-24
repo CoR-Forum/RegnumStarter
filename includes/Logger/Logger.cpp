@@ -17,11 +17,6 @@ namespace {
     std::mutex logMutex; ///< Mutex to protect access to logMessages.
 }
 
-/**
- * @brief Writes a log message to the log file.
- * 
- * @param logMessage The log message to write.
- */
 void WriteLogToFile(const std::string& logMessage) {
     std::filesystem::path logFilePath = std::filesystem::path(appDataPath) / LOG_FILE_PATH;
     
