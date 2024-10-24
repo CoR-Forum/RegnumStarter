@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <sstream>
 #include <regex>
-#include "ui/admin/AdminPanel.h"
 
 extern HWND hwnd;
 
@@ -24,8 +23,9 @@ std::string password;
 std::string license_runtime_end;
 std::string license_features;
 
-extern std::string sylentx_status;
+extern std::string generatedLicenseKey;
 
+extern std::string sylentx_status;
 
 std::string GetAllLicensesRawJson;
 std::string GetAllUsersRawJson;
