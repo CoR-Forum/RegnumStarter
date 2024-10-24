@@ -14,21 +14,16 @@ void ShowAdminPanel(bool* show_admin_window) {
     if (*show_admin_window) {
         ImGui::Begin("Administration", show_admin_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-        // Display Users Table
         ImGui::Text("All Users");
         DisplayUsersTable();
 
         ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
 
-        // Display Licenses Table
         ImGui::Text("All Licenses");
         DisplayLicensesTable();
 
         ImGui::Spacing();
 
-        // Generate License Key Section
         ImGui::Text("Generate License Key");
 
         bool any_feature_selected = false;
@@ -87,10 +82,10 @@ void ShowAdminPanel(bool* show_admin_window) {
         }
 
         ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
 
-        ImGui::InputText("Current Status", statusInput, IM_ARRAYSIZE(statusInput));
+        ImGui::Text("Change System Status");
+
+        ImGui::InputText("##CurrentStatus", statusInput, IM_ARRAYSIZE(statusInput));
 
         // Save button
         ImGui::SameLine();
