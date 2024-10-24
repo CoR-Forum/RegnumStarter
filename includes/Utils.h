@@ -114,7 +114,7 @@ extern std::string license_features;
 // Global constants
 const char* appDataPath = getenv("APPDATA");
 const std::string currentVersion = "0.1.63"; // Current version of the application
-const char* appName = "Sylent-X";
+const std::string appName = "Sylent-X";
 
 extern ImVec4 textColor;
 
