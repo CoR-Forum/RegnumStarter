@@ -1,7 +1,7 @@
 #include "includes/Utils.h"
 #include "includes/Updater/Updater.cpp"
 #include "includes/Logger/Logger.cpp"
-#include "ApiHandler.cpp"
+#include "includes/API/ApiHandler.cpp"
 #include "Style.cpp"
 #include "ui/admin/AdminPanel.h"
 #include "ui/ForgotPasswordWindow.h"
