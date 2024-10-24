@@ -45,7 +45,6 @@ bool loginSuccess = false;
 // Define a variable to store the user-defined hotkey
 int userDefinedHotkey = 0;
 bool waitingForHotkey = false;
-bool fovToggled = false; // Track the state of the FOV toggle
 
 LPDIRECT3DTEXTURE9 myTexture = nullptr;
 
@@ -1056,11 +1055,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::End();
             }
         }
-        // Only process the hotkey if the checkbox is checked
+        // PoV toggle logic
         if (optionFov && userDefinedHotkey != 0 && IsHotkeyPressed(userDefinedHotkey)) {
+            bool fovToggled = false; // Initialize the FOV state
             fovToggled = !fovToggled; // Toggle the FOV state
-            float newValue = fovToggled ? 0.02999999933f : 0.01745329238f;
-            MemoryManipulation("fov", newValue);
+            float newValue = fovToggled ? 0.02999999933f : 0.01745329238f; // Set the new FOV value
+            MemoryManipulation("fov", newValue); // Apply the new FOV value
             // Add a small delay to prevent rapid toggling
             Sleep(200);
         }
