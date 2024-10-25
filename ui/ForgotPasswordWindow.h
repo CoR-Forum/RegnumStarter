@@ -5,6 +5,8 @@
 
 #include <string>
 
+static char forgotPasswordEmail[128] = "";
+
 // Function to display the Forgot Password window
 void ShowForgotPasswordWindow(bool& show_forgot_password_window, bool& show_password_reset_window, bool& show_login_window);
 

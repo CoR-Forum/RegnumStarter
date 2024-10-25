@@ -15,10 +15,11 @@ void ShowForgotPasswordWindow(bool& show_forgot_password_window, bool& show_pass
         PostQuitMessage(0);
     }
 
-    static char forgotPasswordEmail[128] = "";
-
-    // Input field for email
-    ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
+    ImGui::Text("Enter your email address to receive a password reset link.");
+    
+    ImGui::Spacing();
+    
+    ImGui::InputTextWithHint("##Email", "E-Mail Address", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
 
     // Function to handle the submit button click
     auto handleSubmit = [&]() {
@@ -30,18 +31,19 @@ void ShowForgotPasswordWindow(bool& show_forgot_password_window, bool& show_pass
         }
     };
 
-    // Submit button
-    if (ImGui::Button("Submit")) {
+    ImGui::SameLine();
+    if (ImGui::Button("Request Password Reset")) {
         handleSubmit();
     }
 
-    // Button to navigate to password reset window
+    ImGui::Separator();
+
     if (ImGui::Button("I already have a token")) {
         show_forgot_password_window = false;
         show_password_reset_window = true;
     }
 
-    // Button to navigate back to login window
+    ImGui::SameLine();
     if (ImGui::Button("Back to Login")) {
         show_forgot_password_window = false;
         show_login_window = true;
