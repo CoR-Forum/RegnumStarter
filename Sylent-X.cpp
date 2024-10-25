@@ -23,6 +23,12 @@
 #include "ui/login/register/RegisterWindow.cpp"
 #include "ui/RegnumStarter/RegnumStarter.cpp"
 #include "ui/Feedback/Feedback.cpp"
+#include "ui/License/License.cpp"
+#include "ui/Movement/Movement.cpp"
+#include "ui/Credits/Credits.cpp"
+#include "ui/Player/Player.cpp"
+#include "ui/View/View.cpp"
+#include "ui/Chat/Chat.cpp"
 #include "ui/WindowStates.h"
 
 
@@ -37,7 +43,8 @@ static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static bool show_license_window = false;
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
-bool fovToggled = false;
+extern bool show_chat_window;
+bool fovToggled = false; // Initialize the FOV state
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -49,20 +56,9 @@ int userDefinedHotkey = 0;
 bool waitingForHotkey = false;
 
 std::vector<Pointer> pointers;
-std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
-
-// Function to get the key name from the virtual key code
-std::string GetKeyName(int virtualKey) {
-    UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
-    char keyName[128];
-    if (GetKeyNameText(scanCode << 16, keyName, sizeof(keyName)) > 0) {
-        return std::string(keyName);
-    }
-    return "Unknown";
-}
 
 // Function to check if a hotkey is pressed
 bool IsHotkeyPressed(int hotkey) {
@@ -473,220 +469,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ShowFeedbackWindow(show_feedback_window);
 
             } else if (show_license_window) {
-                    static char licenseKey[128] = "";
+                ShowLicenseWindow(show_license_window);
 
-                    // Display the input text field for the license key
-                    ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
-
-                    // Display the submit button
-                    if (ImGui::Button("Submit")) {
-                        try {
-                            ActivateLicense(licenseKey);
-                            ImGui::Text("License activated successfully!");
-                        } catch (const std::exception& e) {
-                            Log("Failed to activate license: " + std::string(e.what()));
-                            ImGui::Text("Failed to activate license: %s", e.what());
-                        }
-                    }
-                    ImGui::Separator();
-                    // License information from license_runtime_end and license_features
-                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
             } else if (show_info_window) {
-                    ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
-                    ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
-                    ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-                    ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
-                    
+                ShowCreditsWindow(show_info_window);  
+
             } else if (show_view_window) {
-                static float zoomValue = 15.0f; // Default zoom value
-                static bool prevZoomState = false; // Track previous state of the checkbox
-
-                ImGui::Checkbox("Enable Zoom", &optionZoom);
-                if (optionZoom) {
-                    ImGui::SameLine();
-                    if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
-                        MemoryManipulation("zoom", zoomValue);
-                    }
-                } else if (prevZoomState) {
-                    // Reset zoom value to 15.0f when checkbox is unchecked
-                    zoomValue = 15.0f;
-                    MemoryManipulation("zoom", zoomValue);
-                }
-
-                prevZoomState = optionZoom; // Update previous state
-
-                // Check if the checkbox is checked
-                ImGui::BeginDisabled(!featureFov);
-                if (ImGui::Checkbox("Field of View", &optionFov)) {
-                    if (!optionFov) {
-                        // If the checkbox is unchecked, reset the FOV value
-                        MemoryManipulation("fov", 0.01745329238f);
-                    }
-                }
-                ImGui::EndDisabled();
-                ImGui::SameLine();
-
-                // Only allow users to set the hotkey if the checkbox is checked
-                if (optionFov) {
-                    std::string buttonLabel;
-                    if (waitingForHotkey) {
-                        buttonLabel = "Press any key...";
-                    } else if (userDefinedHotkey == 0) {
-                        buttonLabel = "Set Hotkey";
-                    } else {
-                        buttonLabel = "Hotkey: " + GetKeyName(userDefinedHotkey);
-                    }
-
-                    if (ImGui::Button(buttonLabel.c_str())) {
-                        waitingForHotkey = true;
-                    }
-
-                    if (waitingForHotkey) {
-                        for (int key = 0x08; key <= 0xFF; key++) {
-                            if (GetAsyncKeyState(key) & 0x8000) {
-                                userDefinedHotkey = key;
-                                waitingForHotkey = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (!featureFov) {
-                    ImGui::SameLine();
-                    ShowLicenseMarker();
-                }  
+                ShowViewWindow(show_view_window, optionZoom, optionFov, featureFov, waitingForHotkey, userDefinedHotkey); 
             } else if (show_movement_window) {
 
-                ImGui::BeginDisabled(!featureSpeedhack);
-                if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
-                    float newValue = optionSpeedHack ? 5.6f : 4.8f;
-                    MemoryManipulation("speedhack", newValue);
-                }
-                if (featureSpeedhack) {
-                    ImGui::SameLine();
-                    ShowHelpMarker("Use at own risk");
-                }
-                ImGui::EndDisabled();
-                if (!featureSpeedhack) {
-                    ImGui::SameLine();
-                    ShowLicenseMarker();
-                }
-
-                ImGui::BeginDisabled(!featureGravity);
-                if (ImGui::Checkbox("Flyhack", &optionGravity)) {
-                    MemoryManipulation("gravity");
-                }
-
-                ImGui::EndDisabled();
-                if (!featureGravity) {
-                    ImGui::SameLine();
-                    ShowLicenseMarker();
-                }
-
-                static float moonjumpValue = 4.0f; // Default moonjump value
-                static bool prevjumpState = false; // Track previous state of the checkbox
-                ImGui::BeginDisabled(!featureMoonjump);
-                if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
-                    if (optionMoonjump) {
-                        prevjumpState = true;
-                    } else if (prevjumpState) {
-                        // Reset zoom value to 4.0f when checkbox is unchecked
-                        moonjumpValue = 4.0f;
-                        MemoryManipulation("moonjump", moonjumpValue);
-                        prevjumpState = false;
-                    }
-                }
-                if (optionMoonjump) {
-                    ImGui::SameLine();
-                    if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
-                        MemoryManipulation("moonjump", moonjumpValue);
-                    }
-                    ImGui::SameLine();
-                    ShowHelpMarker("We recommend value 1.00");
-                }
-                ImGui::EndDisabled();
-                if (!featureMoonjump) {
-                    ImGui::SameLine();
-                    ShowLicenseMarker();
-                }
-
-                ImGui::BeginDisabled(!featureMoonwalk);
-                if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                    if (optionMoonwalk) {
-                        float newValue = 9.219422856E-41f;
-                        MemoryManipulation("moonwalk", newValue);
-                        MemoryManipulation("moonwalk", newValue);
-                        std::thread(UncheckMoonwalkAfterDelay, std::ref(optionMoonwalk)).detach();
-                    }
-                }
-
-                ImGui::EndDisabled();
-                if (!featureMoonwalk) {
-                    ImGui::SameLine();
-                    ShowLicenseMarker();
-                }
-
-                ImGui::BeginDisabled(!featureFakelag);
-                if (ImGui::Checkbox("Fakelag", &optionFakelag)) {
-                    if (optionFakelag) {
-                        float newValue = 0.0f;
-                        MemoryManipulation("fakelag", newValue);
-                        MemoryManipulation("fakelagg", newValue);
-                        std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
-                    }
-                }
-
-                ImGui::EndDisabled();
-                if (!featureFakelag) {
-                    ImGui::SameLine();
-                    ShowLicenseMarker();
-                }
-
-                if (isAdmin) {
-                        ImGui::Spacing();
-                        ImGui::Separator();
-                        ImGui::Spacing();
-                        ImGui::Text("Admin Options:");
-                        ImGui::Spacing();
-                        static float fastflyValue = 250.0f; // Default moonjump value
-                        static bool prevflyState = false; // Track previous state of the checkbox
-                        ImGui::BeginDisabled(!featureFastfly);
-                        if (ImGui::Checkbox("FastFly", &optionFastFly)) {
-                            if (optionFastFly) {
-                                prevflyState = true;
-                            } else if (prevflyState) {
-                                // Reset fly value to 4.8f when checkbox is unchecked
-                                fastflyValue = 4.8f;
-                                MemoryManipulation("fastfly", fastflyValue);
-                                prevflyState = false;
-                            }
-                        }
-                        ImGui::EndDisabled();
-                        if (optionFastFly) {
-                            ImGui::SameLine();
-                            if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
-                                MemoryManipulation("fastfly", fastflyValue);
-                            }
-                        }
-                        ImGui::SameLine();
-                        if (!featureFastfly) {
-                            ImGui::SameLine();
-                            ShowLicenseMarker();
-                        }
-                    }
+                ShowMovementWindow(show_movement_window);
                     
             } else if (show_player_window) {
 
-                if (IsProcessOpen("ROClientGame.exe")) {
-
-                    std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
-                    if (values.size() == 3) {
-                        ImGui::Text("Position - X: %.2f, Y: %.2f, Z: %.2f", values[0], values[1], values[2]);
-                    } else {
-                        ImGui::Text("Failed to read position values.");
-                    }
-                }
+                ShowPlayerWindow(show_player_window);
       
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
@@ -734,30 +530,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             Sleep(200);
         }
         if (show_chat_window) {
-            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            // Log display box at the bottom
-            ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (const auto& msg : g_chatMessages) {
-                ImGui::TextWrapped("%s", msg.c_str());
-            }
-            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-            }
-
-            ImGui::EndChild();
-
-            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-
-            ImGui::SameLine();
-            
-            if (ImGui::Button("Send Message") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
-                if (strlen(chatInput) > 0) {
-                    SendChatMessage(chatInput);
-                    chatInput[0] = '\0'; // Clear input field
-                }
-            }
-            ImGui::End();
+            ShowChatWindow(show_chat_window);
         }
         // Rendering
         ImGui::EndFrame();
