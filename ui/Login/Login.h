@@ -5,4 +5,4 @@
 #include <thread>
 #include <chrono>
 
-void ShowLoginWindow(bool& show_login_window, bool& show_loading_screen, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor);
+void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor);
