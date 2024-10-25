@@ -966,12 +966,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Separator();
                     ImGui::Spacing();
 
+                    LoadRegnumAccounts();
+
                     static int selectedAccount = -1;
-                    const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
-                    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
-                        for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
+                    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
+                        for (int i = 0; i < regnumAccounts.size(); i++) {
                             bool isSelected = (selectedAccount == i);
-                            if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
+                            if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
                                 selectedAccount = i;
                             }
                         }
@@ -980,7 +981,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::SameLine();
                     if (ImGui::Button("Play")) {
-                        runRoClientGame(regnumLoginUser, regnumLoginPassword);
+                        if (selectedAccount != -1) {
+                            const auto& account = regnumAccounts[selectedAccount];
+                            runRoClientGame(account.username, account.password);
+                        }
                     }
 
                     ImGui::Spacing();
