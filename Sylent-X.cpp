@@ -23,6 +23,7 @@
 #include "ui/login/register/RegisterWindow.cpp"
 #include "ui/RegnumStarter/RegnumStarter.cpp"
 #include "ui/Feedback/Feedback.cpp"
+#include "ui/License/License.cpp"
 #include "ui/WindowStates.h"
 
 
@@ -462,24 +463,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ShowFeedbackWindow(show_feedback_window);
 
             } else if (show_license_window) {
-                    static char licenseKey[128] = "";
-
-                    // Display the input text field for the license key
-                    ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
-
-                    // Display the submit button
-                    if (ImGui::Button("Submit")) {
-                        try {
-                            ActivateLicense(licenseKey);
-                            ImGui::Text("License activated successfully!");
-                        } catch (const std::exception& e) {
-                            Log("Failed to activate license: " + std::string(e.what()));
-                            ImGui::Text("Failed to activate license: %s", e.what());
-                        }
-                    }
-                    ImGui::Separator();
-                    // License information from license_runtime_end and license_features
-                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
+                ShowLicenseWindow(show_license_window);
             } else if (show_info_window) {
                     ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
                     ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
