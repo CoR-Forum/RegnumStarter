@@ -19,7 +19,13 @@ void ShowRegisterWindow(bool& show_register_window, bool& show_login_window, boo
     ImGui::TextEx("Register a new account");
 
     ImGui::InputTextWithHint("##Username", "Username", regUsername, IM_ARRAYSIZE(regUsername));
+    ImGui::SameLine();
+    ShowHelpMarker("Your username is only used for logging in and is only visible to you.");
+
     ImGui::InputTextWithHint("##Nickname", "Nickname", regNickname, IM_ARRAYSIZE(regNickname));
+    ImGui::SameLine();
+    ShowHelpMarker("Your nickname is visible to other users in chat.");
+
     ImGui::InputTextWithHint("##Password", "Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
     ImGui::InputTextWithHint("##Email", "E-Mail Address", regEmail, IM_ARRAYSIZE(regEmail));
 
