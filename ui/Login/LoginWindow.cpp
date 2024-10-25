@@ -1,4 +1,4 @@
-#include "Login.h"
+#include "LoginWindow.h"
 #include "../WindowStates.h" // Include the header file where the window state variables are declared
 #include "../../libs/ImageLoader/ImageLoader.h" // Include the ImageLoader header
 

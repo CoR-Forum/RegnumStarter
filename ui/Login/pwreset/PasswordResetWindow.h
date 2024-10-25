@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../helper/Markers/HelpMarker.h"
+
 #ifndef PASSWORD_RESET_WINDOW_H
 #define PASSWORD_RESET_WINDOW_H
 
