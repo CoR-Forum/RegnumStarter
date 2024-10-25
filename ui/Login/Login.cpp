@@ -1,5 +1,6 @@
 #include "Login.h"
 #include "../WindowStates.h" // Include the header file where the window state variables are declared
+#include "../../libs/ImageLoader/ImageLoader.h" // Include the ImageLoader header
 
 void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor) {
     static bool settingsWindowIsOpen = true;
@@ -13,9 +14,20 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static char username[128] = "";
     static char password[128] = "";
 
+    // Load the texture
+    static LPDIRECT3DTEXTURE9 logoTexture = nullptr;
+    if (!logoTexture) {
+        logoTexture = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_LOGO); // Assuming you have a resource ID for the logo
+    }
+
+    // Display the texture at the top
+    if (logoTexture) {
+        ImGui::Image((void*)logoTexture, ImVec2(300, 50)); // Adjust the size as needed
+    }
+
     ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
     ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
-    
+
     if (ImGui::Button("Login")) {
         statusMessage = "Logging in...";
         loginSuccess = false;
