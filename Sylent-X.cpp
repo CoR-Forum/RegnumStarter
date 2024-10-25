@@ -297,40 +297,40 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(startX);
                 ImGui::SetCursorPosY(startY);
                 if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
-                    show_Movement_window = false;
-                    show_settings_content = false;
+                    show_movement_window = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_Player_window = false;
-                    show_View_window = true;
+                    show_RegnumStarter = false;
+                    show_player_window = false;
+                    show_view_window = true;
                 }
 
                 ImGui::SameLine();
                 ImGui::SetCursorPosY(startY);
                 if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
-                    show_View_window = false;
-                    show_settings_content = false;
+                    show_view_window = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_Player_window = false;
-                    show_Movement_window = true;
+                    show_RegnumStarter = false;
+                    show_player_window = false;
+                    show_movement_window = true;
                 }
 
                 ImGui::SameLine();
                 ImGui::SetCursorPosY(startY);
                 if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
-                    show_Movement_window = false;
-                    show_settings_content = false;
+                    show_movement_window = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_View_window = false;
-                    show_Player_window = true;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_player_window = true;
                 }
 
                 ImGui::EndChild();
@@ -356,14 +356,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
-                    show_settings_content = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                 }
 
                 if (isAdmin) {
@@ -384,38 +384,38 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
-                    show_settings_content = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     LoadRegnumAccounts();
-                    show_Regnumstarter = true;
+                    show_RegnumStarter = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
-                    show_settings_content = false;
+                    show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     show_feedback_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
-                    show_settings_content = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     show_license_window = true;
                 }
 
@@ -424,22 +424,22 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_Regnumstarter = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
-                    show_settings_content = true;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_settings_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
-                    show_settings_content = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
-                    show_Regnumstarter = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     show_info_window = true;
                 }
 
@@ -455,7 +455,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 // Main content area
                 ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
 
-                if (show_settings_content) {
+                if (show_settings_window) {
                     ImGui::Text("Appearance Settings");
 
                     ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
@@ -543,7 +543,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
                     ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
                     
-            } else if (show_View_window) {
+            } else if (show_view_window) {
                 static float zoomValue = 15.0f; // Default zoom value
                 static bool prevZoomState = false; // Track previous state of the checkbox
 
@@ -602,7 +602,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SameLine();
                     ShowLicenseMarker();
                 }  
-            } else if (show_Movement_window) {
+            } else if (show_movement_window) {
 
                 ImGui::BeginDisabled(!featureSpeedhack);
                 if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
@@ -722,7 +722,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         }
                     }
                     
-            } else if (show_Player_window) {
+            } else if (show_player_window) {
 
                 if (IsProcessOpen("ROClientGame.exe")) {
 
@@ -734,7 +734,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                 }
       
-            } else if (show_Regnumstarter) {
+            } else if (show_RegnumStarter) {
 
                     // large info that indiciates that those settings are not working yet
                     ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
