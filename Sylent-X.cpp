@@ -478,6 +478,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_View_window = false;
                     show_Movement_window = false;
                     show_Player_window = false;
+                    LoadRegnumAccounts();
                     show_Regnumstarter = true;
                 }
 
@@ -967,8 +968,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::Spacing();
                     ImGui::Separator();
                     ImGui::Spacing();
-
-                    LoadRegnumAccounts();
 
                     static int selectedAccount = -1;
                     if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
