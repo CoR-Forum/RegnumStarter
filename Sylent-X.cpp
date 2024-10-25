@@ -19,6 +19,7 @@
 #include "ui/admin/AdminPanel.cpp"
 #include "ui/ForgotPasswordWindow.cpp"
 #include "ui/PasswordResetWindow.cpp"
+#include "ui/Rainbow/UpdateRainbowColor.cpp"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -327,11 +328,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                 ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
 
+                if (setting_enableRainbow) {
+                    UpdateRainbowColor(setting_rainbowSpeed);
+                }
+
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
                     SaveSettings();
                     PostQuitMessage(0);
                 }
+
                 ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
                 ImGui::Text("Status: %s", sylentx_status.c_str());
                 ImGui::SameLine();
@@ -536,6 +542,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 if (show_settings_content) {
                     ImGui::Text("Appearance Settings");
+
+                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
+                    ImGui::SameLine();
+                    ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
 
                     ImGui::ShowColorWheel(textColor);
 
