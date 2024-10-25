@@ -26,6 +26,7 @@
 #include "ui/License/License.cpp"
 #include "ui/Movement/Movement.cpp"
 #include "ui/Credits/Credits.cpp"
+#include "ui/Player/Player.cpp"
 #include "ui/WindowStates.h"
 
 
@@ -53,7 +54,6 @@ int userDefinedHotkey = 0;
 bool waitingForHotkey = false;
 
 std::vector<Pointer> pointers;
-std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
@@ -535,15 +535,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     
             } else if (show_player_window) {
 
-                if (IsProcessOpen("ROClientGame.exe")) {
-
-                    std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
-                    if (values.size() == 3) {
-                        ImGui::Text("Position - X: %.2f, Y: %.2f, Z: %.2f", values[0], values[1], values[2]);
-                    } else {
-                        ImGui::Text("Failed to read position values.");
-                    }
-                }
+                ShowPlayerWindow(show_player_window);
       
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
