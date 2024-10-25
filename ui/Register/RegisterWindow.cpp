@@ -15,9 +15,11 @@ void ShowRegisterWindow(bool& show_register_window, bool& show_login_window, boo
     static char regPassword[128] = "";
     static char regEmail[128] = "";
 
-    ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
-    ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
-    ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
+    ImGui::TextEx("Register a new account");
+
+    ImGui::InputTextWithHint("##Username", "Username", regUsername, IM_ARRAYSIZE(regUsername));
+    ImGui::InputTextWithHint("##Password", "Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
+    ImGui::InputTextWithHint("##Email", "E-Mail Address", regEmail, IM_ARRAYSIZE(regEmail));
 
     if (ImGui::Button("Register")) {
         RegisterUser(regUsername, regEmail, regPassword);
@@ -25,11 +27,14 @@ void ShowRegisterWindow(bool& show_register_window, bool& show_login_window, boo
         show_login_window = true;
     }
 
+    ImGui::Separator();
+
     if (ImGui::Button("Back to Login")) {
         show_register_window = false;
         show_login_window = true;
     }
 
+    ImGui::SameLine();
     if (ImGui::Button("Exit")) {
         done = true;
     }
