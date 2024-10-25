@@ -47,8 +47,6 @@ bool loginSuccess = false;
 int userDefinedHotkey = 0;
 bool waitingForHotkey = false;
 
-LPDIRECT3DTEXTURE9 myTexture = nullptr;
-
 std::vector<Pointer> pointers;
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
@@ -132,12 +130,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         return 1;
     }
 
-
-    myTexture = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_ICON);
-    if (!myTexture) {
-        MessageBox(NULL, "Failed to load texture", "Error", MB_ICONERROR | MB_OK);
-        return 1;
-    }
+    LPDIRECT3DTEXTURE9 texture_sylent_icon = nullptr;
+    texture_sylent_icon = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_ICON);
 
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
@@ -258,7 +252,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 
                 // Create a child window for the texture
                 ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
-                if (myTexture) {
+                if (texture_sylent_icon) {
                     // Calculate the available space
                     ImVec2 availableSpace = ImGui::GetContentRegionAvail();
                     ImVec2 imageSize = ImVec2(70, 60); // Adjust the size as needed
@@ -271,7 +265,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding.y);
 
                     // Draw the image
-                    ImGui::Image((void*)myTexture, imageSize);
+                    ImGui::Image((void*)texture_sylent_icon, imageSize);
                 } else {
                     ImGui::Text("Texture is null");
                 }
@@ -1011,9 +1005,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
-    if (myTexture) {
-        myTexture->Release();
-        myTexture = nullptr;
+    if (texture_sylent_icon) {
+        texture_sylent_icon->Release();
+        texture_sylent_icon = nullptr;
     }
 
     CleanupDeviceD3D();
