@@ -391,6 +391,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_Regnumstarter = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                     show_View_window = true;
                 }
 
@@ -404,6 +405,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_Regnumstarter = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                     show_Movement_window = true;
                 }
 
@@ -417,6 +419,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_Regnumstarter = false;
                     show_View_window = false;
+                    show_Skilltrainer_window = false;
                     show_Player_window = true;
                 }
 
@@ -451,6 +454,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_View_window = false;
                     show_Movement_window = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                 }
 
                 if (isAdmin) {
@@ -478,8 +482,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_View_window = false;
                     show_Movement_window = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                     LoadRegnumAccounts();
                     show_Regnumstarter = true;
+                }
+                if (ImGui::Button("Skilltrainer", buttonSize)) {
+                    show_settings_content = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_View_window = false;
+                    show_Movement_window = false;
+                    show_Player_window = false;
+                    show_Regnumstarter = false;
+                    show_Skilltrainer_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
@@ -491,6 +507,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_View_window = false;
                     show_Movement_window = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                     show_feedback_window = true;
                 }
 
@@ -503,6 +520,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_View_window = false;
                     show_Movement_window = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                     show_license_window = true;
                 }
 
@@ -515,6 +533,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_View_window = false;
                     show_Movement_window = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                     show_settings_content = true;
                 }
 
@@ -527,6 +546,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_View_window = false;
                     show_Movement_window = false;
                     show_Player_window = false;
+                    show_Skilltrainer_window = false;
                     show_info_window = true;
                 }
 
@@ -1009,6 +1029,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         // Implement the logic to save the settings
                     }
 
+            } else if (show_Skilltrainer_window) {
+                    ImGui::Text("Skilltrainer content here soon");
+                    
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
