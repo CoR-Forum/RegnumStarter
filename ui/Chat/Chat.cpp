@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "../../libs/imgui/imgui.h"
 #include "../../ui/WindowStates.h"
+#include "../../includes/API/ApiHandler.h"
 #include <vector>
 #include <string>
 
