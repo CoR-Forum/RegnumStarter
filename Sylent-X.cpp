@@ -25,6 +25,7 @@
 #include "ui/Feedback/Feedback.cpp"
 #include "ui/License/License.cpp"
 #include "ui/Movement/Movement.cpp"
+#include "ui/Credits/Credits.cpp"
 #include "ui/WindowStates.h"
 
 
@@ -465,12 +466,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
+
             } else if (show_info_window) {
-                    ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
-                    ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
-                    ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-                    ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
-                    
+                ShowCreditsWindow(show_info_window);  
+
             } else if (show_view_window) {
                 static float zoomValue = 15.0f; // Default zoom value
                 static bool prevZoomState = false; // Track previous state of the checkbox
