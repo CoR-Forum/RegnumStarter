@@ -16,10 +16,10 @@
 #include "includes/chrono/chrono.cpp"
 #include "includes/streamproof/streamproof.cpp"
 #include "ui/admin/AdminPanel.cpp"
-#include "ui/pwreset/ForgotPasswordWindow.cpp"
-#include "ui/pwreset/PasswordResetWindow.cpp"
+#include "ui/login/pwreset/ForgotPasswordWindow.cpp"
+#include "ui/login/pwreset/PasswordResetWindow.cpp"
 #include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
-#include "ui/Login/LoginWindow.cpp"
+#include "ui/login/LoginWindow.cpp"
 #include "ui/Register/RegisterWindow.cpp"
 #include "ui/WindowStates.h"
 
