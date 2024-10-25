@@ -515,7 +515,7 @@ void SendChatMessage(const std::string& message) {
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
                 std::string createdAt = msg["created_at"];
-                std::string user = msg["username"];
+                std::string user = msg["nickname"];
                 std::string msgText = msg["message"];
                 std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
@@ -556,7 +556,7 @@ void CheckChatMessages() {
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
                     std::string createdAt = msg["created_at"];
-                    std::string user = msg["username"];
+                    std::string user = msg["nickname"];
                     std::string msgText = msg["message"];
                     std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
