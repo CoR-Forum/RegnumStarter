@@ -14,3 +14,4 @@ bool show_View_window = false;
 bool show_Movement_window = false;
 bool show_Player_window = false;
 bool show_loading_screen = false;
+bool show_Skilltrainer_window = false;
