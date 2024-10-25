@@ -1,4 +1,4 @@
-#include "Credits.h"
+#include "CreditsWindow.h"
 
 void ShowCreditsWindow(bool& show_info_window) {
     if (show_info_window) {

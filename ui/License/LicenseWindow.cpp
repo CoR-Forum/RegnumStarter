@@ -1,4 +1,4 @@
-#include "License.h"
+#include "LicenseWindow.h"
 #include "../../libs/imgui/imgui.h"
 #include "../../includes/API/ApiHandler.h"
 #include "../../includes/API/ApiHandler.h"

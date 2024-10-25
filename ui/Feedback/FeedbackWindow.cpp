@@ -1,4 +1,4 @@
-#include "Feedback.h"
+#include "FeedbackWindow.h"
 #include "../../libs/imgui/imgui.h"
 #include "../../includes/API/ApiHandler.h"
 #include <string>

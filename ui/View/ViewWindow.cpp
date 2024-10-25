@@ -1,4 +1,4 @@
-#include "View.h"
+#include "ViewWindow.h"
 #include "../../includes/Utils.h" // Assuming MemoryManipulation is declared here
 #include "../../ui/helper/Markers/LicenseMarker.h"
 
