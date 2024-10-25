@@ -28,6 +28,7 @@
 #include "ui/Credits/Credits.cpp"
 #include "ui/Player/Player.cpp"
 #include "ui/View/View.cpp"
+#include "ui/Chat/Chat.cpp"
 #include "ui/WindowStates.h"
 
 
@@ -42,6 +43,7 @@ static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static bool show_license_window = false;
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
+extern bool show_chat_window;
 bool fovToggled = false; // Initialize the FOV state
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -517,30 +519,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             Sleep(200);
         }
         if (show_chat_window) {
-            ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            // Log display box at the bottom
-            ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-            for (const auto& msg : g_chatMessages) {
-                ImGui::TextWrapped("%s", msg.c_str());
-            }
-            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-            }
-
-            ImGui::EndChild();
-
-            ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-
-            ImGui::SameLine();
-            
-            if (ImGui::Button("Send Message") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
-                if (strlen(chatInput) > 0) {
-                    SendChatMessage(chatInput);
-                    chatInput[0] = '\0'; // Clear input field
-                }
-            }
-            ImGui::End();
+            ShowChatWindow(show_chat_window);
         }
         // Rendering
         ImGui::EndFrame();
