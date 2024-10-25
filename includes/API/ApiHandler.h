@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <regex>
+#include "../md5/md5.h"
 
 extern HWND hwnd;
 

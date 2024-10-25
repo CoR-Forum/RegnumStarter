@@ -304,6 +304,12 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
     }
 }
 
+
+// Function to generate MD5 hash of a given string using header-only MD5 library
+std::string GenerateMD5(const std::string& input) {
+    return md5(input);
+}
+
 // Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
@@ -317,12 +323,14 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
 
     bool accountUpdated = false;
 
+    std::string hashedPassword = GenerateMD5(password);
+
     if (id != -1) {
         // Try to find and update the existing account with the given ID
         for (auto& account : accountsJson) {
             if (account["id"].get<int>() == id) {
                 account["username"] = username;
-                account["password"] = password;
+                account["password"] = hashedPassword;
                 account["server"] = server;
                 account["referrer"] = referrer;
                 accountUpdated = true;
@@ -341,7 +349,7 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
         nlohmann::json newAccount;
         newAccount["id"] = newId;
         newAccount["username"] = username;
-        newAccount["password"] = password;
+        newAccount["password"] = hashedPassword;
         newAccount["server"] = server;
         newAccount["referrer"] = referrer;
         accountsJson.push_back(newAccount);
