@@ -19,7 +19,7 @@
 #include "ui/pwreset/ForgotPasswordWindow.cpp"
 #include "ui/pwreset/PasswordResetWindow.cpp"
 #include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
-#include "ui/Login/Login.cpp"
+#include "ui/Login/LoginWindow.cpp"
 #include "ui/Register/RegisterWindow.cpp"
 #include "ui/WindowStates.h"
 
