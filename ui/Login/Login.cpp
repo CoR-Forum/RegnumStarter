@@ -46,13 +46,6 @@ void ShowLoginWindow(bool& show_login_window, bool& show_loading_screen, std::st
 
         loginThread.detach();
     }
-
-    if (loginSuccess) {
-        ImGui::Text("Login successful");
-    } else {
-        ImGui::Text("Login failed");
-    }
-
     if (ImGui::Button("Register")) {
         show_login_window = false;
         show_register_window = true;
