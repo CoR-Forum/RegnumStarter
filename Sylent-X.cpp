@@ -20,7 +20,7 @@
 #include "ui/pwreset/PasswordResetWindow.cpp"
 #include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
 #include "ui/Login/Login.cpp"
-#include "ui/Register/Register.cpp"
+#include "ui/Register/RegisterWindow.cpp"
 #include "ui/WindowStates.h"
 
 #pragma comment(lib, "wininet.lib")

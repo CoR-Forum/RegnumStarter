@@ -1,4 +1,4 @@
-#include "Register.h"
+#include "RegisterWindow.h"
 #include "../../includes/API/ApiHandler.h"
 #include "../../ui/WindowStates.h"
 
