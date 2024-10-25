@@ -53,7 +53,7 @@ struct Pointer {
 extern std::vector<Pointer> InitializePointers(); // Updated declaration
 
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
-extern void RegisterUser(const std::string& username, const std::string& email, const std::string& password);
+extern void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
 extern void LoadLoginCredentials(HINSTANCE hInstance);
 extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 extern void SendChatMessage(const std::string& login, const std::string& password, const std::string& message);

@@ -474,11 +474,11 @@ std::vector<Pointer> InitializePointers() {
     return pointers;
 }
 
-void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
+void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password) {
     try {
         HINTERNET hSession = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hSession);
-        std::string path = "/user.php?action=register&username=" + username + "&email=" + email + "&password=" + password;
+        std::string path = "/user.php?action=register&username=" + username + + "&nickname=" + nickname + "&email=" + email + "&password=" + password;
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
