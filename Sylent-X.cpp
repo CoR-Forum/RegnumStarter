@@ -289,21 +289,39 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(startX);
                 ImGui::SetCursorPosY(startY);
                 if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
-                    show_movement_window = show_settings_window = show_feedback_window = show_license_window = show_info_window = show_RegnumStarter = show_player_window = false;
+                    show_movement_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_player_window = false;
                     show_view_window = true;
                 }
 
                 ImGui::SameLine();
                 ImGui::SetCursorPosY(startY);
                 if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
-                    show_view_window = show_settings_window = show_feedback_window = show_license_window = show_info_window = show_RegnumStarter = show_player_window = false;
+                    show_view_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_player_window = false;
                     show_movement_window = true;
                 }
 
                 ImGui::SameLine();
                 ImGui::SetCursorPosY(startY);
                 if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
-                    show_movement_window = show_settings_window = show_feedback_window = show_license_window = show_info_window = show_RegnumStarter = show_view_window = false;
+                    show_movement_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
                     show_player_window = true;
                 }
 
@@ -329,8 +347,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 float buttonPadding = (childWidth - buttonSize.x) / 2.0f;
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) 
-                    show_settings_window = show_feedback_window = show_license_window = show_info_window = show_RegnumStarter = show_view_window = show_movement_window = show_player_window = false;
+                if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                }
 
                 if (isAdmin) {
                     ImGui::SetCursorPosX(buttonPadding);
@@ -350,32 +376,62 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
-                    show_settings_window = show_feedback_window = show_license_window = show_info_window = show_view_window = show_movement_window = show_player_window = false;
-                    LoadRegnumAccounts(); 
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    LoadRegnumAccounts();
                     show_RegnumStarter = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
-                    show_settings_window = show_license_window = show_info_window = show_RegnumStarter = show_view_window = show_movement_window = show_player_window = false;
+                    show_settings_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     show_feedback_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
-                    show_settings_window = show_feedback_window = show_info_window = show_RegnumStarter = show_view_window = show_movement_window = show_player_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     show_license_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COG " Settings", buttonSize)) {
-                    show_feedback_window = show_license_window = show_info_window = show_RegnumStarter = show_view_window = show_movement_window = show_player_window = false;
+                if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     show_settings_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
-                    show_settings_window = show_feedback_window = show_license_window = show_RegnumStarter = show_view_window = show_movement_window = show_player_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
                     show_info_window = true;
                 }
 
