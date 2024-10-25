@@ -16,9 +16,9 @@
 #include "includes/chrono/chrono.cpp"
 #include "includes/streamproof/streamproof.cpp"
 #include "ui/admin/AdminPanel.cpp"
-#include "ui/ForgotPasswordWindow.cpp"
-#include "ui/PasswordResetWindow.cpp"
-#include "ui/Rainbow/UpdateRainbowColor.cpp"
+#include "ui/pwreset/ForgotPasswordWindow.cpp"
+#include "ui/pwreset/PasswordResetWindow.cpp"
+#include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
 #include "ui/Login/Login.cpp"
 #include "ui/Register/Register.cpp"
 
