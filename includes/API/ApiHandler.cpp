@@ -21,7 +21,7 @@ bool Login(const std::string& login, const std::string& password) {
                 LogDebug("User " + login + " logged in successfully");
 
                 sylentx_status = jsonResponse["system_status"];
-                Log("Sylen-X Status: " + sylentx_status);
+                LogDebug("Sylen-X Status: " + sylentx_status);
 
                 sylentx_status = sylentx_status;
 

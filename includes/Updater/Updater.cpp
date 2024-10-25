@@ -20,7 +20,8 @@ void SelfUpdate() {
     }
 
     if (latestVersion <= currentVersion) {
-        Log("No new update available. Server returned version: " + latestVersion);
+        Log("No new update available.");
+        LogDebug("Server returned version: " + latestVersion + " - Current version: " + currentVersion);
         return;
     }
 
