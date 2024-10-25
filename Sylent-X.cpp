@@ -16,9 +16,9 @@
 #include "includes/chrono/chrono.cpp"
 #include "includes/streamproof/streamproof.cpp"
 #include "ui/admin/AdminPanel.cpp"
-#include "ui/ForgotPasswordWindow.cpp"
-#include "ui/PasswordResetWindow.cpp"
-#include "ui/Rainbow/UpdateRainbowColor.cpp"
+#include "ui/pwreset/ForgotPasswordWindow.cpp"
+#include "ui/pwreset/PasswordResetWindow.cpp"
+#include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
 #include "ui/Login/Login.cpp"
 #include "ui/Register/Register.cpp"
 #include "ui/WindowStates.h"
@@ -104,11 +104,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     SelfUpdate();
     LoadLoginCredentials(hInstanceGlobal);
-    LoadSettings();
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
         Log("Auto-login successful");
+        LoadSettings();
         show_login_window = false;
         show_main_window = true;
     } else {
