@@ -59,7 +59,9 @@ void DisplayUsersTable() {
         ImGui::TableNextColumn();
         ImGui::Text("%d", user.value("id", 0));
         ImGui::TableNextColumn();
-        ImGui::Text("%s", user.value("username", "N/A").c_str());
+        std::string username = user.value("username", "N/A");
+        std::string nickname = user.value("nickname", "N/A");
+        ImGui::Text("%s (%s)", username.c_str(), nickname.c_str());
         ImGui::TableNextColumn();
         ImGui::Text("%s", user.value("email", "N/A").c_str());
         ImGui::TableNextColumn();
