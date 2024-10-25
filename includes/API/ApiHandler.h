@@ -33,6 +33,7 @@ bool featureFreecam;
 bool featureFastfly;
 bool featureFakelag;
 
+
 // global variables for (checkbox) options
 bool optionGravity = false;
 bool optionMoonjump = false;
@@ -46,6 +47,8 @@ bool optionFakelag = false;
 
 // global variables for settings (from user account via API)
 float setting_fontSize = 14.0f;
+bool setting_enableRainbow = false;
+float setting_rainbowSpeed = 0.1f;
 bool setting_excludeFromCapture = false;
 std::string setting_regnumInstallPath;
 bool setting_log_debug = true;
