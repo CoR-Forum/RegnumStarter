@@ -22,11 +22,13 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     // Display the texture at the top
     if (logoTexture) {
-        ImGui::Image((void*)logoTexture, ImVec2(300, 50)); // Adjust the size as needed
+        ImGui::Image((void*)logoTexture, ImVec2(231, 38.5)); // Adjust the size as needed
     }
 
-    ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
-    ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
+    ImGui::Spacing();
+
+    ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username));
+    ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
     if (ImGui::Button("Login")) {
         statusMessage = "Logging in...";
@@ -51,12 +53,15 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
         loginThread.detach();
     }
+
+    ImGui::Separator();
     
     if (ImGui::Button("Register")) {
         show_login_window = false;
         show_register_window = true;
     }
 
+    ImGui::SameLine();
     if (ImGui::Button("Forgot Password")) {
         show_login_window = false;
         show_forgot_password_window = true;
