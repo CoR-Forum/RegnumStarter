@@ -21,6 +21,7 @@
 #include "ui/Rainbow/UpdateRainbowColor.cpp"
 #include "ui/Login/Login.cpp"
 #include "ui/Register/Register.cpp"
+#include "ui/WindowStates.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -36,8 +37,6 @@ static bool ctrlKeyPressed = false;
 bool fovToggled = false; // Initialize the FOV state
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-#include "ui/WindowStates.h"
 
 bool g_ShowUI = true;
 std::string statusMessage = "";
