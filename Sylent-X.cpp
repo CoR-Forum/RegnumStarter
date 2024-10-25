@@ -133,7 +133,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
 
-    myTexture = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT);
+    myTexture = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_ICON);
     if (!myTexture) {
         MessageBox(NULL, "Failed to load texture", "Error", MB_ICONERROR | MB_OK);
         return 1;
