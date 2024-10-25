@@ -31,6 +31,7 @@ static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static bool show_license_window = false;
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
+bool fovToggled = false; // Initialize the FOV state
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -1031,7 +1032,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
         // PoV toggle logic
         if (optionFov && userDefinedHotkey != 0 && IsHotkeyPressed(userDefinedHotkey)) {
-            bool fovToggled = false; // Initialize the FOV state
             fovToggled = !fovToggled; // Toggle the FOV state
             float newValue = fovToggled ? 0.02999999933f : 0.01745329238f; // Set the new FOV value
             MemoryManipulation("fov", newValue); // Apply the new FOV value
