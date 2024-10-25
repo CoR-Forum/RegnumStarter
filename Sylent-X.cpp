@@ -11,7 +11,7 @@
 #include "libs/ImageLoader/FontAwesomeIcons.h"
 #include "ui/helper/Markers/HelpMarker.cpp"
 #include "ui/helper/Markers/LicenseMarker.cpp"
-#include <filesystem> // C++17 or later
+#include <filesystem>
 #include "includes/process/process.cpp"
 #include "includes/chrono/chrono.cpp"
 #include "includes/streamproof/streamproof.cpp"
@@ -52,7 +52,6 @@ bool g_ShowUI = true;
 std::string statusMessage = "";
 bool loginSuccess = false;
 
-// Define a variable to store the user-defined hotkey
 int userDefinedHotkey = 0;
 bool waitingForHotkey = false;
 
@@ -421,26 +420,38 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
 
                 if (show_settings_window) {
-                    ImGui::Text("Appearance Settings");
 
-                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
-                    ImGui::SameLine();
-                    ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
-
-                    ImGui::ShowColorWheel(textColor);
-
-                    ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
+                    if (ImGui::Button("Save Settings")) {
+                        SaveSettings();
+                    }
 
                     ImGui::Separator();
 
-                    ImGui::Text("Advanced Settings");
+                    ImGui::SeparatorText("General");
 
                     if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture)) {
                         SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     }
-
                     ImGui::SameLine();
                     ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
+
+                    ImGui::Separator();
+
+                    ImGui::SeparatorText("Appearance");
+
+                    ImGui::Text("Font Color");
+                    ImGui::ShowColorWheel(textColor);
+                    ImGui::SameLine();
+                    ImGui::Text("Font Size");
+                    ImGui::SameLine();
+                    ImGui::SliderFloat("##Font Size", &setting_fontSize, 0.5f, 2.0f);
+
+                    ImGui::Text("Autism Mode");
+                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
+                    ImGui::SameLine();
+                    ImGui::Text("Speed");
+                    ImGui::SameLine();
+                    ImGui::SliderFloat("##Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
 
                     ImGui::Separator();
 
