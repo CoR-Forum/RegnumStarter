@@ -15,14 +15,14 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static char password[128] = "";
 
     // Load the texture
-    static LPDIRECT3DTEXTURE9 logoTexture = nullptr;
-    if (!logoTexture) {
-        logoTexture = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_LOGO); // Assuming you have a resource ID for the logo
+    static LPDIRECT3DTEXTURE9 texture_sylent_logo = nullptr;
+    if (!texture_sylent_logo) {
+        texture_sylent_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_LOGO); // Assuming you have a resource ID for the logo
     }
 
     // Display the texture at the top
-    if (logoTexture) {
-        ImGui::Image((void*)logoTexture, ImVec2(231, 38.5)); // Adjust the size as needed
+    if (texture_sylent_logo) {
+        ImGui::Image((void*)texture_sylent_logo, ImVec2(231, 38.5)); // Adjust the size as needed
     }
 
     ImGui::Spacing();
