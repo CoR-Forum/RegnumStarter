@@ -7,7 +7,6 @@
 #include "libs/DirectX/DirectXInit.cpp"
 #include "libs/imgui/imgui_impl_dx9.cpp"
 #include "libs/imgui/imgui_impl_win32.cpp"
-#include "ui/loadingscreen/LoadingScreen.cpp"
 #include "libs/ImageLoader/ImageLoader.cpp"
 #include "libs/ImageLoader/FontAwesomeIcons.h"
 #include "ui/helper/Markers/HelpMarker.cpp"
@@ -218,7 +217,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         
         if (g_ShowUI) {
             if (show_login_window) {
-                ShowLoginWindow(show_login_window, show_loading_screen, statusMessage, loginSuccess, show_main_window, textColor);
+                ShowLoginWindow(show_login_window, statusMessage, loginSuccess, show_main_window, textColor);
             }
 
             if (show_register_window) {
@@ -991,11 +990,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
             ImGui::End();
         }
-
-        if (show_loading_screen) {
-            ShowLoadingScreen(show_loading_screen, statusMessage, loginSuccess);
-        }
-
         // Rendering
         ImGui::EndFrame();
         g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
