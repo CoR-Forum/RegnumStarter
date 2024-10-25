@@ -1,7 +1,6 @@
 #include "PasswordResetWindow.h"
 #include "../../libs/imgui/imgui.h"
 #include <windows.h>
-#include "../../helper/Markers/HelpMarker.h"
 
 // Function to handle the Password Reset Window
 void ShowPasswordResetWindow(bool& show_password_reset_window, bool& show_login_window, bool& show_forgot_password_window) {

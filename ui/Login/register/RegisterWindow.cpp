@@ -1,6 +1,6 @@
 #include "RegisterWindow.h"
-#include "../../includes/API/ApiHandler.h"
-#include "../../ui/WindowStates.h"
+#include "../../../includes/API/ApiHandler.h"
+#include "../../../ui/WindowStates.h"
 
 void ShowRegisterWindow(bool& show_register_window, bool& show_login_window, bool& done) {
     static bool registerWindowIsOpen = true;
