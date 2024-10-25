@@ -1,3 +1,5 @@
+#pragma once
+
 bool show_login_window = true;
 bool show_main_window = false;
 bool show_register_window = false;
