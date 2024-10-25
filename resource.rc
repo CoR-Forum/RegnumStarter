@@ -1,13 +1,8 @@
 #include "includes/resource.h"
 
 IDI_APP_ICON ICON "assets/logo/sylent-icon.ico"
-
 IDR_FONT_RUDA_BOLD FONT "assets/fonts/Ruda-Bold.ttf"
-
-// IDR_FONT_TANNENBERG_BOLD FONT "assets/fonts/TannenbergFett.ttf"
-
-IDR_PNG_SYLENT_ICON RCDATA "assets/logo/sylent-icon.png" // Add this line
-
-IDR_PNG_SYLENT_LOGO RCDATA "assets/logo/sylent-logo.png" // Add this line
-
-IDR_FONT_AWESOME FONT "assets/fonts/fa-solid-900.ttf" // Add this line
+IDR_FONT_TANNENBERG_BOLD FONT "assets/fonts/TannenbergFett.ttf"
+IDR_PNG_SYLENT_ICON RCDATA "assets/logo/sylent-icon.png"
+IDR_PNG_SYLENT_LOGO RCDATA "assets/logo/sylent-logo.png"
+IDR_FONT_AWESOME FONT "assets/fonts/fa-solid-900.ttf"
