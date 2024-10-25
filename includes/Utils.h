@@ -51,6 +51,7 @@ struct Pointer {
 };
 
 extern std::vector<Pointer> InitializePointers(); // Updated declaration
+std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 extern void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
