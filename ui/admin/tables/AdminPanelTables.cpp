@@ -1,11 +1,11 @@
 // AdminPanelTables.cpp
-#include "../../libs/imgui/imgui.h"
+#include "../../../libs/imgui/imgui.h"
 #include <string>
 #include <vector>
 #include <sstream>
 #include <iostream>
 #include <ctime>
-#include "../../libs/json.hpp"
+#include "../../../libs/json.hpp"
 #include "../AdminPanel.h"
 
 // Function to join vector elements with a comma
