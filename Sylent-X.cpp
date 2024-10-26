@@ -245,8 +245,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 // Create a child window for the texture
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
-                float buttonWidth = 150.0f; // Assuming each button has a width of 150
-                float buttonHeight = 30.0f; // Assuming each button has a height of 40
+                float buttonWidth = 150.0f;
+                float buttonHeight = 30.0f;
                 float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
 
                 // Calculate total width of all buttons and spacing
@@ -312,7 +312,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(120, 0), true);
 
                 // Calculate the padding to center the buttons
                 float childWidth = ImGui::GetWindowWidth();
@@ -335,7 +335,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (ImGui::Button(ICON_FA_USER_REGULAR " Admin", buttonSize)) {
                         GetAllUsers();
                         GetAllLicenses();
-                        show_admin_window = true; // Show the admin window
+                        show_admin_window = true;
                     }
 
                     ShowAdminPanel(&show_admin_window);
@@ -416,7 +416,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
 
-                // Main content area
                 ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
 
                 if (show_settings_window) {
