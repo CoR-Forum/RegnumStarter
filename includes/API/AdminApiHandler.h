@@ -12,9 +12,9 @@
 extern HWND hwnd;
 
 // Global variables for license key generation
-extern std::string generated_license_key;
-extern std::string GetAllLicensesRawJson;
-extern std::string GetAllUsersRawJson;
+std::string generated_license_key;
+std::string GetAllLicensesRawJson;
+std::string GetAllUsersRawJson;
 
 // Function declarations
 void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
