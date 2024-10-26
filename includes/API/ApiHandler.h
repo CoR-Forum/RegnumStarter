@@ -59,15 +59,6 @@ bool isAdmin = false;
 std::vector<Pointer> g_pointers;
 std::vector<std::string> g_chatMessages;
 
-// global variables for license key generation
-std::string generated_license_key;
-
-std::string GetAllLicensesRawJson;
-std::string GetAllUsersRawJson;
-
-void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue);
-void GetAllLicenses();
-
 // global variables for chat input
 static char chatInput[256] = "";
 
@@ -103,11 +94,6 @@ void SaveLoginCredentials(const std::string& login, const std::string& encrypted
 void ActivateLicense(const std::string& licenseKey);
 void GetMagnatCurrency();
 void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile);
-void DisplayUsersTable();
-void ToggleUserBan(int userId);
-void ToggleUserAdmin(int userId);
-void ToggleUserActivation(int userId);
-void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
 void LoadRegnumAccounts();
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
 void DeleteRegnumAccount(int id);
