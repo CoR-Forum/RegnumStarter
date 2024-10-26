@@ -19,9 +19,9 @@ void SelfUpdate() {
         return;
     }
 
-    if (latestVersion <= currentVersion) {
+    if (latestVersion <= sylentx_version) {
         Log("No new update available.");
-        LogDebug("Server returned version: " + latestVersion + " - Current version: " + currentVersion);
+        LogDebug("Server returned version: " + latestVersion + " - Current version: " + sylentx_version);
         return;
     }
 
