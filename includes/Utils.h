@@ -40,10 +40,6 @@ using json = nlohmann::json;
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
 
-LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM); // Handles messages sent to the main window, such as creating and destroying windows, and custom messages like
-const UINT WM_START_SELF_UPDATE = WM_USER + 1; // Custom message identifier for starting the self-update process
-const UINT WM_ENABLE_CHECKBOXES = WM_USER + 3; // Message Identifier for retrieving message to enable checkboxes
-
 struct Pointer {
     std::string name;
     unsigned long address;
