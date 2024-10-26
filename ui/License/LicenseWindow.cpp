@@ -7,11 +7,13 @@ void ShowLicenseWindow(bool& show_license_window) {
     if (show_license_window) {
         static char licenseKey[128] = "";
 
+        ImGui::Text("Activate a new license key");
+
         // Display the input text field for the license key
-        ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
+        ImGui::InputTextWithHint("##License Key", "License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
 
         // Display the submit button
-        if (ImGui::Button("Submit")) {
+        if (ImGui::Button("Activate License")) {
             try {
                 ActivateLicense(licenseKey);
                 ImGui::Text("License activated successfully!");
