@@ -70,3 +70,11 @@ extern void Log(const std::string& message);
  * @param message The debug message to log.
  */
 extern void LogDebug(const std::string& message);
+
+/**
+ * @brief Fetches data from the given API URL.
+ * 
+ * @param url The URL to fetch data from.
+ * @return The response as a string.
+ */
+std::string FetchDataFromAPI(const std::string& url);

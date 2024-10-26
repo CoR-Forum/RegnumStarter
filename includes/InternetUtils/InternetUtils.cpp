@@ -12,7 +12,7 @@ void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInt
 bool LogAndCloseHandles(const std::string& message, HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
     Log(message);
     CloseInternetHandles(hRequest, hConnect, hInternet);
-    return false;
+    return true;
 }
 
 HINTERNET OpenInternetConnection() {
@@ -44,5 +44,21 @@ std::string ReadResponse(HINTERNET hRequest) {
     while (InternetReadFile(hRequest, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
         response.append(buffer, bytesRead);
     }
+
     return response;
+}
+
+std::string FetchDataFromAPI(const std::string& url) {
+    try {
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
+        if (!hConnect) throw std::runtime_error("Failed to open URL");
+
+        std::string response = ReadResponse(hConnect);
+        CloseInternetHandles(nullptr, hConnect, hInternet);
+        return response;
+    } catch (const std::exception& e) {
+        Log(e.what());
+        return "";
+    }
 }

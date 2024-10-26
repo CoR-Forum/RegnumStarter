@@ -411,21 +411,6 @@ void DeleteRegnumAccount(int id) {
     LoadRegnumAccounts();
 }
 
-std::string FetchDataFromAPI(const std::string& url) {
-    try {
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
-        if (!hConnect) throw std::runtime_error("Failed to open URL");
-
-        std::string response = ReadResponse(hConnect);
-        CloseInternetHandles(nullptr, hConnect, hInternet);
-        return response;
-    } catch (const std::exception& e) {
-        Log(e.what());
-        return "";
-    }
-}
-
 std::vector<Pointer> InitializePointers() {
     std::vector<Pointer> pointers;
     std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
