@@ -57,27 +57,6 @@ uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
 extern void GetAllUsers();
 
-struct RegnumAccount {
-    int id;
-    std::string username;
-    std::string password;
-    std::string server;
-    std::string referrer;
-};
-
-struct ServerOption {
-    const char* id;
-    const char* name;
-};
-
-struct ReferrerOption {
-    const char* id;
-    const char* name;
-};
-
-// global variable to store the loaded regnum accounts
-extern std::vector<RegnumAccount> regnumAccounts;
-
 // Global constants
 const char* appDataPath = getenv("APPDATA");
 const std::string currentVersion = "0.1.66"; // Current version of the application

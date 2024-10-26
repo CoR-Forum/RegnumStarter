@@ -362,8 +362,6 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
     LoadRegnumAccounts();
 }
 
-std::vector<RegnumAccount> regnumAccounts;
-
 // Function to load all Regnum accounts from regnum-accounts.json appdata file
 void LoadRegnumAccounts() {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";

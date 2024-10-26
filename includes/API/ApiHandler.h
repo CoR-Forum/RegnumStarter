@@ -71,6 +71,27 @@ void GetAllLicenses();
 // global variables for chat input
 static char chatInput[256] = "";
 
+struct RegnumAccount {
+    int id;
+    std::string username;
+    std::string password;
+    std::string server;
+    std::string referrer;
+};
+
+struct ServerOption {
+    const char* id;
+    const char* name;
+};
+
+struct ReferrerOption {
+    const char* id;
+    const char* name;
+};
+
+// global variable to store the loaded regnum accounts
+std::vector<RegnumAccount> regnumAccounts;
+
 // global functions for chat
 void SendChatMessage(const std::string& message);
 void CheckChatMessages();
