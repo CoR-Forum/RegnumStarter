@@ -320,7 +320,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             if (show_main_window) {
                 std::string windowTitle = "Sylent-X " + currentVersion;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
-                ImGui::SetNextWindowSize(ImVec2(770, 450), ImGuiCond_FirstUseEver);
+                ImGui::SetNextWindowSize(ImVec2(770, 475), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
