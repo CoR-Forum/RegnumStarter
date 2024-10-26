@@ -50,26 +50,12 @@ struct Pointer {
     std::vector<unsigned long> offsets;
 };
 
-extern std::vector<Pointer> InitializePointers(); // Updated declaration
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
-extern void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
-extern void LoadLoginCredentials(HINSTANCE hInstance);
-extern void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
-extern void SendChatMessage(const std::string& login, const std::string& password, const std::string& message);
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
-extern void CheckChatMessages();
 extern void GetAllUsers();
-extern void DisplayUsersTable();
-extern void ToggleUserBan(int userId);
-extern void ToggleUserAdmin(int userId);
-extern void ToggleUserActivation(int userId);
-extern void GetMagnatCurrency();
-extern void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile);
-extern void ActivateLicense(const std::string& licenseKey);
-extern void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime);
 
 struct RegnumAccount {
     int id;
@@ -78,10 +64,6 @@ struct RegnumAccount {
     std::string server;
     std::string referrer;
 };
-
-extern void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
-extern void LoadRegnumAccounts();
-extern void DeleteRegnumAccount(int id);
 
 struct ServerOption {
     const char* id;

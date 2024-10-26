@@ -90,3 +90,4 @@ void GenerateNewLicense(const std::string& licensedFeatures, const std::string& 
 void LoadRegnumAccounts();
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
 void DeleteRegnumAccount(int id);
+std::vector<Pointer> InitializePointers();
