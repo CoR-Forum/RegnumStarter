@@ -509,7 +509,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
             } else if (show_Skilltrainer_window) {
-               ShowSkilltrainer(&show_Skilltrainer_window);
+                ShowSkilltrainer(show_Skilltrainer_window, g_pd3dDevice);
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
