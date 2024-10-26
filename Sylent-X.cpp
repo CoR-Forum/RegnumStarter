@@ -4,6 +4,7 @@
 #include "includes/API/ApiHandler.cpp"
 #include "includes/API/AdminApiHandler.cpp"
 #include "Style.cpp"
+#include "SkillTrainer/SkillTrainer.cpp"
 #include "libs/DirectX/DirectXInit.cpp"
 #include "libs/imgui/imgui_impl_dx9.cpp"
 #include "libs/imgui/imgui_impl_win32.cpp"
@@ -365,14 +366,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("Skilltrainer", buttonSize)) {
-                    show_settings_content = false;
+                    show_settings_window = false;
                     show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_View_window = false;
-                    show_Movement_window = false;
-                    show_Player_window = false;
-                    show_Regnumstarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_RegnumStarter = false;
                     show_Skilltrainer_window = true;
                 }
 
@@ -508,7 +509,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
             } else if (show_Skilltrainer_window) {
-                    ImGui::Text("Skilltrainer is a tool that allows you to train your skills in Regnum Online.");    
+               ShowSkilltrainer(&show_Skilltrainer_window);
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
