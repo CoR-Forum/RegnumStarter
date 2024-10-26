@@ -30,6 +30,11 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
             case 0:
                 ImGui::Text("1");
                 ImGui::Image((void*)textures[0], ImVec2(32, 32)); 
+                if (ImGui::IsItemHovered()) {
+                    ImGui::BeginTooltip();
+                    ImGui::Text("This is texture 0");
+                    ImGui::EndTooltip();
+                }
                 break;
             case 1:
                 ImGui::Text("2");
