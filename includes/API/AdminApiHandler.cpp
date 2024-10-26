@@ -1,4 +1,4 @@
-#include "ApiHandler.h"
+#include "AdminApiHandler.h"
 
 void ModifyGlobalSettings(const std::string& settingName, const std::string& settingValue) {
     try {

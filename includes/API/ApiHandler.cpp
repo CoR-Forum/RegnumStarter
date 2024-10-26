@@ -21,7 +21,7 @@ bool Login(const std::string& login, const std::string& password) {
                 LogDebug("User " + login + " logged in successfully");
 
                 sylentx_status = jsonResponse["system_status"];
-                Log("Sylen-X Status: " + sylentx_status);
+                LogDebug("Sylen-X Status: " + sylentx_status);
 
                 sylentx_status = sylentx_status;
 
@@ -175,6 +175,8 @@ void SaveSettings() {
         settingsJson["logDebug"] = setting_log_debug;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = setting_fontSize;
+        settingsJson["enableRainbow"] = setting_enableRainbow;
+        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;  
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
         settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
 
@@ -221,6 +223,8 @@ void LoadSettings() {
                 if (jsonResponse.contains("settings") && jsonResponse["settings"].is_object()) {
                     auto settingsJson = jsonResponse["settings"];
                     setting_fontSize = settingsJson.value("fontSize", 1.0f);
+                    setting_enableRainbow = settingsJson.value("enableRainbow", false);
+                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);  
                     setting_log_debug = settingsJson.value("logDebug", false);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "C:\\Games\\NGD Studios\\Champions of Regnum");
@@ -300,6 +304,12 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
     }
 }
 
+
+// Function to generate MD5 hash of a given string using header-only MD5 library
+std::string GenerateMD5(const std::string& input) {
+    return md5(input);
+}
+
 // Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
@@ -313,12 +323,14 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
 
     bool accountUpdated = false;
 
+    std::string hashedPassword = GenerateMD5(password);
+
     if (id != -1) {
         // Try to find and update the existing account with the given ID
         for (auto& account : accountsJson) {
             if (account["id"].get<int>() == id) {
                 account["username"] = username;
-                account["password"] = password;
+                account["password"] = hashedPassword;
                 account["server"] = server;
                 account["referrer"] = referrer;
                 accountUpdated = true;
@@ -337,7 +349,7 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
         nlohmann::json newAccount;
         newAccount["id"] = newId;
         newAccount["username"] = username;
-        newAccount["password"] = password;
+        newAccount["password"] = hashedPassword;
         newAccount["server"] = server;
         newAccount["referrer"] = referrer;
         accountsJson.push_back(newAccount);
@@ -349,8 +361,6 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
 
     LoadRegnumAccounts();
 }
-
-std::vector<RegnumAccount> regnumAccounts;
 
 // Function to load all Regnum accounts from regnum-accounts.json appdata file
 void LoadRegnumAccounts() {
@@ -401,21 +411,6 @@ void DeleteRegnumAccount(int id) {
     LoadRegnumAccounts();
 }
 
-std::string FetchDataFromAPI(const std::string& url) {
-    try {
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
-        if (!hConnect) throw std::runtime_error("Failed to open URL");
-
-        std::string response = ReadResponse(hConnect);
-        CloseInternetHandles(nullptr, hConnect, hInternet);
-        return response;
-    } catch (const std::exception& e) {
-        Log(e.what());
-        return "";
-    }
-}
-
 std::vector<Pointer> InitializePointers() {
     std::vector<Pointer> pointers;
     std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
@@ -462,11 +457,11 @@ std::vector<Pointer> InitializePointers() {
     return pointers;
 }
 
-void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
+void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password) {
     try {
         HINTERNET hSession = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hSession);
-        std::string path = "/user.php?action=register&username=" + username + "&email=" + email + "&password=" + password;
+        std::string path = "/user.php?action=register&username=" + username + + "&nickname=" + nickname + "&email=" + email + "&password=" + password;
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
@@ -503,7 +498,7 @@ void SendChatMessage(const std::string& message) {
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
                 std::string createdAt = msg["created_at"];
-                std::string user = msg["username"];
+                std::string user = msg["nickname"];
                 std::string msgText = msg["message"];
                 std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
@@ -544,7 +539,7 @@ void CheckChatMessages() {
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
                     std::string createdAt = msg["created_at"];
-                    std::string user = msg["username"];
+                    std::string user = msg["nickname"];
                     std::string msgText = msg["message"];
                     std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
