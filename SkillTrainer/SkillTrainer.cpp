@@ -1,20 +1,18 @@
 #include "SkillTrainer.h"
-#include "../libs/imgui/imgui.h"
-#include "../ui/WindowStates.h" // Include the header file where the window state variables are declared
-#include "../libs/ImageLoader/ImageLoader.h"
 #include <map>
+#include "../ui/WindowStates.h"
+#include "../libs/ImageLoader/ImageLoader.h"
 
+void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) {
+    static LPDIRECT3DTEXTURE9 textures[6] = { nullptr };
 
-void ShowSkilltrainer(bool& show_Skilltrainer_window, ImVec4 textColor) {
+    if (textures[0] == nullptr) {
+        textures[0] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Acrobatic);
+    }
+
     if (show_Skilltrainer_window) {
-        
         static const char* items[] = { "Hunter", "Marksman", "Conjurer", "Warlock", "Barbarian", "Knight" };
         static int item_current_idx = 0; 
-        
-        static std::map<int, LPDIRECT3DTEXTURE9> textures;
-        if (textures.empty()) {
-            textures[0] = LoadTextureFromResource(g_pd3dDevice, IDR_Skilltrainer_ClassH_Ensaring_arrow);
-        }
 
         if (ImGui::BeginCombo("Class:", items[item_current_idx])) {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
