@@ -51,12 +51,6 @@ void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
 
             ImGui::Text("Next Spawn in: %d d, %02d h, %02d m, %02d s", days, hours, minutes, seconds);
 
-            // Display the next respawn time in a human-readable format
-            std::tm* nextRespawnTm = std::localtime(&boss.nextRespawns[0]);
-            char nextRespawnBuffer[64];
-            std::strftime(nextRespawnBuffer, sizeof(nextRespawnBuffer), "%A, %Y-%m-%d %H:%M:%S", nextRespawnTm);
-            ImGui::Text("Next Respawn Time: %s", nextRespawnBuffer);
-
             // Display the text lines on the left side
             for (const auto& respawnTime : boss.nextRespawns) {
                 std::tm* tm = std::localtime(&respawnTime);
