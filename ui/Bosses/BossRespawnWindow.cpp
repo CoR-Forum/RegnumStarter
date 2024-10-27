@@ -25,8 +25,6 @@ void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
     }
 
     if (show_boss_respawn_window) {
-        refreshDisplay();
-
         for (auto& pair : bossRespawns) {
             BossRespawn& boss = pair.second;
             ImGui::SeparatorText(boss.name.c_str());
