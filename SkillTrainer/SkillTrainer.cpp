@@ -4,10 +4,19 @@
 #include "../libs/ImageLoader/ImageLoader.h"
 
 void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) {
-    static LPDIRECT3DTEXTURE9 textures[6] = { nullptr };
+    static LPDIRECT3DTEXTURE9 textures[10] = { nullptr };
 
     if (textures[0] == nullptr) {
-        textures[0] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Acrobatic);
+        textures[0] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Ensaring_arrow);
+        textures[1] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Death_sentence);
+        textures[2] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Enemy_surveillance);
+        textures[3] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Wild_spirit);
+        textures[4] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Camouflage);
+        textures[5] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Inherited_lightness);
+        textures[6] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Cold_Blood);
+        textures[7] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Reveal);
+        textures[8] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Confuse);
+        textures[9] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Stalker_surroundings);
     }
 
     if (show_Skilltrainer_window) {
@@ -26,30 +35,26 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
             ImGui::EndCombo();
         }
 
-        switch (item_current_idx) {
-            case 0:
-                ImGui::Text("1");
-                ImGui::Image((void*)textures[0], ImVec2(32, 32)); 
-                break;
+switch (item_current_idx) {
+    case 0:
+        for (int i = 0; i < 10; ++i) {
+            ImGui::Image((void*)textures[i], ImVec2(29, 28));
+        }
+        break;
             case 1:
-                ImGui::Text("2");
-                //ImGui::Image((void*)textures[1], ImVec2(32, 32)); 
+                ImGui::Text("2");    
                 break;
             case 2:
                 ImGui::Text("3");
-                //ImGui::Image((void*)textures[2], ImVec2(32, 32)); 
                 break;
             case 3:
                 ImGui::Text("4");
-                //ImGui::Image((void*)textures[3], ImVec2(32, 32)); 
                 break;
             case 4:
                 ImGui::Text("5");
-                //ImGui::Image((void*)textures[4], ImVec2(32, 32)); 
                 break;
             case 5:
                 ImGui::Text("6");
-                //ImGui::Image((void*)textures[5], ImVec2(32, 32)); 
                 break;
             default:
                 ImGui::Text("Unknown");
