@@ -2,9 +2,17 @@
 #include <map>
 #include "../ui/WindowStates.h"
 #include "../libs/ImageLoader/ImageLoader.h"
+#include <../libs/json.hpp>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <numeric> // Include this for std::accumulate
 
-
+// Declare counts vector outside the function to maintain state
 std::vector<int> counts(10, 0);
+std::vector<int> powerPoints(60, 0); // To store power points for levels 1-60
+int item_current_idx = 0;
+int initialSkillPoints = 85; // Default initial skill points
 
 void IncrementCount(int index) {
     if (counts[index] < 5) counts[index]++;
@@ -12,6 +20,22 @@ void IncrementCount(int index) {
 
 void DecrementCount(int index) {
     if (counts[index] > 0) counts[index]--;
+}
+
+void LoadTrainerData() {
+    std::ifstream file("trainerdata.json");
+    nlohmann::json jsonData;
+    file >> jsonData;
+
+    std::string classType = "32"; // Default to "32" for non-mage classes
+    initialSkillPoints = 85; // Default initial skill points for non-mage classes
+
+    if (item_current_idx == 2 || item_current_idx == 3) {
+        classType = "80"; // Use "80" for mage classes
+        initialSkillPoints = 93; // Initial skill points for mage classes
+    }
+
+    powerPoints = jsonData["points"]["power"][classType].get<std::vector<int>>();
 }
 
 void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) {
@@ -33,12 +57,37 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
     if (show_Skilltrainer_window) {
         static const char* items[] = { "Hunter", "Marksman", "Conjurer", "Warlock", "Barbarian", "Knight" };
         static int item_current_idx = 0; 
+        static int selected_level = 0;
 
-        if (ImGui::BeginCombo("Class:", items[item_current_idx])) {
+        ImGui::Text("Class:");
+        ImGui::SameLine();
+        if (ImGui::BeginCombo("##ClassCombo", items[item_current_idx])) {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
                 const bool is_selected = (item_current_idx == n);
-                if (ImGui::Selectable(items[n], is_selected))
+                if (ImGui::Selectable(items[n], is_selected)) {
                     item_current_idx = n;
+                    LoadTrainerData(); // Load data based on selected class
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::SameLine();
+        int totalPointsUsed = std::accumulate(counts.begin(), counts.end(), 0);
+        int remainingPoints = initialSkillPoints - totalPointsUsed;
+        ImGui::Text("Power Points: %d", remainingPoints);
+
+        ImGui::Text("Level:");
+        ImGui::SameLine();
+        if (ImGui::BeginCombo("##LevelCombo", std::to_string(selected_level + 1).c_str())) {
+            for (int n = 0; n < 60; n++) {
+                const bool is_selected = (selected_level == n);
+                if (ImGui::Selectable(std::to_string(n + 1).c_str(), is_selected)) {
+                    selected_level = n;
+                }
 
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();

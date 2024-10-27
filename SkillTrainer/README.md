@@ -12,4 +12,4 @@ The Skill trees are seperated by an comma.
 trainerdata.json:
 
 "80" = Mage classes
-"32" = Every other class
+"32" = Every other class (archer, warrior)
