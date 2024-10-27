@@ -12,10 +12,10 @@ struct BossRespawn {
 };
 
 const std::unordered_map<std::string, time_t> firstRespawns = {
-    {"thorkul", 1721681749},
-    {"evendim", 1721348488},
-    {"daen", 1721042368},
-    {"server", 1721210400 + 37 * 60}
+    {"Thorkul", 1721681749},
+    {"Evendim", 1721348488},
+    {"Daen", 1721042368},
+    {"ServerRestart", 1721210400 + 37 * 60}
 };
 
 const int SERVER_RESPAWN_TIME = 168 * 3600; // 1 week in seconds
