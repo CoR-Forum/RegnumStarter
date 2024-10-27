@@ -85,19 +85,10 @@ void getNextRespawns(const std::string& boss) {
     std::cout << boss << " previous respawn (to put in js file) is " << bossRespawns[boss].previousRespawn << std::endl;
 }
 
-void displayNextRespawn(const std::string& boss) {
-    std::cout << "Last respawn: " << unixstamp2human(bossRespawns[boss].previousRespawn) << std::endl;
-    for (size_t i = 0; i < bossRespawns[boss].nextRespawns.size(); ++i) {
-        std::string color = (i == 0) ? "green" : "faded";
-        std::cout << "<p class=\"" << color << "\"><b>" << unixstamp2human(bossRespawns[boss].nextRespawns[i]) << "</b></p>" << std::endl;
-    }
-}
-
 void refreshDisplay() {
     for (const auto& pair : firstRespawns) {
         const std::string& boss = pair.first;
         bossRespawns[boss].nextRespawns.clear();
         getNextRespawns(boss);
-        displayNextRespawn(boss);
     }
 }
