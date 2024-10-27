@@ -27,8 +27,8 @@ void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
     if (show_boss_respawn_window) {
         refreshDisplay();
 
-        for (const auto& pair : bossRespawns) {
-            const BossRespawn& boss = pair.second;
+        for (auto& pair : bossRespawns) {
+            BossRespawn& boss = pair.second;
             ImGui::SeparatorText(boss.name.c_str());
 
             ImGui::BeginChild(boss.name.c_str(), ImVec2(0, 80), false, ImGuiWindowFlags_NoScrollbar);
@@ -38,12 +38,24 @@ void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
             auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             auto diff = std::difftime(boss.nextRespawns[0], now);
 
+            if (diff <= 0) {
+                // If the boss has spawned, recalculate the next respawns
+                calculateNextRespawns(boss.name);
+                diff = std::difftime(boss.nextRespawns[0], now);
+            }
+
             int days = static_cast<int>(diff) / 86400;
             int hours = (static_cast<int>(diff) % 86400) / 3600;
             int minutes = (static_cast<int>(diff) % 3600) / 60;
             int seconds = static_cast<int>(diff) % 60;
 
             ImGui::Text("Next Spawn in: %d d, %02d h, %02d m, %02d s", days, hours, minutes, seconds);
+
+            // Display the next respawn time in a human-readable format
+            std::tm* nextRespawnTm = std::localtime(&boss.nextRespawns[0]);
+            char nextRespawnBuffer[64];
+            std::strftime(nextRespawnBuffer, sizeof(nextRespawnBuffer), "%A, %Y-%m-%d %H:%M:%S", nextRespawnTm);
+            ImGui::Text("Next Respawn Time: %s", nextRespawnBuffer);
 
             // Display the text lines on the left side
             for (const auto& respawnTime : boss.nextRespawns) {
