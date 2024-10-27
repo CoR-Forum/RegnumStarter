@@ -19,7 +19,5 @@ extern std::unordered_map<std::string, BossRespawn> bossRespawns;
 time_t getCurrentTimestamp();
 void calculateNextRespawns(const std::string& boss);
 void initializeBossRespawns();
-void refreshDisplay();
-void displayNextRespawn(const std::string& boss);
 void getNextRespawns(const std::string& boss);
 std::string unixstamp2human(time_t unixstamp);
