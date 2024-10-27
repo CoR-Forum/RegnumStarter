@@ -14,7 +14,7 @@ void calculateNextRespawns(const std::string& boss) {
     bossRespawns[boss].nextRespawns.clear();
 
     while (true) {
-        if (boss == "server")
+        if (boss == "ServerRestart")
             respawnTime = SERVER_RESPAWN_TIME;
         else
             respawnTime = BOSS_RESPAWN_TIME;
