@@ -84,11 +84,3 @@ void getNextRespawns(const std::string& boss) {
     bossRespawns[boss].previousRespawn = bossRespawns[boss].nextRespawns[0] - respawnTime;
     std::cout << boss << " previous respawn (to put in js file) is " << bossRespawns[boss].previousRespawn << std::endl;
 }
-
-void refreshDisplay() {
-    for (const auto& pair : firstRespawns) {
-        const std::string& boss = pair.first;
-        bossRespawns[boss].nextRespawns.clear();
-        getNextRespawns(boss);
-    }
-}
