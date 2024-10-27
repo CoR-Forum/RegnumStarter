@@ -9,8 +9,11 @@ void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
         for (const auto& pair : bossRespawns) {
             const BossRespawn& boss = pair.second;
             ImGui::Text("Boss: %s", boss.name.c_str());
-            for (size_t i = 0; i < boss.nextRespawns.size(); ++i) {
-                ImGui::Text("Next Respawn %zu: %s", i + 1, std::ctime(&boss.nextRespawns[i]));
+            for (const auto& respawnTime : boss.nextRespawns) {
+                std::tm* tm = std::localtime(&respawnTime);
+                char buffer[64];
+                std::strftime(buffer, sizeof(buffer), "%A, %Y-%m-%d %H:%M:%S", tm);
+                ImGui::Text("%s", buffer);
             }
         }
     }
