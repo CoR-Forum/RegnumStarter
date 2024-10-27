@@ -3,6 +3,17 @@
 #include "../ui/WindowStates.h"
 #include "../libs/ImageLoader/ImageLoader.h"
 
+
+std::vector<int> counts(10, 0);
+
+void IncrementCount(int index) {
+    if (counts[index] < 5) counts[index]++;
+}
+
+void DecrementCount(int index) {
+    if (counts[index] > 0) counts[index]--;
+}
+
 void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) {
     static LPDIRECT3DTEXTURE9 textures[10] = { nullptr };
 
@@ -35,12 +46,22 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
             ImGui::EndCombo();
         }
 
-switch (item_current_idx) {
-    case 0:
-        for (int i = 0; i < 10; ++i) {
-            ImGui::Image((void*)textures[i], ImVec2(29, 28));
-        }
-        break;
+        switch (item_current_idx) {
+            case 0:
+                for (int i = 0; i < 10; ++i) {
+                    ImGui::Text("%d", counts[i]); // Display the count
+                    ImGui::SameLine();
+                    ImGui::Image((void*)textures[i], ImVec2(29, 28));
+                    ImGui::SameLine();
+                    if (ImGui::Button(("+##" + std::to_string(i)).c_str())) {
+                        IncrementCount(i); // Call IncrementCount function
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button(("-##" + std::to_string(i)).c_str())) {
+                        DecrementCount(i); // Call DecrementCount function
+                    }
+                }
+                break;
             case 1:
                 ImGui::Text("2");    
                 break;

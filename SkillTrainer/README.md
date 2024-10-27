@@ -7,3 +7,9 @@ Marksman60,Aiming_Mastery12:0002000000,Short_bows:0121000000,Long_bows:550000050
 [:0002000000] = Skill level of that Tree seperated this means => 0 is the first Skill and the 2nd and 3rd Too. The 4th Skill is Level 2 Skilled.
 
 The Skill trees are seperated by an comma.
+
+
+trainerdata.json:
+
+"80" = Mage classes
+"32" = Every other class
