@@ -8,7 +8,7 @@ void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
         // Display boss respawn times
         for (const auto& pair : bossRespawns) {
             const BossRespawn& boss = pair.second;
-            ImGui::Text("Boss: %s", boss.name.c_str());
+            ImGui::SeparatorText(boss.name.c_str());
             for (const auto& respawnTime : boss.nextRespawns) {
                 std::tm* tm = std::localtime(&respawnTime);
                 char buffer[64];
