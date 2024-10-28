@@ -3,7 +3,6 @@
 
 bool g_DeviceLost = false;
 UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
-bool show_license_window = false;
 bool spaceKeyPressed = false;
 bool ctrlKeyPressed = false;
 bool fovToggled = false; // Initialize the FOV state
