@@ -198,6 +198,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     // Draw the image
                     ImGui::Image((void*)texture_sylent_icon, imageSize);
+
+                    // Detect click on the image
+                    if (ImGui::IsItemClicked()) {
+                        OpenURL("https://sylent-x.com/");
+                    }
                 } else {
                     ImGui::Text("Texture is null");
                 }
