@@ -1,8 +1,5 @@
 #include "Sylent-X.h"
 
-#pragma comment(lib, "wininet.lib")
-#pragma comment(lib, "urlmon.lib")
-#pragma comment(lib, "dwmapi.lib")
 
 bool g_DeviceLost = false;
 UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
