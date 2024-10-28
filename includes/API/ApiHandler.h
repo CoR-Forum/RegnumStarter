@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Utils.h"
+#include "../../ui/Memory/Memory.h"
 #include "../InternetUtils/InternetUtils.cpp"
 #include <stdexcept>
 #include <sstream>

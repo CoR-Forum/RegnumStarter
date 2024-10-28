@@ -11,6 +11,11 @@
 #include "includes/Logger/Logger.cpp"
 #include "includes/API/ApiHandler.cpp"
 #include "includes/API/AdminApiHandler.cpp"
+#include "includes/chrono/chrono.cpp"
+#include "ui/Memory/Memory.cpp"
+#include "ui/Movement/MovementWindow.cpp"
+#include "ui/Player/PlayerWindow.cpp"
+#include "ui/View/ViewWindow.cpp"
 #include "Style.cpp"
 #include "libs/DirectX/DirectXInit.cpp"
 #include "libs/imgui/imgui_impl_dx9.cpp"
@@ -21,7 +26,6 @@
 #include "ui/helper/Markers/LicenseMarker.cpp"
 #include <filesystem>
 #include "includes/process/process.cpp"
-#include "includes/chrono/chrono.cpp"
 #include "includes/streamproof/streamproof.cpp"
 #include "ui/admin/AdminPanel.cpp"
 #include "ui/login/pwreset/ForgotPasswordWindow.cpp"
@@ -32,10 +36,7 @@
 #include "ui/RegnumStarter/RegnumStarter.cpp"
 #include "ui/Feedback/FeedbackWindow.cpp"
 #include "ui/License/LicenseWindow.cpp"
-#include "ui/Movement/MovementWindow.cpp"
 #include "ui/Credits/CreditsWindow.cpp"
-#include "ui/Player/PlayerWindow.cpp"
-#include "ui/View/ViewWindow.cpp"
 #include "ui/Chat/ChatWindow.cpp"
 #include "ui/WindowStates.h"
 #include "includes/Bosses/BossSpawns.cpp"
@@ -71,18 +72,5 @@ extern bool fovToggled;
 
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 std::wstring GetProcessPath(DWORD pid);
-
-// Define MemoryAddress struct
-struct MemoryAddress {
-    std::string name;
-    uintptr_t address;
-    std::vector<unsigned long> offsets;
-};
-
-class Memory {
-public:
-    uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
-    bool WriteFloat(uintptr_t address, float value);
-};
 
 #endif // SYLENT_X_H
