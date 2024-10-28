@@ -1,48 +1,5 @@
 #include "ApiHandler.h"
 
-void CloseInternetHandles(HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
-    if (hRequest) InternetCloseHandle(hRequest);
-    if (hConnect) InternetCloseHandle(hConnect);
-    if (hInternet) InternetCloseHandle(hInternet);
-}
-
-bool LogAndCloseHandles(const std::string& message, HINTERNET hRequest, HINTERNET hConnect, HINTERNET hInternet) {
-    Log(message);
-    CloseInternetHandles(hRequest, hConnect, hInternet);
-    return false;
-}
-
-HINTERNET OpenInternetConnection() {
-    HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-    if (!hInternet) throw std::runtime_error("Failed to open internet connection");
-    return hInternet;
-}
-
-HINTERNET ConnectToAPI(HINTERNET hInternet) {
-    HINTERNET hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
-    if (!hConnect) throw std::runtime_error("Failed to connect to API");
-    return hConnect;
-}
-
-HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
-    const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
-    if (!hRequest || !HttpSendRequest(hRequest, NULL, 0, NULL, 0)) {
-        throw std::runtime_error("Failed to open or send HTTP request");
-    }
-    return hRequest;
-}
-
-std::string ReadResponse(HINTERNET hRequest) {
-    char buffer[4096];
-    DWORD bytesRead;
-    std::string response;
-
-    while (InternetReadFile(hRequest, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
-        response.append(buffer, bytesRead);
-    }
-    return response;
-}
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/user.php?action=login&username=" + login + "&password=" + password;
@@ -62,6 +19,11 @@ bool Login(const std::string& login, const std::string& password) {
 
             if (status == "success") {
                 LogDebug("User " + login + " logged in successfully");
+
+                sylentx_status = jsonResponse["system_status"];
+                LogDebug("Sylen-X Status: " + sylentx_status);
+
+                sylentx_status = sylentx_status;
 
                 auto licensedFeatures = jsonResponse["licensed_features"];
                 featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
@@ -211,12 +173,12 @@ void SaveSettings() {
     try {
         nlohmann::json settingsJson;
         settingsJson["logDebug"] = setting_log_debug;
-        settingsJson["logMaxMessages"] = setting_log_maxMessages; // Corrected line
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["fontSize"] = setting_fontSize;
         settingsJson["enableRainbow"] = setting_enableRainbow;
-        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;
+        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;  
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
+        settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
 
         std::string settingsStr = settingsJson.dump();
         std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
@@ -262,10 +224,10 @@ void LoadSettings() {
                     auto settingsJson = jsonResponse["settings"];
                     setting_fontSize = settingsJson.value("fontSize", 1.0f);
                     setting_enableRainbow = settingsJson.value("enableRainbow", false);
-                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);                    
+                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);  
                     setting_log_debug = settingsJson.value("logDebug", false);
-                    setting_log_maxMessages = settingsJson.value("logMaxMessages", 100);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
+                    setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "C:\\Games\\NGD Studios\\Champions of Regnum");
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
                         textColor.x = settingsJson["textColor"][0];
@@ -342,19 +304,111 @@ void SaveLoginCredentials(const std::string& login, const std::string& password)
     }
 }
 
-std::string FetchDataFromAPI(const std::string& url) {
-    try {
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
-        if (!hConnect) throw std::runtime_error("Failed to open URL");
 
-        std::string response = ReadResponse(hConnect);
-        CloseInternetHandles(nullptr, hConnect, hInternet);
-        return response;
-    } catch (const std::exception& e) {
-        Log(e.what());
-        return "";
+// Function to generate MD5 hash of a given string using header-only MD5 library
+std::string GenerateMD5(const std::string& input) {
+    return md5(input);
+}
+
+// Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
+void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::ifstream file(configFilePath);
+    nlohmann::json accountsJson;
+
+    if (file.is_open()) {
+        file >> accountsJson;
+        file.close();
     }
+
+    bool accountUpdated = false;
+
+    std::string hashedPassword = GenerateMD5(password);
+
+    if (id != -1) {
+        // Try to find and update the existing account with the given ID
+        for (auto& account : accountsJson) {
+            if (account["id"].get<int>() == id) {
+                account["username"] = username;
+                account["password"] = hashedPassword;
+                account["server"] = server;
+                account["referrer"] = referrer;
+                accountUpdated = true;
+                break;
+            }
+        }
+    }
+
+    if (!accountUpdated) {
+        // Generate a new ID for the account
+        int newId = 1;
+        if (!accountsJson.empty()) {
+            newId = accountsJson.back()["id"].get<int>() + 1;
+        }
+
+        nlohmann::json newAccount;
+        newAccount["id"] = newId;
+        newAccount["username"] = username;
+        newAccount["password"] = hashedPassword;
+        newAccount["server"] = server;
+        newAccount["referrer"] = referrer;
+        accountsJson.push_back(newAccount);
+    }
+
+    std::ofstream outFile(configFilePath);
+    outFile << accountsJson.dump(4);
+    outFile.close();
+
+    LoadRegnumAccounts();
+}
+
+// Function to load all Regnum accounts from regnum-accounts.json appdata file
+void LoadRegnumAccounts() {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::ifstream file(configFilePath);
+    nlohmann::json accountsJson;
+
+    if (file.is_open()) {
+        file >> accountsJson;
+        file.close();
+    }
+
+    regnumAccounts.clear();
+    for (const auto& account : accountsJson) {
+        RegnumAccount regnumAccount;
+        regnumAccount.id = account["id"];
+        regnumAccount.username = account["username"];
+        regnumAccount.password = account["password"];
+        regnumAccount.server = account["server"];
+        regnumAccount.referrer = account["referrer"];
+        regnumAccounts.push_back(regnumAccount);
+    }
+    Log("Loaded " + std::to_string(regnumAccounts.size()) + " Regnum accounts");
+}
+
+// delete regnum account by id
+void DeleteRegnumAccount(int id) {
+    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::ifstream file(configFilePath);
+    nlohmann::json accountsJson;
+
+    if (file.is_open()) {
+        file >> accountsJson;
+        file.close();
+    }
+
+    for (auto it = accountsJson.begin(); it != accountsJson.end(); ++it) {
+        if ((*it)["id"].get<int>() == id) {
+            accountsJson.erase(it);
+            break;
+        }
+    }
+
+    std::ofstream outFile(configFilePath);
+    outFile << accountsJson.dump(4);
+    outFile.close();
+
+    LoadRegnumAccounts();
 }
 
 std::vector<Pointer> InitializePointers() {
@@ -403,11 +457,11 @@ std::vector<Pointer> InitializePointers() {
     return pointers;
 }
 
-void RegisterUser(const std::string& username, const std::string& email, const std::string& password) {
+void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password) {
     try {
         HINTERNET hSession = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hSession);
-        std::string path = "/user.php?action=register&username=" + username + "&email=" + email + "&password=" + password;
+        std::string path = "/user.php?action=register&username=" + username + + "&nickname=" + nickname + "&email=" + email + "&password=" + password;
         HINTERNET hRequest = SendHTTPRequest(hConnect, path);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hSession);
@@ -444,7 +498,7 @@ void SendChatMessage(const std::string& message) {
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
                 std::string createdAt = msg["created_at"];
-                std::string user = msg["username"];
+                std::string user = msg["nickname"];
                 std::string msgText = msg["message"];
                 std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
@@ -485,7 +539,7 @@ void CheckChatMessages() {
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
                     std::string createdAt = msg["created_at"];
-                    std::string user = msg["username"];
+                    std::string user = msg["nickname"];
                     std::string msgText = msg["message"];
                     std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
@@ -502,120 +556,6 @@ void CheckChatMessages() {
         } catch (const std::exception& e) {
             Log("Exception: " + std::string(e.what()));
         }
-    }
-}
-
-// ADMIN FUNCTIONS
-// only available if isAdmin is true
-
-void GetAllUsers() {
-    try {
-        std::string path = "/admin.php?action=getUsers&username=" + login + "&password=" + password;
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        // Store the raw JSON response in the global variable
-        GetAllUsersRawJson = response;
-        LogDebug("Users fetched successfully: " + response);
-
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-    }
-}
-
-void GetAllLicenses() {
-    try {
-        std::string path = "/admin.php?action=getLicenses&username=" + login + "&password=" + password;
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        // Store the raw JSON response in the global variable
-        GetAllLicensesRawJson = response;
-        LogDebug("Licenses fetched successfully: " + response);
-
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-    }
-}
-
-void ToggleUserBan(int userId) {
-    try {
-        std::string path = "/admin.php?action=toggleUserBan&username=" + login + "&password=" + password + "&userId=" + std::to_string(userId);
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            LogDebug("User ban toggled successfully: " + message);
-            GetAllUsers();
-        } else {
-            LogDebug("Failed to toggle user ban: " + message);
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-        GetAllUsers();
-    }
-}
-
-void ToggleUserAdmin(int userId) {
-    try {
-        std::string path = "/admin.php?action=toggleUserAdmin&username=" + login + "&password=" + password + "&userId=" + std::to_string(userId);
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            LogDebug("User admin status toggled successfully: " + message);
-            GetAllUsers();
-        } else {
-            LogDebug("Failed to toggle user admin status: " + message);
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-        GetAllUsers();
-    }
-}
-
-void ToggleUserActivation(int userId) {
-    try {
-        std::string path = "/admin.php?action=toggleUserActivation&username=" + login + "&password=" + password + "&userId=" + std::to_string(userId);
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            LogDebug("User activation status toggled successfully: " + message);
-            GetAllUsers();
-        } else {
-            LogDebug("Failed to toggle user activation status: " + message);
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-        GetAllUsers();
     }
 }
 
@@ -735,89 +675,5 @@ void ActivateLicense(const std::string& licenseKey) {
         }
     } catch (const std::exception& e) {
         Log("Exception: " + std::string(e.what()));
-    }
-}
-
-void GenerateNewLicense(const std::string& licensedFeatures, const std::string& runtime) {
-    try {
-        // Check if licensedFeatures is provided
-        if (licensedFeatures.empty()) {
-            LogDebug("licensedFeatures is empty. Cannot generate license.");
-            MessageBox(NULL, "licensedFeatures is empty. Cannot generate license.", "Error", MB_ICONERROR | MB_TOPMOST);
-            return;
-        }
-
-        // Split licensedFeatures by commas and create a JSON array
-        std::vector<std::string> features;
-        std::stringstream ss(licensedFeatures);
-        std::string feature;
-        while (std::getline(ss, feature, ',')) {
-            features.push_back(feature);
-        }
-        nlohmann::json jsonFeatures = features;
-
-        std::string path = "/admin.php?action=generateLicenseKey&username=" + login + "&password=" + password + "&licensedFeatures=" + jsonFeatures.dump() + "&runtime=" + runtime;
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        // Split the response into individual JSON objects
-        std::vector<std::string> jsonResponses;
-        size_t pos = 0;
-        while ((pos = response.find("}{")) != std::string::npos) {
-            jsonResponses.push_back(response.substr(0, pos + 1));
-            response.erase(0, pos + 1);
-        }
-        jsonResponses.push_back(response);
-
-        for (const auto& jsonResponseStr : jsonResponses) {
-            auto jsonResponse = nlohmann::json::parse(jsonResponseStr);
-            std::string status = jsonResponse["status"];
-            std::string message = jsonResponse.contains("message") ? jsonResponse["message"] : "";
-
-            if (status == "success") {
-                generatedLicenseKey = jsonResponse["licenseKey"]["license_key"]; // Set the global variable
-                LogDebug("License generated successfully: " + generatedLicenseKey);
-                GetAllLicenses();
-                return; // Exit the function after successfully generating the license
-            } else {
-                LogDebug("Failed to generate license: " + message);
-                MessageBox(NULL, ("Failed to generate license: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-            }
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
-    }
-}
-
-void ExpireLicense(int licenseId) {
-    try {
-        std::string path = "/admin.php?action=expireLicense&username=" + login + "&password=" + password + "&licenseId=" + std::to_string(licenseId);
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            LogDebug("License expired successfully: " + message);
-            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
-            GetAllLicenses();
-        } else {
-            LogDebug("Failed to expire license: " + message);
-            MessageBox(NULL, message.c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-            GetAllLicenses();
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
-        GetAllLicenses();
     }
 }

@@ -1,16 +1,38 @@
 #include "includes/Utils.h"
 #include "includes/Updater/Updater.cpp"
 #include "includes/Logger/Logger.cpp"
-#include "ApiHandler.cpp"
+#include "includes/API/ApiHandler.cpp"
+#include "includes/API/AdminApiHandler.cpp"
 #include "Style.cpp"
-#include "ui/admin/AdminPanel.h"
-#include "libs/DirectX/DirectXInit.h"
-#include "ui/helper/UpdateRainbowColor.h"
-#include "ui/helper/Markers/HelpMarker.h"
-#include "ui/helper/Markers/LicenseMarker.h"
-#include "includes/streamproof/streamproof.h"
-#include "includes/chrono/chrono.h"
-#include "includes/process/process.h"
+#include "libs/DirectX/DirectXInit.cpp"
+#include "libs/imgui/imgui_impl_dx9.cpp"
+#include "libs/imgui/imgui_impl_win32.cpp"
+#include "libs/ImageLoader/ImageLoader.cpp"
+#include "libs/ImageLoader/FontAwesomeIcons.h"
+#include "ui/helper/Markers/HelpMarker.cpp"
+#include "ui/helper/Markers/LicenseMarker.cpp"
+#include <filesystem>
+#include "includes/process/process.cpp"
+#include "includes/chrono/chrono.cpp"
+#include "includes/streamproof/streamproof.cpp"
+#include "ui/admin/AdminPanel.cpp"
+#include "ui/login/pwreset/ForgotPasswordWindow.cpp"
+#include "ui/login/pwreset/PasswordResetWindow.cpp"
+#include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
+#include "ui/login/LoginWindow.cpp"
+#include "ui/login/register/RegisterWindow.cpp"
+#include "ui/RegnumStarter/RegnumStarter.cpp"
+#include "ui/Feedback/FeedbackWindow.cpp"
+#include "ui/License/LicenseWindow.cpp"
+#include "ui/Movement/MovementWindow.cpp"
+#include "ui/Credits/CreditsWindow.cpp"
+#include "ui/Player/PlayerWindow.cpp"
+#include "ui/View/ViewWindow.cpp"
+#include "ui/Chat/ChatWindow.cpp"
+#include "ui/WindowStates.h"
+#include "includes/Bosses/BossSpawns.cpp"
+#include "ui/Bosses/BossRespawnWindow.cpp"
+
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
@@ -18,70 +40,35 @@
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static bool                     g_DeviceLost = false;
-static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
+static bool g_DeviceLost = false;
+static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static bool show_license_window = false;
-static char chatInput[256] = ""; // Declare chatInput as a static variable
 static bool spaceKeyPressed = false;
 static bool ctrlKeyPressed = false;
+extern bool show_chat_window;
+bool fovToggled = false; // Initialize the FOV state
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-bool show_login_window = true;
-bool show_main_window = false;
-bool show_register_window = false;
-bool show_feedback_window = false;
-bool show_chat_window = false;
-bool show_forgot_password_window = false;
-bool show_password_reset_window = false;
-bool show_admin_window = false;
-bool show_settings_window = false;
-bool show_info_window = false;
-bool show_regnum_settings_window = false;
-bool show_regnum_accounts_window = false;
 bool g_ShowUI = true;
+std::string statusMessage = "";
+bool loginSuccess = false;
 
-extern bool featureZoom;
-extern bool featureFov;
-extern bool featureGravity;
-extern bool featureMoonjump;
-extern bool featureMoonwalk;
-extern bool featureFreecam;
-extern bool featureFastfly;
-extern bool featureSpeedhack;
-extern bool featureFakelag;
+int userDefinedHotkey = 0;
+bool waitingForHotkey = false;
 
 std::vector<Pointer> pointers;
-std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
 
-void runRoClientGame(std::string regnumLoginUser, std::string regnumLoginPassword) {
-    STARTUPINFO si;
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
-    
-    std::string path = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer\\ROClientGame.exe";
-    std::string command = path + " " + regnumLoginUser + " " + regnumLoginPassword;
-    std::string workingDirectory = "C:\\Games\\NGD Studios\\Champions of Regnum\\LiveServer";
-    
-    if (!CreateProcess(path.c_str(), (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, workingDirectory.c_str(), &si, &pi)) {
-        Log("Failed to start the Regnum Online client");
-    } else {
-        // Wait until child process exits.
-        WaitForSingleObject(pi.hProcess, INFINITE);
-
-        // Close process and thread handles.
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-    }
+// Function to check if a hotkey is pressed
+bool IsHotkeyPressed(int hotkey) {
+    return GetAsyncKeyState(hotkey) & 0x8000;
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    Log("Sylent-X " + currentVersion + ". Made with hate in Germany.");
+    Log("Sylent-X " + sylentx_version + ". Made with hate in Germany.");
     // Create a named mutex
     HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex"));
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
@@ -91,22 +78,22 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     SelfUpdate();
     LoadLoginCredentials(hInstanceGlobal);
-    LoadSettings();
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
-        Log("Auto-login successful");
+        LogDebug("Auto-login successful");
+        LoadSettings();
         show_login_window = false;
         show_main_window = true;
     } else {
-        Log("Auto-login failed");
+        LogDebug("Auto-login failed");
         show_login_window = true;
     }
 
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 1200, 1000, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 850, 580, NULL, NULL, wc.hInstance, NULL);
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
@@ -115,6 +102,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
         return 1;
     }
+
+    LPDIRECT3DTEXTURE9 texture_sylent_icon = nullptr;
+    texture_sylent_icon = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_ICON);
 
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
@@ -134,6 +124,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+    initializeBossRespawns();
 
     static char username[128] = "";
     static char password[128] = "";
@@ -179,6 +170,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             // Add a small delay to prevent rapid toggling
             Sleep(200);
         }
+        // Check for global key press and release events using Windows API
+        if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
+            MemoryManipulation("gravity", -8.0f);
+        }
+
+        if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
+            MemoryManipulation("gravity", 8.0f);
+        }
 
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -186,241 +185,33 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         
         if (g_ShowUI) {
             if (show_login_window) {
-                static bool settingsWindowIsOpen = true;
-                ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-                
-                if (!settingsWindowIsOpen) {
-                SaveSettings();
-                PostQuitMessage(0);
-                }
-
-                ImGui::InputText("Username", username, IM_ARRAYSIZE(username));
-                ImGui::InputText("Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
-                
-                if (ImGui::Button("Login")) {
-                    loginSuccess = Login(username, password);
-                    if (loginSuccess) {
-                        Log("Login successful");
-                        SaveLoginCredentials(username, password);
-                        show_login_window = false;
-                        show_main_window = true;
-                    } else {
-                        Log("Login failed");
-                    }
-                }
-
-                if (loginSuccess) {
-                    ImGui::Text("Login successful");
-                } else {
-                    ImGui::Text("Login failed");
-                }
-
-                if (ImGui::Button("Register")) {
-                    show_login_window = false;
-                    show_register_window = true;
-                }
-
-                if (ImGui::Button("Forgot Password")) {
-                    show_login_window = false;
-                    show_forgot_password_window = true;
-                }
-
-                ImGui::End();
+                ShowLoginWindow(show_login_window, statusMessage, loginSuccess, show_main_window, textColor);
             }
 
             if (show_register_window) {
-                static bool registerWindowIsOpen = true;
-                ImGui::Begin("Register", &registerWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                if (!registerWindowIsOpen) {
-                    SaveSettings();
-                    PostQuitMessage(0);
-                }
-
-                static char regUsername[128] = "";
-                static char regPassword[128] = "";
-                static char regEmail[128] = "";
-
-                ImGui::InputText("Username", regUsername, IM_ARRAYSIZE(regUsername));
-                ImGui::InputText("Password", regPassword, IM_ARRAYSIZE(regPassword), ImGuiInputTextFlags_Password);
-                ImGui::InputText("Email", regEmail, IM_ARRAYSIZE(regEmail));
-
-                if (ImGui::Button("Register")) {
-                    RegisterUser(regUsername, regEmail, regPassword);
-                    show_register_window = false;
-                    show_login_window = true;
-                }
-
-                if (ImGui::Button("Back to Login")) {
-                    show_register_window = false;
-                    show_login_window = true;
-                }
-
-                if (ImGui::Button("Exit")) {
-                    done = true;
-                }
-
-                ImGui::End();
+                ShowRegisterWindow(show_register_window, show_login_window, done);
             }
 
             if (show_forgot_password_window) {
-                static bool forgotpassWindowIsOpen = true;
-                
-                ImGui::Begin("Forgot Password", &forgotpassWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                if (!forgotpassWindowIsOpen) {
-                SaveSettings();
-                PostQuitMessage(0);
-                }
-
-                static char forgotPasswordEmail[128] = "";
-
-                ImGui::InputText("Email", forgotPasswordEmail, IM_ARRAYSIZE(forgotPasswordEmail));
-
-                if (ImGui::Button("Submit")) {
-                    if (ResetPasswordRequest(forgotPasswordEmail)) {
-                        show_forgot_password_window = false;
-                        show_password_reset_window = true;
-                    } else {
-                        ImGui::Text("Failed to send reset password request. Please try again.");
-                    }
-                }
-
-                if (ImGui::Button("I already have a token")) {
-                    show_forgot_password_window = false;
-                    show_password_reset_window = true;
-                }
-
-                if (ImGui::Button("Back to Login")) {
-                    show_forgot_password_window = false;
-                    show_login_window = true;
-                }
-
-                ImGui::End();
+                ShowForgotPasswordWindow(show_forgot_password_window, show_password_reset_window, show_login_window);
             }
 
             if (show_password_reset_window) {
-                static bool tokenWindowIsOpen = true;
-
-                ImGui::Begin("Enter Token and New Password", &tokenWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                if (!tokenWindowIsOpen) {
-                SaveSettings();
-                PostQuitMessage(0);
-                }
-
-                static char passwordResetToken[128] = "";
-                static char newPassword[128] = "";
-
-                ImGui::InputText("Token", passwordResetToken, IM_ARRAYSIZE(passwordResetToken));
-                ImGui::SameLine();
-                ShowHelpMarker("Sent to you by e-mail");
-
-                ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
-
-                if (ImGui::Button("Submit")) {
-                    // Implement the logic to verify the token and update the password
-                    if (SetNewPassword(passwordResetToken, newPassword)) {
-                        MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
-                        show_password_reset_window = false;
-                        show_login_window = true;
-                    } else {
-                        ImGui::Text("Failed to update password. Please try again.");
-                    }
-                }
-
-                if (ImGui::Button("Request new token")) {
-                    show_password_reset_window = false;
-                    show_forgot_password_window = true;
-                }
-
-                if (ImGui::Button("Back to Login")) {
-                    show_password_reset_window = false;
-                    show_login_window = true;
-                }
-
-                ImGui::End();
-            }
-
-            if (show_info_window) {
-                ImGui::Begin("Credits", &show_info_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-            ImGui::Text("Sylent-X %s", currentVersion.c_str());
-            ImGui::Text("This software is provided as-is without any warranty. Use at your own risk.");
-            ImGui::Text("Made with hate in Germany by AdrianWho, Manu and Francis");
-            ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
-            ImGui::Text("Big shoutout to Adrian Lastres. You're the best!");
-            ImGui::End();
-            }
-
-            if (show_settings_window) {
-                ImGui::Begin("Settings", &show_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-        
-
-                ImGui::Text("Appearance Settings");
-
-                ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
-                ImGui::SameLine();
-                ImGui::SliderFloat("Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
-                
-                // Show the color wheel
-                ImGui::ShowColorWheel(textColor);
-
-                // Slider to adjust the font size
-                ImGui::SliderFloat("Font Size", &setting_fontSize, 0.5f, 2.0f);
-
-                ImGui::Separator();
-
-                ImGui::Text("Advanced Settings");
-
-                if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture))
-                    {
-                        SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
-                    }
-
-                ImGui::InputInt("Max Log Messages to store", &setting_log_maxMessages);
-                
-                ImGui::SameLine();
-                ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
-
-                ImGui::Separator();
-
-                if (ImGui::Button("Save Settings")) {
-                    SaveSettings();
-                    show_settings_window = false;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Create Ticket")) {
-                    ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Password Reset")) {
-                    show_forgot_password_window = true;
-                    show_settings_window = false;
-                }
-
-                ImGui::Separator();
-                    // License information from license_runtime_end and license_features
-                    ImGui::Text("License Expiry: %s", license_runtime_end.c_str());
-                    
-                    if (ImGui::Button("Activate a License")) {
-                    show_settings_window = false;
-                    show_license_window = true;
-                    }
-                    ImGui::End();
-            }
-
+                ShowPasswordResetWindow(show_password_reset_window, show_login_window, show_forgot_password_window);
+            } 
 
             if (show_main_window) {
-                std::string windowTitle = "Sylent-X " + currentVersion;
+                std::string windowTitle = sylentx_appname + " " + sylentx_version;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
+                ImGui::SetNextWindowSize(ImVec2(770, 450), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
-                ImGui::Text("Status: %s", currentStatus.c_str());
-                ImGui::SameLine();
-                ImGui::Text("Magnat: %d", magnatCurrency);
+                ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+                ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
+
+                if (setting_enableRainbow) {
+                    UpdateRainbowColor(setting_rainbowSpeed);
+                }
 
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
@@ -428,232 +219,127 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     PostQuitMessage(0);
                 }
 
-                if (setting_enableRainbow) {
-                    UpdateRainbowColor(setting_rainbowSpeed);
-                }      
+                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
+                ImGui::Text("Status: %s", sylentx_status.c_str());
+                ImGui::SameLine();
+                ImGui::Text("Magnat: %d", magnatCurrency);
+                
+                // Create a child window for the texture
+                ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
+                if (texture_sylent_icon) {
+                    // Calculate the available space
+                    ImVec2 availableSpace = ImGui::GetContentRegionAvail();
+                    ImVec2 imageSize = ImVec2(70, 60); // Adjust the size as needed
 
-                if (isAdmin) {
-                    if (ImGui::CollapsingHeader("Admins")) {
-                        static float fastflyValue = 250.0f; // Default moonjump value
-                        static bool prevflyState = false; // Track previous state of the checkbox
-                        ImGui::BeginDisabled(!featureFastfly);
-                        if (ImGui::Checkbox("FastFly", &optionFastFly)) {
-                            if (optionFastFly) {
-                                prevflyState = true;
-                            } else if (prevflyState) {
-                                // Reset fly value to 4.8f when checkbox is unchecked
-                                fastflyValue = 4.8f;
-                                MemoryManipulation("fastfly", fastflyValue);
-                                prevflyState = false;
-                            }
-                        }
-                        ImGui::EndDisabled();
-                        if (optionFastFly) {
-                            ImGui::SameLine();
-                            if (ImGui::SliderFloat("##FastFlySlider", &fastflyValue, 4.8f, 250.0f)) { // Adjust the range as needed
-                                MemoryManipulation("fastfly", fastflyValue);
-                            }
-                        }
-                        ImGui::SameLine();
-                        if (!featureFastfly) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                        }
-                    }
-                } 
+                    // Calculate the padding to center the image
+                    ImVec2 padding = ImVec2((availableSpace.x - imageSize.x) * 0.5f, (availableSpace.y - imageSize.y) * 0.5f);
 
-                if (ImGui::CollapsingHeader("View")) {
-                    static float zoomValue = 15.0f; // Default zoom value
-                    static bool prevZoomState = false; // Track previous state of the checkbox
+                    // Add padding
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + padding.x);
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding.y);
 
-                    ImGui::Checkbox("Enable Zoom", &optionZoom);               
-                        if (optionZoom) {
-                            ImGui::SameLine();
-                            if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
-                                MemoryManipulation("zoom", zoomValue);
-                            }
-                        } else if (prevZoomState) {
-                            // Reset zoom value to 15.0f when checkbox is unchecked
-                            zoomValue = 15.0f;
-                            MemoryManipulation("zoom", zoomValue);
-                        }
-
-                    prevZoomState = optionZoom; // Update previous state
-
-                    ImGui::BeginDisabled(!featureFov);
-                    if (ImGui::Checkbox("Field of View", &optionFov)) {
-                        float newValue = optionFov ? 0.02999999933f : 0.01745329238f;
-                        MemoryManipulation("fov", newValue);
-                    }
-                    ImGui::EndDisabled();
-
+                    // Draw the image
+                    ImGui::Image((void*)texture_sylent_icon, imageSize);
+                } else {
+                    ImGui::Text("Texture is null");
                 }
+                ImGui::EndChild();
 
-                ImGui::Spacing();
+                ImGui::SameLine();
+                // Create a child window for the texture
+                ImGui::BeginChild("Menu", ImVec2(615, 80), true);
+                float buttonWidth = 150.0f; // Assuming each button has a width of 150
+                float buttonHeight = 30.0f; // Assuming each button has a height of 40
+                float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
 
-                if (ImGui::CollapsingHeader("Movement")) {
+                // Calculate total width of all buttons and spacing
+                float totalWidth = 3 * buttonWidth + 6 * spacing;
 
-                    ImGui::BeginDisabled(!featureSpeedhack);
-                    if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
-                        float newValue = optionSpeedHack ? 5.6f : 4.8f;
-                        MemoryManipulation("speedhack", newValue);
-                    }
-                    if (featureSpeedhack) {
-                        ImGui::SameLine();
-                        ShowHelpMarker("Use at own risk");
-                    }
-                    ImGui::EndDisabled();
-                    if (!featureSpeedhack) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
+                // Calculate starting X position to center buttons horizontally
+                float startX = (615 - totalWidth) / 2.0f;
 
-                    ImGui::BeginDisabled(!featureGravity);
-                    if (ImGui::Checkbox("Flyhack", &optionGravity)) {
-                        MemoryManipulation("gravity");
-                    }
-                    
-                    ImGui::EndDisabled();
-                    if (!featureGravity) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
+                // Calculate starting Y position to center buttons vertically
+                float startY = (80 - buttonHeight) / 2.0f;
 
-                    static float moonjumpValue = 4.0f; // Default moonjump value
-                    static bool prevjumpState = false; // Track previous state of the checkbox
-                    ImGui::BeginDisabled(!featureMoonjump);
-                    if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
-                        if (optionMoonjump) {
-                            prevjumpState = true;
-                        } else if (prevjumpState) {
-                            // Reset zoom value to 4.0f when checkbox is unchecked
-                            moonjumpValue = 4.0f;
-                            MemoryManipulation("moonjump", moonjumpValue);
-                            prevjumpState = false;
-                        }
-                    }
-                    if (optionMoonjump) {
-                        ImGui::SameLine();
-                        if (ImGui::SliderFloat("##MoonjumpSlider", &moonjumpValue, 0.3f, 4.0f)) { // Adjust the range as needed
-                            MemoryManipulation("moonjump", moonjumpValue);
-                        }
-                        ImGui::SameLine();
-                        ShowHelpMarker("We recommend value 1.00");
-                    }
-                    ImGui::EndDisabled();
-                    if (!featureMoonjump) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
-
-                    ImGui::BeginDisabled(!featureMoonwalk);
-                    if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
-                        float newValue = optionMoonwalk ? 9.219422856E-41f : 0.0f;
-                        MemoryManipulation("moonwalk", newValue);
-                    }
-                    ImGui::EndDisabled();
-                    if (!featureMoonwalk) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
-
-                    ImGui::BeginDisabled(!featureFakelag);
-                    if (ImGui::Checkbox("fakelag", &optionFakelag)) {
-                        if (optionFakelag) {
-                            float newValue = 0.0f;
-                            MemoryManipulation("fakelag", newValue);
-                            MemoryManipulation("fakelagg", newValue);
-                            std::thread(UncheckFakelagAfterDelay, std::ref(optionFakelag)).detach();
-                        }
-                    }
-                    
-                    ImGui::EndDisabled();
-                    if (!featureFakelag) {
-                        ImGui::SameLine();
-                        ShowLicenseMarker();
-                    }
-
-                    // Check for global key press and release events using Windows API
-                    if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
-                        MemoryManipulation("gravity", -8.0f);
-                    }
-
-                    if (optionGravity && (GetAsyncKeyState(VK_LCONTROL) & 0x8000)) {
-                        MemoryManipulation("gravity", 8.0f);
-                    }
-                }
-
-                ImGui::Spacing();
- 
-                if (IsProcessOpen("ROClientGame.exe")) {
-                    if (ImGui::CollapsingHeader("Player")) {
-                        std::vector<float> values = ReadMemoryValues({"posz", "posx", "posy"});
-                        if (values.size() == 3) {
-                            ImGui::Text("Position - Z: %.2f, X: %.2f, Y: %.2f", values[0], values[1], values[2]);
-                        } else {
-                            ImGui::Text("Failed to read position values.");
-                        }
-                    }
-                }
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                if (ImGui::Button("Regnum Settings")) {
-                    show_regnum_settings_window = true;
+                ImGui::SetCursorPosX(startX);
+                ImGui::SetCursorPosY(startY);
+                if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
+                    show_movement_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    show_view_window = true;
                 }
 
                 ImGui::SameLine();
-                if (ImGui::Button("Regnum Accounts")) {
-                    show_regnum_accounts_window = true;
+                ImGui::SetCursorPosY(startY);
+                if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
+                    show_view_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    show_movement_window = true;
                 }
 
                 ImGui::SameLine();
-                static int selectedAccount = -1;
-                const char* exampleAccounts[] = { "Account1", "Account2", "Account3" };
-                if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : exampleAccounts[selectedAccount])) {
-                    for (int i = 0; i < IM_ARRAYSIZE(exampleAccounts); i++) {
-                        bool isSelected = (selectedAccount == i);
-                        if (ImGui::Selectable(exampleAccounts[i], isSelected)) {
-                            selectedAccount = i;
-                        }
-                    }
-                    ImGui::EndCombo();
+                ImGui::SetCursorPosY(startY);
+                if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
+                    show_movement_window = false;
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_boss_respawn_window = false;
+                    show_player_window = true;
                 }
 
-                ImGui::SameLine();
-                if (ImGui::Button("Play")) {
-                    runRoClientGame(regnumLoginUser, regnumLoginPassword);
+                ImGui::EndChild();
+
+                // Calculate the size of the largest button
+                ImVec2 buttonSize = ImVec2(0, 0);
+                const char* buttonLabels[] = {
+                    "Sylent-X", "Admin", "Chat", "Settings", "RegnumStarter", 
+                    "Feedback", "License", "Info", "Logout"
+                };
+                for (const char* label : buttonLabels) {
+                    ImVec2 size = ImGui::CalcTextSize(label);
+                    buttonSize.x = std::max(buttonSize.x, size.x + ImGui::GetStyle().FramePadding.x * 2.0f);
+                    buttonSize.y = std::max(buttonSize.y, size.y + ImGui::GetStyle().FramePadding.y * 2.0f);
                 }
 
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
+                // Create a child window for the navigation buttons
+                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
 
-                ImGui::SameLine();
-                if (ImGui::Button("Chat")) {
-                    show_chat_window = true;
-                }
+                // Calculate the padding to center the buttons
+                float childWidth = ImGui::GetWindowWidth();
+                float buttonPadding = (childWidth - buttonSize.x) / 2.0f;
 
-                ImGui::SameLine();
-                if (ImGui::Button("Settings")) {
-                    show_settings_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Credits")) {
-                    show_info_window = true;
-                }
-
-                ImGui::SameLine();
-                if (ImGui::Button("Feedback")) {
-                    show_feedback_window = true;
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
                 }
 
                 if (isAdmin) {
-                    ImGui::SameLine();
-                    if (ImGui::Button("Admin")) {
+                    ImGui::SetCursorPosX(buttonPadding);
+                    if (ImGui::Button(ICON_FA_USER_REGULAR " Admin", buttonSize)) {
                         GetAllUsers();
                         GetAllLicenses();
                         show_admin_window = true; // Show the admin window
@@ -662,186 +348,216 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ShowAdminPanel(&show_admin_window);
                 }
 
-                ImGui::SameLine();
-                if (ImGui::Button("Logout")) {
-                    ImGui::OpenPopup("Confirm Logout");
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_COMMENTS " Chat", buttonSize)) {
+                    show_chat_window = true;
                 }
 
-                if (ImGui::BeginPopupModal("Confirm Logout", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                    ImGui::Text("Are you sure you want to logout?\nThis will remove your login credentials and close the application.\nYour license key is stored in your account and will be available after you login again.");
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button("RegnumStarter", buttonSize)) {
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    LoadRegnumAccounts();
+                    show_RegnumStarter = true;
+                }
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", buttonSize)) {
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_info_window = false;
+                    show_boss_respawn_window = true;
+                }
+
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
+                    show_settings_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    show_feedback_window = true;
+                }
+
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    show_license_window = true;
+                }
+
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    show_settings_window = true;
+                }
+
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    show_info_window = true;
+                }
+
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_RIGHT_FROM_BRACKET " Logout", buttonSize)) {
+                    Logout();
+                }
+
+                ImGui::EndChild();
+
+                ImGui::SameLine();
+
+                // Main content area
+                ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
+
+                if (show_settings_window) {
+
+                    if (ImGui::Button("Save Settings")) {
+                        SaveSettings();
+                    }
+
                     ImGui::Separator();
 
-                    if (ImGui::Button("Yes", ImVec2(120, 0))) {
-                        Logout(); // Use the logic from ApiHandler.cpp
-                        ImGui::CloseCurrentPopup();
+                    ImGui::SeparatorText("General");
+
+                    if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture)) {
+                        SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     }
                     ImGui::SameLine();
-                    if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-                        ImGui::CloseCurrentPopup();
+                    ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
+
+                    ImGui::Separator();
+
+                    ImGui::SeparatorText("Appearance");
+
+                    ImGui::Text("Font Color");
+                    ImGui::ShowColorWheel(textColor);
+                    ImGui::SameLine();
+                    ImGui::Text("Font Size");
+                    ImGui::SameLine();
+                    ImGui::SliderFloat("##Font Size", &setting_fontSize, 0.5f, 2.0f);
+
+                    ImGui::Text("Autism Mode");
+                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
+                    ImGui::SameLine();
+                    ImGui::Text("Speed");
+                    ImGui::SameLine();
+                    ImGui::SliderFloat("##Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
+
+                    ImGui::Separator();
+
+                    if (ImGui::Button("Save Settings")) {
+                        SaveSettings();
                     }
 
-                    ImGui::EndPopup();
-                }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Create Ticket")) {
+                        ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
+                    }
 
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
+            } else if (show_feedback_window) {
 
-                // Log and chat display box at the bottom
-                ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-                for (const auto& msg : logMessages) {
-                    ImGui::TextWrapped("%s", msg.c_str());
-                }
-                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                ShowFeedbackWindow(show_feedback_window);
+
+            } else if (show_license_window) {
+                ShowLicenseWindow(show_license_window);
+
+            } else if (show_info_window) {
+                ShowCreditsWindow(show_info_window);  
+
+            } else if (show_view_window) {
+                ShowViewWindow(show_view_window, optionZoom, optionFov, featureFov, waitingForHotkey, userDefinedHotkey); 
+            } else if (show_movement_window) {
+
+                ShowMovementWindow(show_movement_window);
+                    
+            } else if (show_player_window) {
+
+                ShowPlayerWindow(show_player_window);
+      
+            } else if (show_RegnumStarter) {
+                ShowRegnumStarter(show_RegnumStarter);
+            } else if (show_boss_respawn_window) {
+                ShowBossRespawnWindow(show_boss_respawn_window);
+            } else {
+                    ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
+                    ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
+
+                    // Log and chat display box at the bottom
+                    ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                    for (const auto& msg : logMessages) {
+                        ImGui::TextWrapped("%s", msg.c_str());
+                    }
+                    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                        ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+                    }
+                    ImGui::EndChild();
+
+                    // input field and button to send chat messages using sendChatMessage function
+                    ImGui::PushItemWidth(360); // Set the width of the input field
+                    if (ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        if (strlen(chatInput) > 0) {
+                            SendChatMessage(chatInput);
+                            chatInput[0] = '\0'; // Clear input field
+                        }
+                    }
+                    ImGui::PopItemWidth(); // Reset the item width to default
+                    ImGui::SameLine();
+                    if (ImGui::Button("Send") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+                        if (strlen(chatInput) > 0) {
+                            SendChatMessage(chatInput);
+                            chatInput[0] = '\0'; // Clear input field
+                        }
+                    }
                 }
                 ImGui::EndChild();
-
-                // input field and button to send chat messages using sendChatMessage function
-                ImGui::PushItemWidth(360); // Set the width of the input field
-                if (ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    if (strlen(chatInput) > 0) {
-                        SendChatMessage(chatInput);
-                        chatInput[0] = '\0'; // Clear input field
-                    }
-                }
-                ImGui::PopItemWidth(); // Reset the item width to default
-                ImGui::SameLine();
-                if (ImGui::Button("Send") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
-                    if (strlen(chatInput) > 0) {
-                        SendChatMessage(chatInput);
-                        chatInput[0] = '\0'; // Clear input field
-                    }
-                }
-
-                ImGui::End();
-            }
-
-            if (show_regnum_accounts_window) {
-                ImGui::Begin("Regnum Accounts", &show_regnum_accounts_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                ImGui::Text("Regnum Accounts");
-
-                // display a table with 
-
-                ImGui::End();
-            }
-
-            if (show_regnum_settings_window) {
-                ImGui::Begin("Regnum Settings", &show_regnum_settings_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                // large info that indiciates that those settings are not working yet
-                ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
-
-                // slider to set sound volume
-                static float soundVolume = 0.5f;
-                ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 1.0f);
-
-                // checkbox to enable/disable music
-                static bool enableMusic = true;
-                ImGui::Checkbox("Enable Music", &enableMusic);
-
-                // checkbox to enable/disable sound effects
-                static bool enableSoundEffects = true;
-                ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
-
-                // button to save the settings
-                if (ImGui::Button("Save Settings")) {
-                    // Implement the logic to save the settings
-                }
-
-                ImGui::End();
-
-            }
-        
-            if (show_feedback_window) {
-                ImGui::Begin("Feedback", &show_feedback_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-
-                static int feedbackType = 0;
-                static bool feedback_includeLogfile = true;
-                const char* feedbackTypes[] = { "Suggestion", "Bug Report", "Other" };
-                static char feedbackText[1024] = "";
-                static std::string feedbackMessage = "";
-
-                ImGui::Combo("Type", &feedbackType, feedbackTypes, IM_ARRAYSIZE(feedbackTypes));
-
-                ImGui::SameLine();
-                ImGui::Checkbox("Include Log File", &feedback_includeLogfile);
-
-                ImGui::InputTextMultiline("Feedback", feedbackText, IM_ARRAYSIZE(feedbackText), ImVec2(480, ImGui::GetTextLineHeight() * 10));
-
-
-                if (ImGui::Button("Submit")) {
-                    try {
-                        SendFeedback(feedbackTypes[feedbackType], feedbackText, feedback_includeLogfile);
-                        feedbackMessage = "Feedback sent successfully!";
-                        feedbackText[0] = '\0'; // Clear the feedback text
-                    } catch (const std::exception& e) {
-                        feedbackMessage = "Failed to send feedback: " + std::string(e.what());
-                    }
-                }
-
-                if (!feedbackMessage.empty()) {
-                    ImGui::Text("%s", feedbackMessage.c_str());
-                }
-
                 ImGui::End();
             }
         }
-        
-            if (show_chat_window) {
-                ImGui::Begin("Chat", &show_chat_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-
-                // Log display box at the bottom
-                ImGui::BeginChild("ChatMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-                for (const auto& msg : g_chatMessages) {
-                    ImGui::TextWrapped("%s", msg.c_str());
-                }
-                if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                    ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
-                }
-
-                ImGui::EndChild();
-
-                ImGui::InputTextWithHint("##ChatInput", "Type your message here...", chatInput, IM_ARRAYSIZE(chatInput));
-
-                ImGui::SameLine();
-                
-                if (ImGui::Button("Send Message")) {
-                    if (strlen(chatInput) > 0) {
-                        SendChatMessage(chatInput);
-                        chatInput[0] = '\0'; // Clear input field
-                    }
-                }
-
-                ImGui::End();
-            }
-        if (g_ShowUI)
-        {
-
-            if (show_license_window) {
-                ImGui::Begin("Activate License", &show_license_window, ImGuiWindowFlags_AlwaysAutoResize);
-                
-                static char licenseKey[128] = "";
-
-                // Display the input text field for the license key
-                ImGui::InputText("License Key", licenseKey, IM_ARRAYSIZE(licenseKey));
-
-                // Display the submit button
-                if (ImGui::Button("Submit")) {
-                    try {
-                        ActivateLicense(licenseKey);
-                        ImGui::Text("License activated successfully!");
-                    } catch (const std::exception& e) {
-                        Log("Failed to activate license: " + std::string(e.what()));
-                        ImGui::Text("Failed to activate license: %s", e.what());
-                    }
-                }
-
-                ImGui::End();
-            }
+        // PoV toggle logic
+        if (optionFov && userDefinedHotkey != 0 && IsHotkeyPressed(userDefinedHotkey)) {
+            fovToggled = !fovToggled; // Toggle the FOV state
+            float newValue = fovToggled ? 0.02999999933f : 0.01745329238f; // Set the new FOV value
+            MemoryManipulation("fov", newValue); // Apply the new FOV value
+            // Add a small delay to prevent rapid toggling
+            Sleep(200);
         }
-
+        if (show_chat_window) {
+            ShowChatWindow(show_chat_window);
+        }
         // Rendering
         ImGui::EndFrame();
         g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -862,6 +578,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplDX9_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+
+    if (texture_sylent_icon) {
+        texture_sylent_icon->Release();
+        texture_sylent_icon = nullptr;
+    }
 
     CleanupDeviceD3D();
     ::DestroyWindow(hwnd);

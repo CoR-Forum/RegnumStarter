@@ -35,6 +35,7 @@ public:
 
 std::pair<std::string, std::string> FetchLatestVersion();
 void Log(const std::string& message);
+void LogDebug(const std::string& message);
 void SelfUpdate();
 
 #endif // UPDATER_H

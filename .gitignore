@@ -46,3 +46,7 @@ imgui.ini
 
 # Build path
 bin/
+
+# Gource
+gource.log
+gource.mp4
