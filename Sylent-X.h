@@ -41,6 +41,7 @@
 #include "ui/WindowStates.h"
 #include "includes/Bosses/BossSpawns.cpp"
 #include "ui/Bosses/BossRespawnWindow.cpp"
+#include "includes/OpenUrl/OpenUrl.cpp"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
