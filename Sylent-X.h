@@ -1,11 +1,6 @@
 #ifndef SYLENT_X_H
 #define SYLENT_X_H
 
-#include <windows.h>
-#include <string>
-#include <vector>
-#include <atomic>
-#include <thread>
 #include "includes/Utils.h"
 #include "includes/Updater/Updater.cpp"
 #include "includes/Logger/Logger.cpp"
@@ -16,6 +11,11 @@
 #include "ui/Movement/MovementWindow.cpp"
 #include "ui/Player/PlayerWindow.cpp"
 #include "ui/View/ViewWindow.cpp"
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <atomic>
+#include <thread>
 #include "Style.cpp"
 #include "libs/DirectX/DirectXInit.cpp"
 #include "libs/imgui/imgui_impl_dx9.cpp"
