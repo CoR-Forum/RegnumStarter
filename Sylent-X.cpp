@@ -1,51 +1,14 @@
-#include "includes/Utils.h"
-#include "includes/Updater/Updater.cpp"
-#include "includes/Logger/Logger.cpp"
-#include "includes/API/ApiHandler.cpp"
-#include "includes/API/AdminApiHandler.cpp"
-#include "Style.cpp"
-#include "libs/DirectX/DirectXInit.cpp"
-#include "libs/imgui/imgui_impl_dx9.cpp"
-#include "libs/imgui/imgui_impl_win32.cpp"
-#include "libs/ImageLoader/ImageLoader.cpp"
-#include "libs/ImageLoader/FontAwesomeIcons.h"
-#include "ui/helper/Markers/HelpMarker.cpp"
-#include "ui/helper/Markers/LicenseMarker.cpp"
-#include <filesystem>
-#include "includes/process/process.cpp"
-#include "includes/chrono/chrono.cpp"
-#include "includes/streamproof/streamproof.cpp"
-#include "ui/admin/AdminPanel.cpp"
-#include "ui/login/pwreset/ForgotPasswordWindow.cpp"
-#include "ui/login/pwreset/PasswordResetWindow.cpp"
-#include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
-#include "ui/login/LoginWindow.cpp"
-#include "ui/login/register/RegisterWindow.cpp"
-#include "ui/RegnumStarter/RegnumStarter.cpp"
-#include "ui/Feedback/FeedbackWindow.cpp"
-#include "ui/License/LicenseWindow.cpp"
-#include "ui/Movement/MovementWindow.cpp"
-#include "ui/Credits/CreditsWindow.cpp"
-#include "ui/Player/PlayerWindow.cpp"
-#include "ui/View/ViewWindow.cpp"
-#include "ui/Chat/ChatWindow.cpp"
-#include "ui/WindowStates.h"
-#include "includes/Bosses/BossSpawns.cpp"
-#include "ui/Bosses/BossRespawnWindow.cpp"
-
+#include "Sylent-X.h"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "dwmapi.lib")
 
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static bool g_DeviceLost = false;
-static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
-static bool show_license_window = false;
-static bool spaceKeyPressed = false;
-static bool ctrlKeyPressed = false;
-extern bool show_chat_window;
+bool g_DeviceLost = false;
+UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
+bool show_license_window = false;
+bool spaceKeyPressed = false;
+bool ctrlKeyPressed = false;
 bool fovToggled = false; // Initialize the FOV state
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -687,20 +650,6 @@ DWORD GetProcessIdByName(const std::wstring& processName) {
     LogDebug(L"Process ID of " + processName + L": " + std::to_wstring(processId));
     return processId;
 }
-
-// Define MemoryAddress struct
-struct MemoryAddress {
-    std::string name;
-    uintptr_t address;
-    std::vector<unsigned long> offsets;
-};
-
-// Memory class to handle memory operations
-class Memory {
-public:
-    uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
-    bool WriteFloat(uintptr_t address, float value);
-};
 
 // function to get process path
 std::wstring GetProcessPath(DWORD pid) {
