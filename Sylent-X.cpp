@@ -30,6 +30,8 @@
 #include "ui/View/ViewWindow.cpp"
 #include "ui/Chat/ChatWindow.cpp"
 #include "ui/WindowStates.h"
+#include "includes/Bosses/BossSpawns.cpp"
+#include "ui/Bosses/BossRespawnWindow.cpp"
 
 
 #pragma comment(lib, "wininet.lib")
@@ -122,6 +124,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+    initializeBossRespawns();
 
     static char username[128] = "";
     static char password[128] = "";
@@ -268,6 +271,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_view_window = true;
                 }
 
@@ -281,6 +285,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_movement_window = true;
                 }
 
@@ -294,6 +299,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
+                    show_boss_respawn_window = false;
                     show_player_window = true;
                 }
 
@@ -328,6 +334,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                 }
 
                 if (isAdmin) {
@@ -355,8 +362,21 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     LoadRegnumAccounts();
                     show_RegnumStarter = true;
+                }
+                ImGui::SetCursorPosX(buttonPadding);
+                if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", buttonSize)) {
+                    show_settings_window = false;
+                    show_feedback_window = false;
+                    show_license_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_info_window = false;
+                    show_boss_respawn_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
@@ -368,6 +388,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_feedback_window = true;
                 }
 
@@ -380,6 +401,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_license_window = true;
                 }
 
@@ -392,6 +414,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_settings_window = true;
                 }
 
@@ -404,6 +427,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_info_window = true;
                 }
 
@@ -485,6 +509,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
       
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
+            } else if (show_boss_respawn_window) {
+                ShowBossRespawnWindow(show_boss_respawn_window);
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
