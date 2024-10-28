@@ -1,5 +1,7 @@
 #include "RegnumStarter.h"
 
+extern std::string setting_regnumInstallPath;
+
 void runRoClientGame(const std::string& regnumLoginUser, const std::string& regnumLoginPassword) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -34,21 +36,21 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    static ImGui::FileBrowser fileDialog;
+    static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
     static bool showFileDialog = false;
 
     if (ImGui::Button("Select Regnum Online Installation Path")) {
+        fileDialog.Open();
         showFileDialog = true;
     }
 
     if (showFileDialog) {
         fileDialog.Display();
-    }
-
-    if (fileDialog.HasSelected()) {
-        setting_regnumInstallPath = fileDialog.GetSelected().string();
-        fileDialog.ClearSelected();
-        showFileDialog = false;
+        if (fileDialog.HasSelected()) {
+            setting_regnumInstallPath = fileDialog.GetSelected().string();
+            fileDialog.ClearSelected();
+            showFileDialog = false;
+        }
     }
 
     ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
