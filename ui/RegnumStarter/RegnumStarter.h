@@ -13,3 +13,10 @@ void ShowRegnumStarter(bool& show_RegnumStarter);
 
 // Function to run the Regnum Online client game
 void runRoClientGame(const std::string& regnumLoginUser, const std::string& regnumLoginPassword);
+
+// Define the checkbox states
+bool enableMusic = true;
+bool enableSoundEffects = true;
+bool showLoadingScreen = true;
+bool ShowIntro = true;
+float soundVolume = 0.5f;
