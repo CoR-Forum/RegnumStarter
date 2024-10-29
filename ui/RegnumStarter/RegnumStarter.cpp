@@ -62,7 +62,54 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     }
 }
 
+void CheckAndUpdateConfig() {
+    std::string configPath = setting_regnumInstallPath + "\\game.cfg";
+    std::ifstream configFileRead(configPath);
+    std::unordered_map<std::string, std::string> configMap;
+
+    if (configFileRead.is_open()) {
+        std::string line;
+        while (std::getline(configFileRead, line)) {
+            std::istringstream lineStream(line);
+            std::string key;
+            if (std::getline(lineStream, key, '=')) {
+                std::string value;
+                if (std::getline(lineStream, value)) {
+                    configMap[key] = value;
+                }
+            }
+        }
+        configFileRead.close();
+    }
+
+    bool updated = false;
+
+    auto updateIfDifferent = [&](const std::string& key, const std::string& value) {
+        if (configMap[key] != value) {
+            UpdateConfigValue(key, value);
+            updated = true;
+        }
+    };
+
+    updateIfDifferent("snd_sound_volume", std::to_string(soundVolume));
+    updateIfDifferent("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+    updateIfDifferent("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+    updateIfDifferent("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+    updateIfDifferent("show_intro", std::to_string(ShowIntro ? 1 : 0));
+
+    if (updated) {
+        Log("Configuration file updated with saved settings.");
+    }
+}
+
 void ShowRegnumStarter(bool& show_RegnumStarter) {
+
+    static bool configChecked = false;
+    if (!configChecked) {
+        CheckAndUpdateConfig();
+        configChecked = true;
+    }
+
     if (!show_RegnumStarter) return;
 
     ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
