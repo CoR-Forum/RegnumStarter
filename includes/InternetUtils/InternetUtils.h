@@ -65,7 +65,17 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path);
  * @param payload The payload to send with the request.
  * @return Handle to the HTTP request.
  */
-HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody);
+HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody, const std::string& session_id = "");
+
+
+/** 
+ * @brief Sends an HTTP PUT request to the given path using the provided connection handle.
+ * 
+ * @param hConnect Handle to the internet connection.
+ * @param path The path to send the request to.
+ * @param payload The payload to send with the request.
+ */
+HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody, const std::string& session_id = "");
 
 /**
  * @brief Reads the response from the given HTTP request handle.

@@ -42,21 +42,37 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
     return hRequest;
 }
 
-HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody) {
-    Log("Sending POST request to " + path + " with body: " + requestBody);
+HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& payload, const std::string& session_id) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0); // Removed INTERNET_FLAG_SECURE
-    if (!hRequest) {
-        std::cerr << "HttpOpenRequest failed with error: " << GetLastError() << std::endl;
-        throw std::runtime_error("Failed to open HTTP request");
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+
+    std::string headers = "Content-Type: application/json\r\n";
+    if (!session_id.empty()) {
+        headers += "Cookie: connect.sid=" + session_id + "\r\n";
     }
 
-    const char* headers = "Content-Type: application/json\r\n";
-    if (!HttpSendRequest(hRequest, headers, (DWORD)strlen(headers), (LPVOID)requestBody.c_str(), (DWORD)requestBody.length())) {
-        std::cerr << "HttpSendRequest failed with error: " << GetLastError() << std::endl;
-        InternetCloseHandle(hRequest);
+    BOOL result = HttpSendRequest(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
+    if (!result) {
         throw std::runtime_error("Failed to send HTTP request");
     }
+
+    return hRequest;
+}
+
+HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& payload, const std::string& session_id) {
+    const char* acceptTypes[] = { "application/json", NULL };
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "PUT", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+
+    std::string headers = "Content-Type: application/json\r\n";
+    if (!session_id.empty()) {
+        headers += "Cookie: connect.sid=" + session_id + "\r\n";
+    }
+
+    BOOL result = HttpSendRequest(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
+    if (!result) {
+        throw std::runtime_error("Failed to send HTTP request");
+    }
+
     return hRequest;
 }
 

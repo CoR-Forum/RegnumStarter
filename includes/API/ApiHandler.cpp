@@ -15,34 +15,51 @@ bool Login(const std::string& login, const std::string& password) {
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
+
+        // Extract session ID from response headers
+        DWORD dwSize = 0;
+        HttpQueryInfo(hRequest, HTTP_QUERY_SET_COOKIE, NULL, &dwSize, NULL);
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+            std::vector<char> buffer(dwSize);
+            if (HttpQueryInfo(hRequest, HTTP_QUERY_SET_COOKIE, buffer.data(), &dwSize, NULL)) {
+                std::string headers(buffer.begin(), buffer.end());
+                std::regex sessionRegex("connect.sid=([^;]+);");
+                std::smatch match;
+                if (std::regex_search(headers, match, sessionRegex) && match.size() > 1) {
+                    session_id = match.str(1);
+                    LogDebug("Session ID: " + session_id);
+                }
+            }
+        }
+
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
 
-        if (jsonResponse.contains("message") && !jsonResponse["message"].is_null()) {
+        if (jsonResponse.contains("message") && jsonResponse["message"].is_string()) {
             std::string message = jsonResponse["message"];
 
             if (message == "Login successful") {
                 LogDebug("User " + login + " logged in successfully");
 
-                if (jsonResponse.contains("user") && !jsonResponse["user"].is_null()) {
+                if (jsonResponse.contains("user") && jsonResponse["user"].is_object()) {
                     auto user = jsonResponse["user"];
 
-                    int userId = user["id"];
-                    std::string username = user["username"];
-                    std::string nickname = user["nickname"];
-                    std::string settings = user["settings"];
-                    std::string features = user["features"];
+                    int userId = user.value("id", -1);
+                    std::string username = user.value("username", "");
+                    std::string nickname = user.value("nickname", "");
+                    std::string settings = user.value("settings", "");
+                    std::string features = user.value("features", "");
 
                     LogDebug("User ID: " + std::to_string(userId) + ", Username: " + username + ", Nickname: " + nickname);
 
-                    if (user.contains("pointers") && !user["pointers"].is_null()) {
+                    if (user.contains("pointers") && user["pointers"].is_object()) {
                         auto pointers = user["pointers"];
 
                         for (auto& [key, value] : pointers.items()) {
-                            std::string feature = value["feature"];
-                            std::string address = value["address"];
-                            std::string offsets = value["offsets"];
+                            std::string feature = value.value("feature", "");
+                            std::string address = value.value("address", "");
+                            std::string offsets = value.value("offsets", "");
 
                             LogDebug("Pointer: " + key + ", Feature: " + feature + ", Address: " + address + ", Offsets: " + offsets);
                         }
@@ -63,12 +80,51 @@ bool Login(const std::string& login, const std::string& password) {
                 return false;
             }
         } else {
-            Log("Invalid response: missing message");
+            Log("Invalid response: missing or invalid message");
             return false;
         }
     } catch (const std::exception& e) {
         Log(e.what());
         return false;
+    }
+}
+
+void SaveSettings() {
+    try {
+        nlohmann::json settingsJson;
+        settingsJson["logDebug"] = setting_log_debug;
+        settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
+        settingsJson["fontSize"] = setting_fontSize;
+        settingsJson["enableRainbow"] = setting_enableRainbow;
+        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;  
+        settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
+        settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
+        settingsJson["enableMusic"] = enableMusic;
+        settingsJson["enableSoundEffects"] = enableSoundEffects;
+        settingsJson["showLoadingScreen"] = showLoadingScreen;
+        settingsJson["showIntro"] = ShowIntro;
+        settingsJson["SoundVolume"] = soundVolume;
+
+        std::string payload = settingsJson.dump();
+        std::string path = "/api/save-settings";
+
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
+        HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload, session_id); // Pass session_id as a header
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse.value("status", "");
+        std::string message = jsonResponse.value("message", "");
+
+        if (status == "success") {
+            Log("Settings saved successfully");
+        } else {
+            Log("Failed to save settings: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Failed to save settings with exception: " + std::string(e.what()));
     }
 }
 
@@ -95,100 +151,6 @@ void Logout() {
     outFile.close();
     
     PostQuitMessage(0);
-}
-
-void SaveSettings() {
-    try {
-        nlohmann::json settingsJson;
-        settingsJson["logDebug"] = setting_log_debug;
-        settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
-        settingsJson["fontSize"] = setting_fontSize;
-        settingsJson["enableRainbow"] = setting_enableRainbow;
-        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;  
-        settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
-        settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
-        settingsJson["enableMusic"] = enableMusic;
-        settingsJson["enableSoundEffects"] = enableSoundEffects;
-        settingsJson["showLoadingScreen"] = showLoadingScreen;
-        settingsJson["showIntro"] = ShowIntro;
-        settingsJson["SoundVolume"] = soundVolume;
-
-        std::string settingsStr = settingsJson.dump();
-        std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
-
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            Log("Settings saved successfully");
-        } else {
-            Log("Failed to save settings: " + message);
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-    }
-}
-
-void LoadSettings() {
-    try {
-        std::string path = "/user.php?action=loadSettings&username=" + login + "&password=" + password;
-
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        
-        if (jsonResponse.contains("status") && jsonResponse["status"].is_string()) {
-            std::string status = jsonResponse["status"];
-            std::string message = jsonResponse.value("message", "");
-
-            if (status == "success") {
-                if (jsonResponse.contains("settings") && jsonResponse["settings"].is_object()) {
-                    auto settingsJson = jsonResponse["settings"];
-                    setting_fontSize = settingsJson.value("fontSize", 1.0f);
-                    setting_enableRainbow = settingsJson.value("enableRainbow", false);
-                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);  
-                    setting_log_debug = settingsJson.value("logDebug", false);
-                    setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
-                    setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "C:\\Games\\NGD Studios\\Champions of Regnum");
-                    enableMusic = settingsJson.value("enableMusic", true);
-                    enableSoundEffects = settingsJson.value("enableSoundEffects", true);
-                    showLoadingScreen = settingsJson.value("showLoadingScreen", true);
-                    ShowIntro = settingsJson.value("showIntro", true);
-                    soundVolume = settingsJson.value("SoundVolume", 0.5f);
-
-                    if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
-                        textColor.x = settingsJson["textColor"][0];
-                        textColor.y = settingsJson["textColor"][1];
-                        textColor.z = settingsJson["textColor"][2];
-                        textColor.w = settingsJson["textColor"][3];
-                    } else {
-                        Log("Invalid or missing textColor settings");
-                    }
-
-                    Log("Settings loaded successfully");
-                } else {
-                    Log("Invalid or missing settings object");
-                }
-            } else {
-                Log("Failed to load settings: " + message);
-            }
-        } else {
-            Log("Invalid or missing status in response");
-        }
-    } catch (const std::exception& e) {
-        Log("Settings load failed with Exception: " + std::string(e.what()));
-    }
 }
 
 // Function to generate MD5 hash of a given string using header-only MD5 library
@@ -442,30 +404,6 @@ void CheckChatMessages() {
         } catch (const std::exception& e) {
             Log("Exception: " + std::string(e.what()));
         }
-    }
-}
-
-void GetMagnatCurrency() {
-    try {
-        std::string path = "/magnat.php?action=getWallet&username=" + login + "&password=" + password;
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            magnatCurrency = jsonResponse["wallet"]["amount"];
-            LogDebug("Magnat currency fetched successfully: " + std::to_string(magnatCurrency));
-        } else {
-            LogDebug("Failed to fetch Magnat currency: " + message);
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
     }
 }
 
