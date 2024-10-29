@@ -179,6 +179,11 @@ void SaveSettings() {
         settingsJson["rainbowSpeed"] = setting_rainbowSpeed;  
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
         settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
+        settingsJson["enableMusic"] = enableMusic;
+        settingsJson["enableSoundEffects"] = enableSoundEffects;
+        settingsJson["showLoadingScreen"] = showLoadingScreen;
+        settingsJson["showIntro"] = ShowIntro;
+        settingsJson["SoundVolume"] = soundVolume;
 
         std::string settingsStr = settingsJson.dump();
         std::string path = "/user.php?action=saveSettings&username=" + login + "&password=" + password + "&settings=" + settingsStr;
@@ -228,6 +233,11 @@ void LoadSettings() {
                     setting_log_debug = settingsJson.value("logDebug", false);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "C:\\Games\\NGD Studios\\Champions of Regnum");
+                    enableMusic = settingsJson.value("enableMusic", true);
+                    enableSoundEffects = settingsJson.value("enableSoundEffects", true);
+                    showLoadingScreen = settingsJson.value("showLoadingScreen", true);
+                    ShowIntro = settingsJson.value("showIntro", true);
+                    soundVolume = settingsJson.value("SoundVolume", 0.5f);
 
                     if (settingsJson.contains("textColor") && settingsJson["textColor"].is_array() && settingsJson["textColor"].size() == 4) {
                         textColor.x = settingsJson["textColor"][0];
