@@ -53,6 +53,26 @@ bool Login(const std::string& login, const std::string& password) {
 
                     LogDebug("User ID: " + std::to_string(userId) + ", Username: " + username + ", Nickname: " + nickname);
 
+                    // Deserialize settings JSON string
+                    auto settingsJson = nlohmann::json::parse(settings);
+                    setting_log_debug = settingsJson.value("logDebug", false);
+                    textColor = ImVec4(
+                        settingsJson["textColor"][0],
+                        settingsJson["textColor"][1],
+                        settingsJson["textColor"][2],
+                        settingsJson["textColor"][3]
+                    );
+                    setting_fontSize = settingsJson.value("fontSize", 14.0f);
+                    setting_enableRainbow = settingsJson.value("enableRainbow", false);
+                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);
+                    setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
+                    setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "");
+                    enableMusic = settingsJson.value("enableMusic", true);
+                    enableSoundEffects = settingsJson.value("enableSoundEffects", true);
+                    showLoadingScreen = settingsJson.value("showLoadingScreen", true);
+                    ShowIntro = settingsJson.value("showIntro", true);
+                    soundVolume = settingsJson.value("SoundVolume", 0.5f);
+
                     if (user.contains("pointers") && user["pointers"].is_object()) {
                         auto pointers = user["pointers"];
 
@@ -105,13 +125,23 @@ void SaveSettings() {
         settingsJson["showIntro"] = ShowIntro;
         settingsJson["SoundVolume"] = soundVolume;
 
-        std::string payload = settingsJson.dump();
+        // Serialize settingsJson to a string
+        std::string settingsString = settingsJson.dump();
+
+        nlohmann::json payloadJson;
+        payloadJson["settings"] = settingsString; // Store the serialized JSON string
+
+        std::string payload = payloadJson.dump();
+        Log("Payload being sent: " + payload); // Log the payload
+
         std::string path = "/api/save-settings";
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload, session_id); // Pass session_id as a header
         std::string response = ReadResponse(hRequest);
+        Log("Response received: " + response); // Log the response
+
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
@@ -119,7 +149,7 @@ void SaveSettings() {
         std::string message = jsonResponse.value("message", "");
 
         if (status == "success") {
-            Log("Settings saved successfully");
+            Log("Settings saved successfully: " + message);
         } else {
             Log("Failed to save settings: " + message);
         }
