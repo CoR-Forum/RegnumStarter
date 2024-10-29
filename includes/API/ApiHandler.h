@@ -100,7 +100,6 @@ void RegisterUser(const std::string& username, const std::string& nickname, cons
 void LoadLoginCredentials(HINSTANCE hInstance);
 void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 void ActivateLicense(const std::string& licenseKey);
-void GetMagnatCurrency();
 void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile);
 void LoadRegnumAccounts();
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
