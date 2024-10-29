@@ -82,7 +82,25 @@ bool Login(const std::string& login, const std::string& password) {
                             std::string offsets = value.value("offsets", "");
 
                             LogDebug("Pointer: " + key + ", Feature: " + feature + ", Address: " + address + ", Offsets: " + offsets);
+
+                            Pointer pointer;
+                            pointer.name = key;
+                            pointer.address = std::stoul(address, nullptr, 16);
+
+                            if (!offsets.empty()) {
+                                std::stringstream ss(offsets);
+                                std::string offset;
+                                while (std::getline(ss, offset, ',')) {
+                                    pointer.offsets.push_back(std::stoul(offset, nullptr, 16));
+                                }
+                            }
+
+                            std::stringstream addressHex;
+                            addressHex << std::hex << pointer.address;
+                            LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsets);
+                            g_pointers.push_back(pointer);
                         }
+                        LogDebug("Pointers fetched and parsed successfully");
                     }
 
                     // Initialize other necessary variables and features here
@@ -159,27 +177,7 @@ void SaveSettings() {
 }
 
 void Logout() {
-    login.clear();
-    password.clear();
-
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\config.txt";
-    std::ifstream configFile(configFilePath);
-    std::string line;
-    std::vector<std::string> lines;
-
-    while (std::getline(configFile, line)) {
-        if (line.find("login=") == std::string::npos && line.find("password=") == std::string::npos) {
-            lines.push_back(line);
-        }
-    }
-    configFile.close();
-
-    std::ofstream outFile(configFilePath);
-    for (const auto& l : lines) {
-        outFile << l << std::endl;
-    }
-    outFile.close();
-    
+    session_id.clear();
     PostQuitMessage(0);
 }
 
@@ -287,52 +285,6 @@ void DeleteRegnumAccount(int id) {
     outFile.close();
 
     LoadRegnumAccounts();
-}
-
-std::vector<Pointer> InitializePointers() {
-    std::vector<Pointer> pointers;
-    std::string url = "https://api.sylent-x.com/pointers.php?username=" + login + "&password=" + password;
-    std::string jsonResponse = FetchDataFromAPI(url);
-    LogDebug("Fetched pointers from API: " + jsonResponse);
-    
-    if (!jsonResponse.empty()) {
-        try {
-            auto json = nlohmann::json::parse(jsonResponse);
-            if (!json.contains("memory_pointers")) {
-                Log("Invalid JSON response: memory_pointers not found");
-                return pointers;
-            }
-
-            for (const auto& item : json["memory_pointers"].items()) {
-                Pointer pointer;
-                pointer.name = item.key();
-                pointer.address = std::stoul(item.value()["address"].get<std::string>(), nullptr, 16);
-
-                std::string offsetsStr = item.value()["offsets"].get<std::string>();
-                if (!offsetsStr.empty()) {
-                    std::stringstream ss(offsetsStr);
-                    std::string offset;
-                    while (std::getline(ss, offset, ',')) {
-                        pointer.offsets.push_back(std::stoul(offset, nullptr, 16));
-                    }
-                }
-
-                std::stringstream addressHex;
-                addressHex << std::hex << pointer.address;
-                LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsetsStr);
-                pointers.push_back(pointer);
-            }
-            LogDebug("Pointers fetched and parsed successfully");
-        } catch (const nlohmann::json::exception& e) {
-            LogDebug("JSON parsing error: " + std::string(e.what()));
-        } catch (const std::invalid_argument& e) {
-            LogDebug("Invalid address or offset format");
-        }
-    } else {
-        Log("Failed to fetch or parse pointers");
-    }
-
-    return pointers;
 }
 
 void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password) {
