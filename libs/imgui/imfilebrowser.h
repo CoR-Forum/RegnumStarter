@@ -783,15 +783,15 @@ inline void ImGui::FileBrowser::Display()
 
     SameLine();
 
-    const bool shouldClose =
+    /* const bool shouldClose =
         Button("cancel") || shouldClose_ ||
         ((flags_ & ImGuiFileBrowserFlags_CloseOnEsc) &&
         IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
         IsKeyPressed(ImGuiKey_Escape));
     if (shouldClose)
     {
-        // CloseCurrentPopup(); // Remove this line
-    }
+        isOk_ = true;
+    } */
 
     if (!statusStr_.empty() && !(flags_ & ImGuiFileBrowserFlags_NoStatusBar))
     {
