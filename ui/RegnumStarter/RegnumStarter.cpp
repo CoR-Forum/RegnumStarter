@@ -230,7 +230,16 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
 
     static bool ShowIntro = true;
-    if (ImGui::Checkbox("Show Intro", &ShowIntro)) {
+    ImGui::Checkbox("Show Intro", &ShowIntro);
+
+    if (ImGui::Button("Save Settings")) {
+        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
+        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
+        SaveSettings();
+
         std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
         std::vector<std::string> filesToDelete = {
             "splash_nge.png",
@@ -268,14 +277,5 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                 }
             }
         }
-    }
-
-    if (ImGui::Button("Save Settings")) {
-        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
-        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
-        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
-        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
-        SaveSettings();
     }
 }
