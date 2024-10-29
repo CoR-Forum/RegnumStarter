@@ -12,7 +12,6 @@
 std::vector<int> counts(10, 0);
 std::vector<int> powerPoints(60, 0); // To store power points for levels 1-60
 int item_current_idx = 0;
-int initialSkillPoints = 85; // Default initial skill points
 
 void IncrementCount(int index) {
     if (counts[index] < 5) counts[index]++;
@@ -28,14 +27,11 @@ void LoadTrainerData() {
     file >> jsonData;
 
     std::string classType = "32"; // Default to "32" for non-mage classes
-    initialSkillPoints = 85; // Default initial skill points for non-mage classes
-
     if (item_current_idx == 2 || item_current_idx == 3) {
         classType = "80"; // Use "80" for mage classes
-        initialSkillPoints = 93; // Initial skill points for mage classes
     }
 
-    powerPoints = jsonData["points"]["power"][classType].get<std::vector<int>>();
+    powerPoints = jsonData["power"][classType].get<std::vector<int>>();
 }
 
 void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) {
@@ -56,7 +52,6 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
 
     if (show_Skilltrainer_window) {
         static const char* items[] = { "Hunter", "Marksman", "Conjurer", "Warlock", "Barbarian", "Knight" };
-        static int item_current_idx = 0; 
         static int selected_level = 0;
 
         ImGui::Text("Class:");
@@ -75,11 +70,6 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
             ImGui::EndCombo();
         }
 
-        ImGui::SameLine();
-        int totalPointsUsed = std::accumulate(counts.begin(), counts.end(), 0);
-        int remainingPoints = initialSkillPoints - totalPointsUsed;
-        ImGui::Text("Power Points: %d", remainingPoints);
-
         ImGui::Text("Level:");
         ImGui::SameLine();
         if (ImGui::BeginCombo("##LevelCombo", std::to_string(selected_level + 1).c_str())) {
@@ -94,6 +84,12 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
             }
             ImGui::EndCombo();
         }
+
+        int totalPointsUsed = std::accumulate(counts.begin(), counts.end(), 0);
+        int remainingPoints = powerPoints[selected_level] - totalPointsUsed;
+
+        // Display the remaining power points
+        ImGui::Text("Power Points: %d", remainingPoints);
 
         switch (item_current_idx) {
             case 0:
