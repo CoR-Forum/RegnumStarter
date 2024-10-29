@@ -218,24 +218,16 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Spacing();
 
     static float soundVolume = 0.5f;
-    if (ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f)) {
-        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
-    }
+    ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
 
     static bool enableMusic = true;
-    if (ImGui::Checkbox("Enable Music", &enableMusic)) {
-        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
-    }
+    ImGui::Checkbox("Enable Music", &enableMusic);
 
     static bool enableSoundEffects = true;
-    if (ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects)) {
-        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
-    }
+    ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
 
     static bool showLoadingScreen = true;
-    if (ImGui::Checkbox("Show Loading Screen", &showLoadingScreen)) {
-        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-    }
+    ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
 
     static bool ShowIntro = true;
     if (ImGui::Checkbox("Show Intro", &ShowIntro)) {
@@ -276,10 +268,14 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                 }
             }
         }
-        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
     }
 
     if (ImGui::Button("Save Settings")) {
+        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
+        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
         SaveSettings();
     }
 }
