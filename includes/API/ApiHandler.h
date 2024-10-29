@@ -97,8 +97,6 @@ void CheckChatMessages();
 
 bool Login(const std::string& login, const std::string& password);
 void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
-void LoadLoginCredentials(HINSTANCE hInstance);
-void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 void ActivateLicense(const std::string& licenseKey);
 void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile);
 void LoadRegnumAccounts();

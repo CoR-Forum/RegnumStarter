@@ -35,12 +35,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     SelfUpdate();
-    LoadLoginCredentials(hInstanceGlobal);
 
     bool loginSuccess = Login(login, password);
     if (loginSuccess) {
         LogDebug("Auto-login successful");
-        LoadSettings();
         show_login_window = false;
         show_main_window = true;
     } else {
