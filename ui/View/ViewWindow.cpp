@@ -2,6 +2,8 @@
 #include "../../includes/Utils.h" // Assuming MemoryManipulation is declared here
 #include "../../ui/helper/Markers/LicenseMarker.h"
 
+extern std::string sylentx_status;
+
 // Function to get the key name from the virtual key code
 std::string GetKeyName(int virtualKey) {
     UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
@@ -16,7 +18,9 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
     if (show_view_window) {
         static float zoomValue = 15.0f; // Default zoom value
         static bool prevZoomState = false; // Track previous state of the checkbox
+        bool disableCheckboxes = (sylentx_status == "Detected");
 
+        ImGui::BeginDisabled(disableCheckboxes);
         ImGui::Checkbox("Enable Zoom", &optionZoom);
         if (optionZoom) {
             ImGui::SameLine();
@@ -30,9 +34,10 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
         }
 
         prevZoomState = optionZoom; // Update previous state
+        ImGui::EndDisabled();
 
         // Check if the checkbox is checked
-        ImGui::BeginDisabled(!featureFov);
+        ImGui::BeginDisabled(disableCheckboxes || !featureFov);
         if (ImGui::Checkbox("Field of View", &optionFov)) {
             if (!optionFov) {
                 // If the checkbox is unchecked, reset the FOV value
