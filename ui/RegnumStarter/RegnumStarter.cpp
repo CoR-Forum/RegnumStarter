@@ -1,6 +1,39 @@
 #include "RegnumStarter.h"
+#include <fstream>
+#include <sstream>
 
 extern std::string setting_regnumInstallPath;
+
+void UpdateConfigValue(const std::string& key, const std::string& value) {
+    std::string configPath = setting_regnumInstallPath + "\\game.cfg";
+    std::ifstream configFileRead(configPath);
+    std::string configContent;
+    bool lineExists = false;
+
+    if (configFileRead.is_open()) {
+        std::string line;
+        while (std::getline(configFileRead, line)) {
+            if (line.find(key) != std::string::npos) {
+                line = key + " = " + value;
+                lineExists = true;
+            }
+            configContent += line + "\n";
+        }
+        configFileRead.close();
+    }
+
+    if (!lineExists) {
+        configContent += key + " = " + value + "\n";
+    }
+
+    std::ofstream configFileWrite(configPath);
+    if (configFileWrite.is_open()) {
+        configFileWrite << configContent;
+        configFileWrite.close();
+    } else {
+        Log("Failed to open game.cfg for writing");
+    }
+}
 
 void runRoClientGame(const std::string& regnumLoginUser, const std::string& regnumLoginPassword) {
     STARTUPINFO si;
@@ -185,13 +218,66 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Spacing();
 
     static float soundVolume = 0.5f;
-    ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 1.0f);
+    if (ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f)) {
+        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
+    }
 
     static bool enableMusic = true;
-    ImGui::Checkbox("Enable Music", &enableMusic);
+    if (ImGui::Checkbox("Enable Music", &enableMusic)) {
+        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+    }
 
     static bool enableSoundEffects = true;
-    ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
+    if (ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects)) {
+        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+    }
+
+    static bool showLoadingScreen = true;
+    if (ImGui::Checkbox("Show Loading Screen", &showLoadingScreen)) {
+        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+    }
+
+    static bool ShowIntro = true;
+    if (ImGui::Checkbox("Show Intro", &ShowIntro)) {
+        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+        std::vector<std::string> filesToDelete = {
+            "splash_nge.png",
+            "splash_nge.ogg"
+        };
+
+        if (ShowIntro) {
+            // Check if files exist and download if they don't
+            for (const auto& file : filesToDelete) {
+                std::string filePath = livePath + file;
+                std::ifstream infile(filePath);
+                if (!infile.good()) {
+                    Log("File does not exist: " + filePath + ". Downloading...");
+                    std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
+
+                    // Download file using URLDownloadToFile
+                    HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
+                    if (SUCCEEDED(hr)) {
+                        Log("Downloaded file: " + filePath);
+                    } else {
+                        Log("Failed to download file: " + filePath);
+                    }
+                } else {
+                    Log("File already exists: " + filePath);
+                }
+            }
+        } else {
+            // Delete files
+            for (const auto& file : filesToDelete) {
+                std::string filePath = livePath + file;
+                if (remove(filePath.c_str()) != 0) {
+                    Log("Failed to delete file: " + filePath);
+                } else {
+                    Log("Deleted file: " + filePath);
+                }
+            }
+        }
+        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
+    }
 
     if (ImGui::Button("Save Settings")) {
         SaveSettings();
