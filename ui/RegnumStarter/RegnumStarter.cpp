@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 
+
 extern std::string setting_regnumInstallPath;
 
 void UpdateConfigValue(const std::string& key, const std::string& value) {
@@ -84,6 +85,56 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             fileDialog.ClearSelected();
             showFileDialog = false;
         }
+    }
+
+    static bool filesChecked = false; // Static flag to ensure the code runs only once
+
+    if (!filesChecked) {
+        // Check if splash_nge.ogg and splash_nge.png exist
+        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+        std::vector<std::string> filesToCheck = {
+            "splash_nge.png",
+            "splash_nge.ogg"
+        };
+        bool filesExist = true;
+        for (const auto& file : filesToCheck) {
+            std::string filePath = livePath + file;
+            std::ifstream infile(filePath);
+            if (!infile.good()) {
+                filesExist = false;
+                break;
+            }
+        }
+
+        // If files exist and the checkbox is saved as false, delete the files
+        if (filesExist && !ShowIntro) {
+            for (const auto& file : filesToCheck) {
+                std::string filePath = livePath + file;
+                if (remove(filePath.c_str()) != 0) {
+                    Log("Failed to delete file: " + filePath);
+                } else {
+                    Log("Deleted file: " + filePath);
+                }
+            }
+        }
+
+        // If files do not exist and the checkbox is saved as true, download the files
+        if (!filesExist && ShowIntro) {
+            std::vector<std::pair<std::string, std::string>> filesToDownload = {
+                {"https://patch.sylent-x.com/assets/splash_nge.png", livePath + "splash_nge.png"},
+                {"https://patch.sylent-x.com/assets/splash_nge.ogg", livePath + "splash_nge.ogg"}
+            };
+            for (const auto& file : filesToDownload) {
+                HRESULT hr = URLDownloadToFile(NULL, file.first.c_str(), file.second.c_str(), 0, NULL);
+                if (SUCCEEDED(hr)) {
+                    Log("Downloaded file: " + file.second);
+                } else {
+                    Log("Failed to download file: " + file.second);
+                }
+            }
+        }
+
+        filesChecked = true; // Set the flag to true after the operation is performed
     }
 
     ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
@@ -217,19 +268,18 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    static float soundVolume = 0.5f;
     ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
 
-    static bool enableMusic = true;
+
     ImGui::Checkbox("Enable Music", &enableMusic);
 
-    static bool enableSoundEffects = true;
+
     ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
 
-    static bool showLoadingScreen = true;
+
     ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
 
-    static bool ShowIntro = true;
+
     ImGui::Checkbox("Show Intro", &ShowIntro);
 
     if (ImGui::Button("Save Settings")) {
