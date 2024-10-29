@@ -407,12 +407,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 if (show_settings_window) {
 
-                    if (ImGui::Button("Save Settings")) {
-                        SaveSettings();
-                    }
-
-                    ImGui::Separator();
-
                     ImGui::SeparatorText("General");
 
                     if (ImGui::Checkbox("Streamproof", &setting_excludeFromCapture)) {
@@ -439,7 +433,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SameLine();
                     ImGui::SliderFloat("##Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
 
-                    ImGui::Separator();
+                    ImGui::SeparatorText("Misc");
 
                     if (ImGui::Button("Save Settings")) {
                         SaveSettings();
