@@ -1,88 +1,75 @@
 #include "ApiHandler.h"
 
+std::string session_id;
+
 bool Login(const std::string& login, const std::string& password) {
     try {
-        std::string path = "/user.php?action=login&username=" + login + "&password=" + password;
+        std::string path = "/api/login";
+        nlohmann::json jsonPayload = {
+            {"username", login},
+            {"password", password}
+        };
+        std::string payload = jsonPayload.dump();
+
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
 
-        // Check if status and message are not null
-        if (jsonResponse.contains("status") && !jsonResponse["status"].is_null() &&
-            jsonResponse.contains("message") && !jsonResponse["message"].is_null()) {
-            std::string status = jsonResponse["status"];
+        if (jsonResponse.contains("message") && !jsonResponse["message"].is_null()) {
             std::string message = jsonResponse["message"];
 
-            if (status == "success") {
+            if (message == "Login successful") {
                 LogDebug("User " + login + " logged in successfully");
 
-                sylentx_status = jsonResponse["system_status"];
-                LogDebug("Sylen-X Status: " + sylentx_status);
+                if (jsonResponse.contains("user") && !jsonResponse["user"].is_null()) {
+                    auto user = jsonResponse["user"];
 
-                sylentx_status = sylentx_status;
+                    int userId = user["id"];
+                    std::string username = user["username"];
+                    std::string nickname = user["nickname"];
+                    std::string settings = user["settings"];
+                    std::string features = user["features"];
 
-                auto licensedFeatures = jsonResponse["licensed_features"];
-                featureZoom = std::find(licensedFeatures.begin(), licensedFeatures.end(), "zoom") != licensedFeatures.end();
-                featureGravity = std::find(licensedFeatures.begin(), licensedFeatures.end(), "gravity") != licensedFeatures.end();
-                featureMoonjump = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonjump") != licensedFeatures.end();
-                featureMoonwalk = std::find(licensedFeatures.begin(), licensedFeatures.end(), "moonwalk") != licensedFeatures.end();
-                featureFakelag = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fakelag") != licensedFeatures.end();
-                featureFov = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fov") != licensedFeatures.end();
-                featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
-                featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
-                featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
+                    LogDebug("User ID: " + std::to_string(userId));
+                    LogDebug("Username: " + username);
+                    LogDebug("Nickname: " + nickname);
+                    LogDebug("Settings: " + settings);
+                    LogDebug("Features: " + features);
 
-                Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
-                    std::string(featureGravity ? ", Gravity" : "") + 
-                    std::string(featureMoonjump ? ", Moonjump" : "") + 
-                    std::string(featureMoonwalk ? ", Moonwalk" : "") + 
-                    std::string(featureFov ? ", Field of View" : "") + 
-                    std::string(featureSpeedhack ? ", Speedhack" : "") + 
-                    std::string(featureFastfly ? ", Fastfly" : "") + 
-                    std::string(featureFakelag ? ", fakelag" : "") + 
-                    std::string(featureFreecam ? ", Freecam" : ""));
-                    
-                // Check if role is not null
-                if (jsonResponse.contains("role") && !jsonResponse["role"].is_null()) {
-                    std::string role = jsonResponse["role"];
-                    isAdmin = (role == "admin");
-                    Log("Role: " + role);
+                    if (user.contains("pointers") && !user["pointers"].is_null()) {
+                        auto pointers = user["pointers"];
+
+                        for (auto& [key, value] : pointers.items()) {
+                            std::string feature = value["feature"];
+                            std::string address = value["address"];
+                            std::string offsets = value["offsets"];
+
+                            LogDebug("Pointer Feature: " + feature);
+                            LogDebug("Pointer Address: " + address);
+                            LogDebug("Pointer Offsets: " + offsets);
+                        }
+                    }
+
+                    // Initialize other necessary variables and features here
+
+                    std::thread chatThread(CheckChatMessages);
+                    chatThread.detach();
+
+                    return true;
                 } else {
-                    isAdmin = false;
-                    Log("Role: unknown");
+                    Log("Invalid response: missing user object");
+                    return false;
                 }
-
-                // Check if runtime_end is not null
-                if (jsonResponse.contains("runtime_end") && !jsonResponse["runtime_end"].is_null()) {
-                    license_runtime_end = jsonResponse["runtime_end"];
-                } else {
-                    license_runtime_end = "";
-                }
-
-                // Convert the licensed_features array to a comma-separated string
-                std::ostringstream oss;
-                for (const auto& feature : jsonResponse["licensed_features"]) {
-                    if (oss.tellp() > 0) oss << ", ";
-                    oss << feature.get<std::string>();
-                }
-                license_features = oss.str();
-
-                g_pointers = InitializePointers();
-
-                // Start the CheckChatMessages process in a new thread
-                std::thread chatThread(CheckChatMessages);
-                chatThread.detach(); // Detach the thread to run independently
-
-                return true;
             } else {
+                Log("Login failed: " + message);
                 return false;
             }
         } else {
-            Log("Invalid response: missing status or message");
+            Log("Invalid response: missing message");
             return false;
         }
     } catch (const std::exception& e) {
@@ -565,6 +552,30 @@ void CheckChatMessages() {
         } catch (const std::exception& e) {
             Log("Exception: " + std::string(e.what()));
         }
+    }
+}
+
+void GetMagnatCurrency() {
+    try {
+        std::string path = "/magnat.php?action=getWallet&username=" + login + "&password=" + password;
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            magnatCurrency = jsonResponse["wallet"]["amount"];
+            LogDebug("Magnat currency fetched successfully: " + std::to_string(magnatCurrency));
+        } else {
+            LogDebug("Failed to fetch Magnat currency: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Exception: " + std::string(e.what()));
     }
 }
 

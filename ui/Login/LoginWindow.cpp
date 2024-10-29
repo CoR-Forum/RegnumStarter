@@ -38,15 +38,12 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         std::thread loginThread([&]() {
             loginSuccess = Login(username, password);
             if (loginSuccess) {
-                Log("Login successful");
-                SaveLoginCredentials(username, password);
                 show_main_window = true;
 
                 // Reapply color settings after manual login
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                 ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
             } else {
-                Log("Login failed");
                 show_login_window = true; // Show the login window again if login fails
             }
         });
