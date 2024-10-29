@@ -112,11 +112,6 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
     if (!show_RegnumStarter) return;
 
-    ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
     static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
     static bool showFileDialog = false;
 
