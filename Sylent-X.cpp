@@ -36,15 +36,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     SelfUpdate();
 
-    bool loginSuccess = Login(login, password);
-    if (loginSuccess) {
-        LogDebug("Auto-login successful");
-        show_login_window = false;
-        show_main_window = true;
-    } else {
-        LogDebug("Auto-login failed");
-        show_login_window = true;
-    }
+    show_login_window = true;
 
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
