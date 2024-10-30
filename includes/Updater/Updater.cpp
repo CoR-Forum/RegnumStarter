@@ -21,7 +21,6 @@ void SelfUpdate() {
 
     if (latestVersion <= sylentx_version) {
         Log("No new update available.");
-        LogDebug("Server returned version: " + latestVersion + " - Current version: " + sylentx_version);
         return;
     }
 
@@ -32,7 +31,7 @@ void SelfUpdate() {
     HRESULT hr = URLDownloadToFile(NULL, downloadURL.c_str(), "Sylent-X_New.exe", 0, &progressCallback);
     if (SUCCEEDED(hr)) {
         Log("Update downloaded successfully");
-        MessageBox(NULL, "Update downloaded! The application will now restart to complete the update.", "Update", MB_OK | MB_TOPMOST);
+        MessageBox(NULL, "Update downloaded! The application will now quit to complete the update. Please restart manually after 5 seconds.", "Update", MB_OK | MB_TOPMOST);
 
         // Get the name of the currently running executable
         char currentExePath[MAX_PATH];
@@ -87,7 +86,7 @@ std::pair<std::string, std::string> FetchLatestVersion() {
     std::string downloadURL;
     std::string randomString = generateRandomString(10); // Generate a random string of length 10
     std::string url = "https://patch.sylent-x.com/v0/latest_version.txt?v=" + randomString;
-    Log("Fetching latest version from: " + url);
+    LogDebug("Fetching latest version from: " + url);
 
     HRESULT hr = URLDownloadToFile(NULL, url.c_str(), "latest_version.txt", 0, NULL);
     if (SUCCEEDED(hr)) {
@@ -117,7 +116,7 @@ std::pair<std::string, std::string> FetchLatestVersion() {
         } else {
             Log("Error: Unable to open the version file.");
         }
-        Log("Fetched latest version: " + latestVersion + " - Download URL: " + downloadURL);
+        LogDebug("Fetched latest version: " + latestVersion + " - Download URL: " + downloadURL);
         std::remove("latest_version.txt");
     } else {
         Log("Error: Failed to download the version file.");
