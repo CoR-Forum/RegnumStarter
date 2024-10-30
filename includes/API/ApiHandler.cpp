@@ -129,6 +129,7 @@ bool Login(const std::string& login, const std::string& password) {
                 }
             } else {
                 Log("Login failed: " + message);
+                MessageBox(NULL, message.c_str(), "Login failed", MB_ICONERROR | MB_TOPMOST);
                 return false;
             }
         } else {
