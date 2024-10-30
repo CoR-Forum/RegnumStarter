@@ -28,8 +28,8 @@ HINTERNET ConnectToAPI(HINTERNET hInternet) {
 }
 
 HINTERNET ConnectToAPIv2(HINTERNET hInternet) {
-    HINTERNET hConnect = InternetConnect(hInternet, "5.161.184.121", 3000, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
-    if (!hConnect) throw std::runtime_error("Failed to connect to API on 5.161.184.121:3000");
+    HINTERNET hConnect = InternetConnect(hInternet, "localhost", 3000, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) throw std::runtime_error("Failed to connect to API on localhost:3000");
     return hConnect;
 }
 
@@ -45,6 +45,8 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
 HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& payload, const std::string& session_id) {
     const char* acceptTypes[] = { "application/json", NULL };
     HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+
+    LogDebug("Using SendHTTPPostRequest with: " + path + " and payload: " + payload);
 
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
