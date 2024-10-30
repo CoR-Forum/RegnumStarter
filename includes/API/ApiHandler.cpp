@@ -73,6 +73,20 @@ bool Login(const std::string& login, const std::string& password) {
                     ShowIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
 
+                    // Log the loaded settings
+                    LogDebug("Loaded settings: logDebug=" + std::to_string(setting_log_debug) +
+                             ", textColor=(" + std::to_string(textColor.x) + ", " + std::to_string(textColor.y) + ", " + std::to_string(textColor.z) + ", " + std::to_string(textColor.w) + ")" +
+                             ", fontSize=" + std::to_string(setting_fontSize) +
+                             ", enableRainbow=" + std::to_string(setting_enableRainbow) +
+                             ", rainbowSpeed=" + std::to_string(setting_rainbowSpeed) +
+                             ", excludeFromCapture=" + std::to_string(setting_excludeFromCapture) +
+                             ", regnumInstallPath=" + setting_regnumInstallPath +
+                             ", enableMusic=" + std::to_string(enableMusic) +
+                             ", enableSoundEffects=" + std::to_string(enableSoundEffects) +
+                             ", showLoadingScreen=" + std::to_string(showLoadingScreen) +
+                             ", showIntro=" + std::to_string(ShowIntro) +
+                             ", soundVolume=" + std::to_string(soundVolume));
+
                     if (user.contains("pointers") && user["pointers"].is_object()) {
                         auto pointers = user["pointers"];
 
