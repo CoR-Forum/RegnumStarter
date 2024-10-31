@@ -242,6 +242,30 @@ void SaveSettings() {
 }
 
 void Logout() {
+    try {
+        std::string path = "/api/logout";
+
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, "", session_id); // Pass session_id as a header
+        std::string response = ReadResponse(hRequest);
+        Log("Response received: " + response); // Log the response
+
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse.value("status", "");
+        std::string message = jsonResponse.value("message", "");
+
+        if (status == "success") {
+            Log("Logged out successfully: " + message);
+        } else {
+            Log("Failed to log out: " + message);
+        }
+    } catch (const std::exception& e) {
+        Log("Failed to log out with exception: " + std::string(e.what()));
+    }
+
     session_id.clear();
     PostQuitMessage(0);
 }
