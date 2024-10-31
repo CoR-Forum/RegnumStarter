@@ -242,6 +242,7 @@ void SaveSettings() {
 }
 
 void Logout() {
+    SaveSettings(); // Save settings before logging out
     try {
         std::string path = "/api/logout";
 
