@@ -303,6 +303,71 @@ void RegisterUser(const std::string& username, const std::string& nickname, cons
     }
 }
 
+bool ResetPasswordRequest(const std::string& email) {
+    try {
+        nlohmann::json jsonPayload = {
+            {"email", email}
+        };
+        std::string payload = jsonPayload.dump();
+
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
+        std::string path = "/api/reset-password";
+        std::string headers = "Content-Type: application/json";
+
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            return true;
+        } else {
+            MessageBox(NULL, ("Failed to send password reset e-mail: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            return false;
+        }
+    } catch (const std::exception& e) {
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+        return false;
+    }
+}
+
+bool SetNewPassword(const std::string& token, const std::string& password) {
+    try {
+        std::string path = "/api/reset-password/" + token;
+        nlohmann::json jsonPayload = {
+            {"password", password}
+        };
+        std::string payload = jsonPayload.dump();
+        std::string headers = "Content-Type: application/json";
+
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
+        std::string response = ReadResponse(hRequest);
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        std::string status = jsonResponse["status"];
+        std::string message = jsonResponse["message"];
+
+        if (status == "success") {
+            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            return true;
+        } else {
+            MessageBox(NULL, ("Failed to set new password: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
+            return false;
+        }
+    } catch (const std::exception& e) {
+        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
+        return false;
+    }
+}
+
 void SendChatMessage(const std::string& message) {
     try {
         std::string path = "/shoutbox.php?action=add&username=" + login + "&password=" + password + "&message=" + message;
@@ -404,58 +469,6 @@ void ActivateLicense(const std::string& licenseKey) {
         }
     } catch (const std::exception& e) {
         Log("Exception: " + std::string(e.what()));
-    }
-}
-
-bool ResetPasswordRequest(const std::string& email) {
-    try {
-        std::string path = "/user.php?action=reset&resetAction=init&email=" + email;
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
-            return true;
-        } else {
-            MessageBox(NULL, ("Failed to send password reset e-mail: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-            return false;
-        }
-    } catch (const std::exception& e) {
-        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
-        return false;
-    }
-}
-
-bool SetNewPassword(const std::string& token, const std::string& password) {
-    try {
-        std::string path = "/user.php?action=reset&resetAction=reset&token=" + token + "&password=" + password;
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            MessageBox(NULL, message.c_str(), "Success", MB_ICONINFORMATION | MB_TOPMOST);
-            return true;
-        } else {
-            MessageBox(NULL, ("Failed to set new password: " + message).c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
-            return false;
-        }
-    } catch (const std::exception& e) {
-        MessageBox(NULL, e.what(), "Exception", MB_ICONERROR | MB_TOPMOST);
-        return false;
     }
 }
 
