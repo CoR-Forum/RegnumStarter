@@ -4,7 +4,7 @@ std::string session_id;
 
 bool Login(const std::string& login, const std::string& password) {
     try {
-        std::string path = "/api/login";
+        std::string path = "/api/v2/login";
         nlohmann::json jsonPayload = {
             {"username", login},
             {"password", password}
@@ -36,7 +36,8 @@ bool Login(const std::string& login, const std::string& password) {
 
         auto jsonResponse = nlohmann::json::parse(response);
 
-        if (jsonResponse.contains("message") && jsonResponse["message"].is_string()) {
+        if (jsonResponse.contains("status") && jsonResponse["status"] == "success" &&
+            jsonResponse.contains("message") && jsonResponse["message"].is_string()) {
             std::string message = jsonResponse["message"];
 
             if (message == "Login successful") {
@@ -45,13 +46,13 @@ bool Login(const std::string& login, const std::string& password) {
                 if (jsonResponse.contains("user") && jsonResponse["user"].is_object()) {
                     auto user = jsonResponse["user"];
 
-                    int userId = user.value("id", -1);
+                    std::string userId = user.value("id", "");
                     std::string username = user.value("username", "");
                     std::string nickname = user.value("nickname", "");
                     std::string settings = user.value("settings", "");
                     std::string features = user.value("features", "");
 
-                    LogDebug("User ID: " + std::to_string(userId) + ", Username: " + username + ", Nickname: " + nickname);
+                    LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname);
 
                     // Deserialize settings JSON string
                     auto settingsJson = nlohmann::json::parse(settings);
@@ -132,8 +133,14 @@ bool Login(const std::string& login, const std::string& password) {
                 MessageBox(NULL, message.c_str(), "Login failed", MB_ICONERROR | MB_TOPMOST);
                 return false;
             }
+        } else if (jsonResponse.contains("status") && jsonResponse["status"] == "error" &&
+                   jsonResponse.contains("message") && jsonResponse["message"].is_string()) {
+            std::string message = jsonResponse["message"];
+            Log("Login failed: " + message);
+            MessageBox(NULL, message.c_str(), "Login failed", MB_ICONERROR | MB_TOPMOST);
+            return false;
         } else {
-            Log("Invalid response: missing or invalid message");
+            Log("Invalid response: missing or invalid status/message");
             return false;
         }
     } catch (const std::exception& e) {
@@ -162,7 +169,7 @@ void SendFeedback(const std::string& type, const std::string& feedback, bool fee
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        std::string path = "/api/feedback";
+        std::string path = "/api/v2/feedback";
         std::string headers = "Content-Type: application/json";
         if (!session_id.empty()) {
             headers += "\r\nCookie: connect.sid=" + session_id;
@@ -217,7 +224,7 @@ void SaveSettings() {
         std::string payload = payloadJson.dump();
         Log("Payload being sent: " + payload); // Log the payload
 
-        std::string path = "/api/save-settings";
+        std::string path = "/api/v2/save-settings";
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
@@ -244,7 +251,7 @@ void SaveSettings() {
 void Logout() {
     SaveSettings(); // Save settings before logging out
     try {
-        std::string path = "/api/logout";
+        std::string path = "/api/v2/logout";
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
@@ -283,7 +290,7 @@ void RegisterUser(const std::string& username, const std::string& nickname, cons
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        std::string path = "/api/register";
+        std::string path = "/api/v2/register";
         std::string headers = "Content-Type: application/json";
 
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
@@ -313,7 +320,7 @@ bool ResetPasswordRequest(const std::string& email) {
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        std::string path = "/api/reset-password";
+        std::string path = "/api/v2/reset-password";
         std::string headers = "Content-Type: application/json";
 
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
@@ -339,7 +346,7 @@ bool ResetPasswordRequest(const std::string& email) {
 
 bool SetNewPassword(const std::string& token, const std::string& password) {
     try {
-        std::string path = "/api/reset-password/" + token;
+        std::string path = "/api/v2/reset-password/" + token;
         nlohmann::json jsonPayload = {
             {"password", password}
         };
