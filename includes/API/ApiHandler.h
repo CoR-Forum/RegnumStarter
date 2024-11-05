@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Utils.h"
+#include "../../ui/Memory/Memory.h"
 #include "../InternetUtils/InternetUtils.cpp"
 #include <stdexcept>
 #include <sstream>
@@ -34,6 +35,12 @@ bool featureFreecam;
 bool featureFastfly;
 bool featureFakelag;
 
+// Declare the checkbox states as global variables
+extern bool enableMusic;
+extern bool enableSoundEffects;
+extern bool showLoadingScreen;
+extern bool ShowIntro;
+extern float soundVolume;
 
 // global variables for (checkbox) options
 bool optionGravity = false;
@@ -45,6 +52,7 @@ bool optionFov = false;
 bool optionFastFly = false;
 bool optionSpeedHack = false;
 bool optionFakelag = false;
+
 
 // global variables for settings (from user account via API)
 float setting_fontSize = 14.0f;

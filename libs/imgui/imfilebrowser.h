@@ -353,51 +353,31 @@ inline void ImGui::FileBrowser::Display()
         PopID();
     });
 
-    if(shouldOpen_)
-    {
-        OpenPopup(openLabel_.c_str());
-    }
     isOpened_ = false;
 
-    // open the popup window
+    // Set window position and size
+    if (isPosSet_)
+    {
+        SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)), ImGuiCond_FirstUseEver);
+    }
+    SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)), ImGuiCond_FirstUseEver);
 
-    if(shouldOpen_ && (flags_ & ImGuiFileBrowserFlags_NoModal))
+    // Begin the file browser window
+    if (!Begin("File Browser", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
     {
-        if(isPosSet_)
-        {
-            SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)));
-        }
-        SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)));
-    }
-    else
-    {
-        if(isPosSet_)
-        {
-            SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)), ImGuiCond_FirstUseEver);
-        }
-        SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)), ImGuiCond_FirstUseEver);
-    }
-    if(flags_ & ImGuiFileBrowserFlags_NoModal)
-    {
-        if(!BeginPopup(openLabel_.c_str()))
-        {
-            return;
-        }
-    }
-    else if(!BeginPopupModal(openLabel_.c_str(), nullptr,
-                             flags_ & ImGuiFileBrowserFlags_NoTitleBar ? ImGuiWindowFlags_NoTitleBar : 0))
-    {
+        End();
         return;
     }
 
     isOpened_ = true;
-    ScopeGuard endPopup([] { EndPopup(); });
+    ScopeGuard endWindow([] { End(); });
 
-    std::filesystem::path newDir; bool shouldSetNewDir = false;
+    std::filesystem::path newDir; 
+    bool shouldSetNewDir = false;
 
-    if(editDir_)
+    if (editDir_)
     {
-        if(setFocusToEditDir_) // Automatically set the text box to be focused on appearing
+        if (setFocusToEditDir_) // Automatically set the text box to be focused on appearing
         {
             SetKeyboardFocusHere();
         }
@@ -409,21 +389,21 @@ inline void ImGui::FileBrowser::Display()
             ExpandInputBuffer, &currDirBuffer_);
         PopItemWidth();
 
-        if(!IsItemActive() && !setFocusToEditDir_)
+        if (!IsItemActive() && !setFocusToEditDir_)
         {
             editDir_ = false;
         }
         setFocusToEditDir_ = false;
 
-        if(enter)
+        if (enter)
         {
             std::filesystem::path enteredDir = u8StrToPath(currDirBuffer_.data());
-            if(is_directory(enteredDir))
+            if (is_directory(enteredDir))
             {
                 newDir = std::move(enteredDir);
                 shouldSetNewDir = true;
             }
-            else if(is_directory(enteredDir.parent_path()))
+            else if (is_directory(enteredDir.parent_path()))
             {
                 newDir = enteredDir.parent_path();
                 shouldSetNewDir = true;
@@ -443,13 +423,13 @@ inline void ImGui::FileBrowser::Display()
         const char driveStr[] = { currentDrive, ':', '\0' };
 
         PushItemWidth(4 * GetFontSize());
-        if(BeginCombo("##select_drive", driveStr))
+        if (BeginCombo("##select_drive", driveStr))
         {
             ScopeGuard guard([&] { EndCombo(); });
 
-            for(int i = 0; i < 26; ++i)
+            for (int i = 0; i < 26; ++i)
             {
-                if(!(drives_ & (1 << i)))
+                if (!(drives_ & (1 << i)))
                 {
                     continue;
                 }
@@ -458,7 +438,7 @@ inline void ImGui::FileBrowser::Display()
                 const char selectableStr[] = { driveCh, ':', '\0' };
                 const bool selected = currentDrive == driveCh;
 
-                if(Selectable(selectableStr, selected) && !selected)
+                if (Selectable(selectableStr, selected) && !selected)
                 {
                     char newPwd[] = { driveCh, ':', '\\', '\0' };
                     SetDirectory(newPwd);
@@ -471,10 +451,10 @@ inline void ImGui::FileBrowser::Display()
 #endif
 
         int secIdx = 0, newDirLastSecIdx = -1;
-        for(const auto &sec : currentDirectory_)
+        for (const auto &sec : currentDirectory_)
         {
 #ifdef _WIN32
-            if(secIdx == 1)
+            if (secIdx == 1)
             {
                 ++secIdx;
                 continue;
@@ -482,11 +462,11 @@ inline void ImGui::FileBrowser::Display()
 #endif
 
             PushID(secIdx);
-            if(secIdx > 0)
+            if (secIdx > 0)
             {
                 SameLine();
             }
-            if(SmallButton(u8StrToStr(sec.u8string()).c_str()))
+            if (SmallButton(u8StrToStr(sec.u8string()).c_str()))
             {
                 newDirLastSecIdx = secIdx;
             }
@@ -495,13 +475,13 @@ inline void ImGui::FileBrowser::Display()
             ++secIdx;
         }
 
-        if(newDirLastSecIdx >= 0)
+        if (newDirLastSecIdx >= 0)
         {
             int i = 0;
             std::filesystem::path dstDir;
-            for(const auto &sec : currentDirectory_)
+            for (const auto &sec : currentDirectory_)
             {
-                if(i++ > newDirLastSecIdx)
+                if (i++ > newDirLastSecIdx)
                 {
                     break;
                 }
@@ -509,7 +489,7 @@ inline void ImGui::FileBrowser::Display()
             }
 
 #ifdef _WIN32
-            if(newDirLastSecIdx == 0)
+            if (newDirLastSecIdx == 0)
             {
                 dstDir /= "\\";
             }
@@ -518,11 +498,11 @@ inline void ImGui::FileBrowser::Display()
             SetDirectory(dstDir);
         }
 
-        if(flags_ & ImGuiFileBrowserFlags_EditPathString)
+        if (flags_ & ImGuiFileBrowserFlags_EditPathString)
         {
             SameLine();
 
-            if(SmallButton("#"))
+            if (SmallButton("#"))
             {
                 const auto currDirStr = u8StrToStr(currentDirectory_.u8string());
                 currDirBuffer_.resize(currDirStr.size() + 1);
@@ -536,41 +516,41 @@ inline void ImGui::FileBrowser::Display()
     }
 
     SameLine();
-    if(SmallButton("*"))
+    if (SmallButton("*"))
     {
         UpdateFileRecords();
 
         std::set<std::filesystem::path> newSelectedFilenames;
-        for(auto &name : selectedFilenames_)
+        for (auto &name : selectedFilenames_)
         {
             const auto it = std::find_if(
                 fileRecords_.begin(), fileRecords_.end(), [&](const FileRecord &record)
                 {
                     return name == record.name;
                 });
-            if(it != fileRecords_.end())
+            if (it != fileRecords_.end())
             {
                 newSelectedFilenames.insert(name);
             }
         }
 
-        if((flags_ & ImGuiFileBrowserFlags_EnterNewFilename) && inputNameBuffer_[0])
+        if ((flags_ & ImGuiFileBrowserFlags_EnterNewFilename) && inputNameBuffer_[0])
         {
             newSelectedFilenames.insert(u8StrToPath(inputNameBuffer_.data()));
         }
     }
 
     bool focusOnInputText = false;
-    if(flags_ & ImGuiFileBrowserFlags_CreateNewDir)
+    if (flags_ & ImGuiFileBrowserFlags_CreateNewDir)
     {
         SameLine();
-        if(SmallButton("+"))
+        if (SmallButton("+"))
         {
             OpenPopup(openNewDirLabel_.c_str());
             newDirNameBuffer_[0] = '\0';
         }
 
-        if(BeginPopup(openNewDirLabel_.c_str()))
+        if (BeginPopup(openNewDirLabel_.c_str()))
         {
             ScopeGuard endNewDirPopup([] { EndPopup(); });
 
@@ -580,10 +560,10 @@ inline void ImGui::FileBrowser::Display()
             focusOnInputText |= IsItemFocused();
             SameLine();
 
-            if(Button("ok") && newDirNameBuffer_[0] != '\0')
+            if (Button("ok") && newDirNameBuffer_[0] != '\0')
             {
                 ScopeGuard closeNewDirPopup([] { CloseCurrentPopup(); });
-                if(create_directory(currentDirectory_ / u8StrToPath(newDirNameBuffer_.data())))
+                if (create_directory(currentDirectory_ / u8StrToPath(newDirNameBuffer_.data())))
                 {
                     UpdateFileRecords();
                 }
@@ -598,7 +578,7 @@ inline void ImGui::FileBrowser::Display()
     // browse files in a child window
 
     float reserveHeight = GetFrameHeightWithSpacing();
-    if(flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
+    if (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
     {
         reserveHeight += GetFrameHeightWithSpacing();
     }
@@ -611,24 +591,24 @@ inline void ImGui::FileBrowser::Display()
         const bool shouldHideRegularFiles =
             (flags_ & ImGuiFileBrowserFlags_HideRegularFiles) && (flags_ & ImGuiFileBrowserFlags_SelectDirectory);
 
-        for(unsigned int rscIndex = 0; rscIndex < fileRecords_.size(); ++rscIndex)
+        for (unsigned int rscIndex = 0; rscIndex < fileRecords_.size(); ++rscIndex)
         {
             const auto &rsc = fileRecords_[rscIndex];
-            if(!rsc.isDir && shouldHideRegularFiles)
+            if (!rsc.isDir && shouldHideRegularFiles)
             {
                 continue;
             }
-            if(!rsc.isDir && !IsExtensionMatched(rsc.extension))
+            if (!rsc.isDir && !IsExtensionMatched(rsc.extension))
             {
                 continue;
             }
-            if(!rsc.name.empty() && rsc.name.c_str()[0] == '$')
+            if (!rsc.name.empty() && rsc.name.c_str()[0] == '$')
             {
                 continue;
             }
 
             const bool selected = selectedFilenames_.find(rsc.name) != selectedFilenames_.end();
-            if(Selectable(rsc.showName.c_str(), selected, ImGuiSelectableFlags_DontClosePopups))
+            if (Selectable(rsc.showName.c_str(), selected, ImGuiSelectableFlags_DontClosePopups))
             {
                 const bool wantDir = flags_ & ImGuiFileBrowserFlags_SelectDirectory;
                 const bool canSelect = rsc.name != ".." && rsc.isDir == wantDir;
@@ -642,27 +622,27 @@ inline void ImGui::FileBrowser::Display()
                     (flags_ & ImGuiFileBrowserFlags_MultipleSelection) &&
                     IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-                if(rangeSelect)
+                if (rangeSelect)
                 {
                     const unsigned int first = (std::min)(rangeSelectionStart_, rscIndex);
                     const unsigned int last = (std::max)(rangeSelectionStart_, rscIndex);
                     selectedFilenames_.clear();
-                    for(unsigned int i = first; i <= last; ++i)
+                    for (unsigned int i = first; i <= last; ++i)
                     {
-                        if(fileRecords_[i].isDir != wantDir)
+                        if (fileRecords_[i].isDir != wantDir)
                         {
                             continue;
                         }
-                        if(!wantDir && !IsExtensionMatched(fileRecords_[i].extension))
+                        if (!wantDir && !IsExtensionMatched(fileRecords_[i].extension))
                         {
                             continue;
                         }
                         selectedFilenames_.insert(fileRecords_[i].name);
                     }
                 }
-                else if(selected)
+                else if (selected)
                 {
-                    if(!multiSelect)
+                    if (!multiSelect)
                     {
                         selectedFilenames_ = { rsc.name };
                         rangeSelectionStart_ = rscIndex;
@@ -671,14 +651,14 @@ inline void ImGui::FileBrowser::Display()
                     {
                         selectedFilenames_.erase(rsc.name);
                     }
-                    if(flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
+                    if (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
                     {
                         inputNameBuffer_[0] = '\0';
                     }
                 }
-                else if(canSelect)
+                else if (canSelect)
                 {
-                    if(multiSelect)
+                    if (multiSelect)
                     {
                         selectedFilenames_.insert(rsc.name);
                     }
@@ -686,10 +666,10 @@ inline void ImGui::FileBrowser::Display()
                     {
                         selectedFilenames_ = { rsc.name };
                     }
-                    if(flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
+                    if (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
                     {
                         const auto rscName = u8StrToStr(rsc.name.u8string());
-                        if(inputNameBuffer_.size() < rscName.size() + 1)
+                        if (inputNameBuffer_.size() < rscName.size() + 1)
                         {
                             inputNameBuffer_.resize(rscName.size() + 1);
                         }
@@ -699,36 +679,36 @@ inline void ImGui::FileBrowser::Display()
                 }
                 else
                 {
-                    if(!multiSelect)
+                    if (!multiSelect)
                     {
                         selectedFilenames_.clear();
                     }
                 }
             }
 
-            if(IsItemClicked(0) && IsMouseDoubleClicked(0))
+            if (IsItemClicked(0) && IsMouseDoubleClicked(0))
             {
-                if(rsc.isDir)
+                if (rsc.isDir)
                 {
                     shouldSetNewDir = true;
                     newDir = (rsc.name != "..") ? (currentDirectory_ / rsc.name) : currentDirectory_.parent_path();
                 }
-                else if(!(flags_ & ImGuiFileBrowserFlags_SelectDirectory))
+                else if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory))
                 {
                     selectedFilenames_ = { rsc.name };
                     isOk_ = true;
                     CloseCurrentPopup();
                 }
             }
-            else if(IsKeyPressed(ImGuiKey_GamepadFaceDown) && IsItemHovered()) 
+            else if (IsKeyPressed(ImGuiKey_GamepadFaceDown) && IsItemHovered()) 
             {
-                if(rsc.isDir)
+                if (rsc.isDir)
                 {
                     shouldSetNewDir = true;
                     newDir = (rsc.name != "..") ? (currentDirectory_ / rsc.name) : currentDirectory_.parent_path();
                     SetKeyboardFocusHere(-1);
                 }
-                else if(!(flags_ & ImGuiFileBrowserFlags_SelectDirectory))
+                else if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory))
                 {
                     selectedFilenames_ = { rsc.name };
                     isOk_ = true;
@@ -738,18 +718,18 @@ inline void ImGui::FileBrowser::Display()
         }
     }
 
-    if(shouldSetNewDir)
+    if (shouldSetNewDir)
     {
         SetDirectory(newDir);
     }
 
-    if(flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
+    if (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)
     {
         PushID(this);
         ScopeGuard popTextID([] { PopID(); });
 
         PushItemWidth(-1);
-        if(InputText(
+        if (InputText(
             "", inputNameBuffer_.data(), inputNameBuffer_.size(),
             ImGuiInputTextFlags_CallbackResize, ExpandInputBuffer, &inputNameBuffer_) && inputNameBuffer_[0] != '\0')
         {
@@ -759,19 +739,19 @@ inline void ImGui::FileBrowser::Display()
         PopItemWidth();
     }
 
-    if(!focusOnInputText && !editDir_)
+    if (!focusOnInputText && !editDir_)
     {
         const bool selectAll = (flags_ & ImGuiFileBrowserFlags_MultipleSelection) &&
                                IsKeyPressed(ImGuiKey_A) && (IsKeyDown(ImGuiKey_LeftCtrl) ||
                                IsKeyDown(ImGuiKey_RightCtrl));
-        if(selectAll)
+        if (selectAll)
         {
             const bool needDir = flags_ & ImGuiFileBrowserFlags_SelectDirectory;
             selectedFilenames_.clear();
-            for(size_t i = 1; i < fileRecords_.size(); ++i)
+            for (size_t i = 1; i < fileRecords_.size(); ++i)
             {
                 auto &record = fileRecords_[i];
-                if(record.isDir == needDir &&
+                if (record.isDir == needDir &&
                    (needDir || IsExtensionMatched(record.extension)))
                 {
                     selectedFilenames_.insert(record.name);
@@ -784,54 +764,54 @@ inline void ImGui::FileBrowser::Display()
         (flags_ & ImGuiFileBrowserFlags_ConfirmOnEnter) &&
         IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
         IsKeyPressed(ImGuiKey_Enter);
-    if(!(flags_ & ImGuiFileBrowserFlags_SelectDirectory))
+    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory))
     {
-        if((Button(" ok ") || isEnterPressed) && !selectedFilenames_.empty())
+        if ((Button(" ok ") || isEnterPressed) && !selectedFilenames_.empty())
         {
             isOk_ = true;
-            CloseCurrentPopup();
+            // CloseCurrentPopup(); // Remove this line
         }
     }
     else
     {
-        if(Button(" ok ") || isEnterPressed)
+        if (Button(" ok ") || isEnterPressed)
         {
             isOk_ = true;
-            CloseCurrentPopup();
+            // CloseCurrentPopup(); // Remove this line
         }
     }
 
     SameLine();
 
-    const bool shouldClose =
+    /* const bool shouldClose =
         Button("cancel") || shouldClose_ ||
         ((flags_ & ImGuiFileBrowserFlags_CloseOnEsc) &&
         IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
         IsKeyPressed(ImGuiKey_Escape));
-    if(shouldClose)
+    if (shouldClose)
     {
-        CloseCurrentPopup();
-    }
+        isOk_ = true;
+    } */
 
-    if(!statusStr_.empty() && !(flags_ & ImGuiFileBrowserFlags_NoStatusBar))
+    if (!statusStr_.empty() && !(flags_ & ImGuiFileBrowserFlags_NoStatusBar))
     {
         SameLine();
         Text("%s", statusStr_.c_str());
     }
 
-    if(!typeFilters_.empty())
+    if (!typeFilters_.empty())
     {
         SameLine();
         PushItemWidth(8 * GetFontSize());
-        if(BeginCombo(
+        if (BeginCombo(
             "##type_filters", typeFilters_[typeFilterIndex_].c_str()))
         {
             ScopeGuard guard([&] { EndCombo(); });
 
-            for(size_t i = 0; i < typeFilters_.size(); ++i)
+            for (size_t i = 0; i < typeFilters_.size(); ++i)
             {
                 bool selected = i == typeFilterIndex_;
-                if(Selectable(typeFilters_[i].c_str(), selected) && !selected)
+                if (Selectable(typeFilters_[i].c_str(), selected) && !selected)
                 {
                     typeFilterIndex_ = static_cast<unsigned int>(i);
                 }

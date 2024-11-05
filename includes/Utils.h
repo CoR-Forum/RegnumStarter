@@ -35,16 +35,12 @@
 #include "../libs/imgui/imgui_impl_win32.h"
 #include "../libs/imgui/imgui_internal.h"
 #include "../libs/imgui/imfilebrowser.h"
+
 using json = nlohmann::json;
 
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
 
-struct Pointer {
-    std::string name;
-    unsigned long address;
-    std::vector<unsigned long> offsets;
-};
 
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
