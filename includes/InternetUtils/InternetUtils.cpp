@@ -28,7 +28,7 @@ HINTERNET ConnectToAPI(HINTERNET hInternet) {
 }
 
 HINTERNET ConnectToAPIv2(HINTERNET hInternet) {
-    HINTERNET hConnect = InternetConnect(hInternet, "5.161.184.121", 3000, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect = InternetConnect(hInternet, "localhost", 3000, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) throw std::runtime_error("Failed to connect to API on 5.161.184.121:3000");
     return hConnect;
 }

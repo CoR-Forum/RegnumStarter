@@ -50,7 +50,6 @@ bool Login(const std::string& login, const std::string& password) {
                     std::string username = user.value("username", "");
                     std::string nickname = user.value("nickname", "");
                     std::string settings = user.value("settings", "");
-                    std::string features = user.value("features", "");
 
                     LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname);
 
@@ -88,32 +87,35 @@ bool Login(const std::string& login, const std::string& password) {
                              ", showIntro=" + std::to_string(ShowIntro) +
                              ", soundVolume=" + std::to_string(soundVolume));
 
-                    if (user.contains("pointers") && user["pointers"].is_object()) {
-                        auto pointers = user["pointers"];
+                    if (user.contains("features") && user["features"].is_array()) {
+                        auto features = user["features"];
 
-                        for (auto& [key, value] : pointers.items()) {
-                            std::string feature = value.value("feature", "");
-                            std::string address = value.value("address", "");
-                            std::string offsets = value.value("offsets", "");
+                        for (const auto& feature : features) {
+                            if (feature.contains("pointer") && feature["pointer"].is_object()) {
+                                auto pointerObj = feature["pointer"];
+                                std::string featureName = feature.value("name", "");
+                                std::string address = pointerObj.value("address", "");
+                                std::string offsets = pointerObj.value("offsets", "");
 
-                            LogDebug("Pointer: " + key + ", Feature: " + feature + ", Address: " + address + ", Offsets: " + offsets);
+                                LogDebug("Pointer: " + featureName + ", Address: " + address + ", Offsets: " + offsets);
 
-                            Pointer pointer;
-                            pointer.name = key;
-                            pointer.address = std::stoul(address, nullptr, 16);
+                                Pointer pointer;
+                                pointer.name = featureName;
+                                pointer.address = std::stoul(address, nullptr, 16);
 
-                            if (!offsets.empty()) {
-                                std::stringstream ss(offsets);
-                                std::string offset;
-                                while (std::getline(ss, offset, ',')) {
-                                    pointer.offsets.push_back(std::stoul(offset, nullptr, 16));
+                                if (!offsets.empty()) {
+                                    std::stringstream ss(offsets);
+                                    std::string offset;
+                                    while (std::getline(ss, offset, ',')) {
+                                        pointer.offsets.push_back(std::stoul(offset, nullptr, 16));
+                                    }
                                 }
-                            }
 
-                            std::stringstream addressHex;
-                            addressHex << std::hex << pointer.address;
-                            LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsets);
-                            g_pointers.push_back(pointer);
+                                std::stringstream addressHex;
+                                addressHex << std::hex << pointer.address;
+                                LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsets);
+                                g_pointers.push_back(pointer);
+                            }
                         }
                         LogDebug("Pointers fetched and parsed successfully");
                     }
