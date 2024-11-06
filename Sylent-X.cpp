@@ -426,7 +426,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SameLine();
                     ImGui::SliderFloat("##Font Size", &setting_fontSize, 0.5f, 2.0f);
 
-                    ImGui::Text("Autism Mode");
+                    ImGui::Text("Rainbow Color");
                     ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
                     ImGui::SameLine();
                     ImGui::Text("Speed");
