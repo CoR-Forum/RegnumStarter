@@ -6,6 +6,11 @@ Sylent-X is an application designed to run on Windows, altough the development i
 
 This guide provides detailed instructions on how to build the application on both operating systems.
 
+## Branches
+
+* **main** - latest stable version
+* **dev** - current dev branch
+
 ## Build Instructions
 
 ### Build on macOS
