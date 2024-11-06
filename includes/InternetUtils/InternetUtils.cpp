@@ -54,8 +54,6 @@ HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const
     const char* acceptTypes[] = { "application/json", NULL };
     HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
 
-    LogDebug("Using SendHTTPPostRequest with: " + path + " and payload: " + payload);
-
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
         headers += "Cookie: connect.sid=" + session_id + "\r\n";

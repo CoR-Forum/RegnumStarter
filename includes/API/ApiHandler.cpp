@@ -151,56 +151,6 @@ bool Login(const std::string& login, const std::string& password) {
     }
 }
 
-void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile) {
-    try {
-        std::string logContent;
-        if (feedback_includeLogfile) {
-            for (const auto& logMessage : logMessages) {
-                logContent += logMessage + "\n";
-            }
-        }
-
-        nlohmann::json requestBody;
-        requestBody["type"] = type;
-        requestBody["feedback"] = feedback;
-        if (!logContent.empty()) {
-            requestBody["log"] = logContent;
-        }
-
-        std::string requestBodyStr = requestBody.dump();
-
-        HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        std::string path = "/api/v2/feedback";
-        std::string headers = "Content-Type: application/json";
-        if (!session_id.empty()) {
-            headers += "\r\nCookie: connect.sid=" + session_id;
-        }
-
-        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, requestBodyStr, headers);
-        std::string response = ReadResponse(hRequest);
-        CloseInternetHandles(hRequest, hConnect, hInternet);
-
-        // Check if the response is valid JSON
-        if (response.empty() || response[0] != '{') {
-            Log("Invalid response received: " + response);
-            return;
-        }
-
-        auto jsonResponse = nlohmann::json::parse(response);
-        std::string status = jsonResponse["status"];
-        std::string message = jsonResponse["message"];
-
-        if (status == "success") {
-            LogDebug("Feedback sent successfully: " + message);
-        } else {
-            LogDebug("Failed to send feedback: " + message);
-        }
-    } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
-    }
-}
-
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;

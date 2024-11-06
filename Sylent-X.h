@@ -34,7 +34,6 @@
 #include "ui/login/LoginWindow.cpp"
 #include "ui/login/register/RegisterWindow.cpp"
 #include "ui/RegnumStarter/RegnumStarter.cpp"
-#include "ui/Feedback/FeedbackWindow.cpp"
 #include "ui/License/LicenseWindow.cpp"
 #include "ui/Credits/CreditsWindow.cpp"
 #include "ui/Chat/ChatWindow.cpp"
