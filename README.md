@@ -2,13 +2,15 @@
 
 ## Overview
 
-Sylent-X is a cross-platform application designed to run on both macOS and Windows. This guide provides detailed instructions on how to build the application on both operating systems.
+Sylent-X is an application designed to run on Windows, altough the development is also possible on macOS.
+
+This guide provides detailed instructions on how to build the application on both operating systems.
 
 ## Build Instructions
 
 ### Build on macOS
 
-1. **Build the application:**
+1. **Build the application:** d
     ```sh
     i686-w64-mingw32-windres resource.rc resource.o && \
     i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp includes/md5/md5.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && wine bin/Sylent-X.exe
@@ -59,15 +61,3 @@ To update the application, place the new file on the server and update `latest_v
 0.1.1
 https://cor-forum.de/regnum/sylent/Sylent-X-0.1.1.exe
 ```
-
-## License
-
-Include licensing information here.
-
-## Contributing
-
-Include guidelines for contributing here.
-
-## Contact
-
-Provide contact information or links to relevant resources here.
