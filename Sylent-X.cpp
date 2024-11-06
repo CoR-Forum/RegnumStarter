@@ -35,18 +35,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     SelfUpdate();
-    LoadLoginCredentials(hInstanceGlobal);
 
-    bool loginSuccess = Login(login, password);
-    if (loginSuccess) {
-        LogDebug("Auto-login successful");
-        LoadSettings();
-        show_login_window = false;
-        show_main_window = true;
-    } else {
-        LogDebug("Auto-login failed");
-        show_login_window = true;
-    }
+    show_login_window = true;
 
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
@@ -229,7 +219,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -243,7 +232,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
                     show_view_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -257,7 +245,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -271,8 +258,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 // Calculate the size of the largest button
                 ImVec2 buttonSize = ImVec2(0, 0);
                 const char* buttonLabels[] = {
-                    "Sylent-X", "Admin", "Chat", "Settings", "RegnumStarter", 
-                    "Feedback", "License", "Info", "Logout"
+                    "Sylent-X", "Chat", "Settings", "RegnumStarter", 
+                    "License", "Info", "Logout"
                 };
                 for (const char* label : buttonLabels) {
                     ImVec2 size = ImGui::CalcTextSize(label);
@@ -290,7 +277,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -298,17 +284,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_movement_window = false;
                     show_player_window = false;
                     show_boss_respawn_window = false;
-                }
-
-                if (isAdmin) {
-                    ImGui::SetCursorPosX(buttonPadding);
-                    if (ImGui::Button(ICON_FA_USER_REGULAR " Admin", buttonSize)) {
-                        GetAllUsers();
-                        GetAllLicenses();
-                        show_admin_window = true;
-                    }
-
-                    ShowAdminPanel(&show_admin_window);
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
@@ -319,7 +294,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_view_window = false;
@@ -332,7 +306,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
@@ -343,22 +316,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    show_feedback_window = true;
-                }
-
-                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
@@ -370,7 +329,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -384,7 +342,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
@@ -443,11 +400,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (ImGui::Button("Create Ticket")) {
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
                     }
-
-            } else if (show_feedback_window) {
-
-                ShowFeedbackWindow(show_feedback_window);
-
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
 

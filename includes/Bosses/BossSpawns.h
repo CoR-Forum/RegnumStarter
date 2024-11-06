@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <ctime>
+#include "../Logger/Logger.h"
 
 struct BossRespawn {
     std::string name;

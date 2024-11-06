@@ -2,7 +2,14 @@
 
 ## Overview
 
-Sylent-X is a cross-platform application designed to run on both macOS and Windows. This guide provides detailed instructions on how to build the application on both operating systems.
+Sylent-X is an application designed to run on Windows, altough the development is also possible on macOS.
+
+This guide provides detailed instructions on how to build the application on both operating systems.
+
+## Branches
+
+* **main** - latest stable version
+* **dev** - current dev branch
 
 ## Build Instructions
 
@@ -59,15 +66,3 @@ To update the application, place the new file on the server and update `latest_v
 0.1.1
 https://cor-forum.de/regnum/sylent/Sylent-X-0.1.1.exe
 ```
-
-## License
-
-Include licensing information here.
-
-## Contributing
-
-Include guidelines for contributing here.
-
-## Contact
-
-Provide contact information or links to relevant resources here.
