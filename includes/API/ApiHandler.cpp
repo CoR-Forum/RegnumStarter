@@ -423,10 +423,19 @@ void CheckChatMessages() {
 
 void ActivateLicense(const std::string& licenseKey) {
     try {
-        std::string path = "/license.php?action=activate&username=" + login + "&password=" + password + "&key=" + licenseKey;
+        std::string path = "/api/v2/license/activate";
+        nlohmann::json jsonPayload = {
+            {"licenseKey", licenseKey}
+        };
+        std::string payload = jsonPayload.dump();
+        std::string headers = "Content-Type: application/json";
+        if (!session_id.empty()) {
+            headers += "\r\nCookie: connect.sid=" + session_id;
+        }
+
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
+        HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload, headers);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
