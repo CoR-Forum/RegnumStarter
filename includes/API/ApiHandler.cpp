@@ -380,10 +380,19 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
 
 void SendChatMessage(const std::string& message) {
     try {
-        std::string path = "/shoutbox.php?action=add&username=" + login + "&password=" + password + "&message=" + message;
+        std::string path = "/api/v2/chat/send";
+        nlohmann::json jsonPayload = {
+            {"message", message}
+        };
+        std::string payload = jsonPayload.dump();
+        std::string headers = "Content-Type: application/json";
+        if (!session_id.empty()) {
+            headers += "\r\nCookie: connect.sid=" + session_id;
+        }
+
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
-        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -395,7 +404,7 @@ void SendChatMessage(const std::string& message) {
             auto messages = jsonResponse["messages"];
             std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
             for (const auto& msg : messages) {
-                std::string createdAt = msg["created_at"];
+                std::string createdAt = msg["timestamp"];
                 std::string user = msg["nickname"];
                 std::string msgText = msg["message"];
                 std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
@@ -421,10 +430,15 @@ void CheckChatMessages() {
     while (keepRunning) {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         try {
-            std::string path = "/shoutbox.php?action=get&username=" + login + "&password=" + password;
+            std::string path = "/api/v2/chat/receive";
+            std::string headers = "Content-Type: application/json";
+            if (!session_id.empty()) {
+                headers += "\r\nCookie: connect.sid=" + session_id;
+            }
+
             HINTERNET hInternet = OpenInternetConnection();
-            HINTERNET hConnect = ConnectToAPI(hInternet);
-            HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+            HINTERNET hConnect = ConnectToAPIv2(hInternet);
+            HINTERNET hRequest = SendHTTPRequest(hConnect, path, headers);
             std::string response = ReadResponse(hRequest);
             CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -436,7 +450,7 @@ void CheckChatMessages() {
                 auto messages = jsonResponse["messages"];
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
-                    std::string createdAt = msg["created_at"];
+                    std::string createdAt = msg["timestamp"];
                     std::string user = msg["nickname"];
                     std::string msgText = msg["message"];
                     std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;

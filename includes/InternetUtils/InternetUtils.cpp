@@ -33,12 +33,20 @@ HINTERNET ConnectToAPIv2(HINTERNET hInternet) {
     return hConnect;
 }
 
-HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
+HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std::string& session_id) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0); // Removed INTERNET_FLAG_SECURE
-    if (!hRequest || !HttpSendRequest(hRequest, NULL, 0, NULL, 0)) {
-        throw std::runtime_error("Failed to open or send HTTP request");
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+
+    std::string headers = "Content-Type: application/json";
+    if (!session_id.empty()) {
+        headers += "\r\nCookie: connect.sid=" + session_id;
     }
+
+    BOOL result = HttpSendRequest(hRequest, headers.c_str(), headers.length(), NULL, 0);
+    if (!result) {
+        throw std::runtime_error("Failed to send HTTP request");
+    }
+
     return hRequest;
 }
 

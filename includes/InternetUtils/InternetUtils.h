@@ -55,7 +55,7 @@ HINTERNET ConnectToAPIv2(HINTERNET hInternet);
  * @param path The path to send the request to.
  * @return Handle to the HTTP request.
  */
-HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path);
+HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std::string& session_id = "");
 
 /**
  * @brief Sends an HTTP POST request to the given path using the provided connection handle.
