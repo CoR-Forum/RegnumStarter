@@ -258,7 +258,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 // Calculate the size of the largest button
                 ImVec2 buttonSize = ImVec2(0, 0);
                 const char* buttonLabels[] = {
-                    "Sylent-X", "Admin", "Chat", "Settings", "RegnumStarter", 
+                    "Sylent-X", "Chat", "Settings", "RegnumStarter", 
                     "License", "Info", "Logout"
                 };
                 for (const char* label : buttonLabels) {
@@ -284,17 +284,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_movement_window = false;
                     show_player_window = false;
                     show_boss_respawn_window = false;
-                }
-
-                if (isAdmin) {
-                    ImGui::SetCursorPosX(buttonPadding);
-                    if (ImGui::Button(ICON_FA_USER_REGULAR " Admin", buttonSize)) {
-                        GetAllUsers();
-                        GetAllLicenses();
-                        show_admin_window = true;
-                    }
-
-                    ShowAdminPanel(&show_admin_window);
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);

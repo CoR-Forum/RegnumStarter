@@ -5,7 +5,6 @@
 #include "includes/Updater/Updater.cpp"
 #include "includes/Logger/Logger.cpp"
 #include "includes/API/ApiHandler.cpp"
-#include "includes/API/AdminApiHandler.cpp"
 #include "includes/chrono/chrono.cpp"
 #include "ui/Memory/Memory.cpp"
 #include "ui/Movement/MovementWindow.cpp"
@@ -27,7 +26,6 @@
 #include <filesystem>
 #include "includes/process/process.cpp"
 #include "includes/streamproof/streamproof.cpp"
-#include "ui/admin/AdminPanel.cpp"
 #include "ui/login/pwreset/ForgotPasswordWindow.cpp"
 #include "ui/login/pwreset/PasswordResetWindow.cpp"
 #include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
