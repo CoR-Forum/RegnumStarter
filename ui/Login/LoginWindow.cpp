@@ -30,7 +30,14 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username));
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
-    if (ImGui::Button("Login")) {
+    bool loginTriggered = ImGui::Button("Login");
+
+    // Check for Enter key press
+    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+        loginTriggered = true;
+    }
+
+    if (loginTriggered) {
         statusMessage = "Logging in...";
         loginSuccess = false;
         show_login_window = false; // Hide the login window
