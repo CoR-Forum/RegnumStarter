@@ -1,50 +1,9 @@
-#include "includes/Utils.h"
-#include "includes/Updater/Updater.cpp"
-#include "includes/Logger/Logger.cpp"
-#include "includes/API/ApiHandler.cpp"
-#include "includes/API/AdminApiHandler.cpp"
-#include "Style.cpp"
-#include "SkillTrainer/SkillTrainer.cpp"
-#include "libs/DirectX/DirectXInit.cpp"
-#include "libs/imgui/imgui_impl_dx9.cpp"
-#include "libs/imgui/imgui_impl_win32.cpp"
-#include "libs/ImageLoader/ImageLoader.cpp"
-#include "libs/ImageLoader/FontAwesomeIcons.h"
-#include "ui/helper/Markers/HelpMarker.cpp"
-#include "ui/helper/Markers/LicenseMarker.cpp"
-#include <filesystem>
-#include "includes/process/process.cpp"
-#include "includes/chrono/chrono.cpp"
-#include "includes/streamproof/streamproof.cpp"
-#include "ui/admin/AdminPanel.cpp"
-#include "ui/login/pwreset/ForgotPasswordWindow.cpp"
-#include "ui/login/pwreset/PasswordResetWindow.cpp"
-#include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
-#include "ui/login/LoginWindow.cpp"
-#include "ui/login/register/RegisterWindow.cpp"
-#include "ui/RegnumStarter/RegnumStarter.cpp"
-#include "ui/Feedback/FeedbackWindow.cpp"
-#include "ui/License/LicenseWindow.cpp"
-#include "ui/Movement/MovementWindow.cpp"
-#include "ui/Credits/CreditsWindow.cpp"
-#include "ui/Player/PlayerWindow.cpp"
-#include "ui/View/ViewWindow.cpp"
-#include "ui/Chat/ChatWindow.cpp"
-#include "ui/WindowStates.h"
+#include "Sylent-X.h"
 
-
-#pragma comment(lib, "wininet.lib")
-#pragma comment(lib, "urlmon.lib")
-#pragma comment(lib, "dwmapi.lib")
-
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static bool g_DeviceLost = false;
-static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
-static bool show_license_window = false;
-static bool spaceKeyPressed = false;
-static bool ctrlKeyPressed = false;
-extern bool show_chat_window;
+bool g_DeviceLost = false;
+UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
+bool spaceKeyPressed = false;
+bool ctrlKeyPressed = false;
 bool fovToggled = false; // Initialize the FOV state
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -76,18 +35,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     SelfUpdate();
-    LoadLoginCredentials(hInstanceGlobal);
 
-    bool loginSuccess = Login(login, password);
-    if (loginSuccess) {
-        LogDebug("Auto-login successful");
-        LoadSettings();
-        show_login_window = false;
-        show_main_window = true;
-    } else {
-        LogDebug("Auto-login failed");
-        show_login_window = true;
-    }
+    show_login_window = true;
 
     // Register and create the main window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
@@ -123,6 +72,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+    initializeBossRespawns();
 
     static char username[128] = "";
     static char password[128] = "";
@@ -238,6 +188,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     // Draw the image
                     ImGui::Image((void*)texture_sylent_icon, imageSize);
+
+                    // Detect click on the image
+                    if (ImGui::IsItemClicked()) {
+                        OpenURL("https://sylent-x.com/");
+                    }
                 } else {
                     ImGui::Text("Texture is null");
                 }
@@ -246,8 +201,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 // Create a child window for the texture
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
-                float buttonWidth = 150.0f; // Assuming each button has a width of 150
-                float buttonHeight = 30.0f; // Assuming each button has a height of 40
+                float buttonWidth = 150.0f;
+                float buttonHeight = 30.0f;
                 float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
 
                 // Calculate total width of all buttons and spacing
@@ -264,11 +219,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_Skilltrainer_window = false;
                     show_view_window = true;
                 }
@@ -278,11 +233,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
                     show_view_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_Skilltrainer_window = false;
                     show_movement_window = true;
                 }
@@ -292,11 +247,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
+                    show_boss_respawn_window = false;
                     show_Skilltrainer_window = false;
                     show_player_window = true;
                 }
@@ -306,8 +261,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 // Calculate the size of the largest button
                 ImVec2 buttonSize = ImVec2(0, 0);
                 const char* buttonLabels[] = {
-                    "Sylent-X", "Admin", "Chat", "Settings", "RegnumStarter", 
-                    "Feedback", "License", "Info", "Logout"
+                    "Sylent-X", "Chat", "Settings", "RegnumStarter", 
+                    "License", "Info", "Logout"
                 };
                 for (const char* label : buttonLabels) {
                     ImVec2 size = ImGui::CalcTextSize(label);
@@ -316,7 +271,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(120, 0), true);
 
                 // Calculate the padding to center the buttons
                 float childWidth = ImGui::GetWindowWidth();
@@ -325,7 +280,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -333,17 +287,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_movement_window = false;
                     show_player_window = false;
                     show_Skilltrainer_window = false;
-                }
-
-                if (isAdmin) {
-                    ImGui::SetCursorPosX(buttonPadding);
-                    if (ImGui::Button(ICON_FA_USER_REGULAR " Admin", buttonSize)) {
-                        GetAllUsers();
-                        GetAllLicenses();
-                        show_admin_window = true; // Show the admin window
-                    }
-
-                    ShowAdminPanel(&show_admin_window);
+                    show_boss_respawn_window = false;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
@@ -354,12 +298,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     LoadRegnumAccounts();
                     show_Skilltrainer_window = false;
                     show_RegnumStarter = true;
@@ -376,42 +320,41 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_RegnumStarter = false;
                     show_Skilltrainer_window = true;
                 }
-
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
+                if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
-                    show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
                     show_Skilltrainer_window = false;
-                    show_feedback_window = true;
+                    show_info_window = false;
+                    show_boss_respawn_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_Skilltrainer_window = false;
                     show_license_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_Skilltrainer_window = false;
                     show_settings_window = true;
                 }
@@ -419,12 +362,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
+                    show_boss_respawn_window = false;
                     show_Skilltrainer_window = false;
                     show_info_window = true;
                 }
@@ -438,16 +381,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
 
-                // Main content area
                 ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
 
                 if (show_settings_window) {
-
-                    if (ImGui::Button("Save Settings")) {
-                        SaveSettings();
-                    }
-
-                    ImGui::Separator();
 
                     ImGui::SeparatorText("General");
 
@@ -468,14 +404,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SameLine();
                     ImGui::SliderFloat("##Font Size", &setting_fontSize, 0.5f, 2.0f);
 
-                    ImGui::Text("Autism Mode");
+                    ImGui::Text("Rainbow Color");
                     ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
                     ImGui::SameLine();
                     ImGui::Text("Speed");
                     ImGui::SameLine();
                     ImGui::SliderFloat("##Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
 
-                    ImGui::Separator();
+                    ImGui::SeparatorText("Misc");
 
                     if (ImGui::Button("Save Settings")) {
                         SaveSettings();
@@ -485,11 +421,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (ImGui::Button("Create Ticket")) {
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
                     }
-
-            } else if (show_feedback_window) {
-
-                ShowFeedbackWindow(show_feedback_window);
-
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
 
@@ -508,6 +439,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
       
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
+            } else if (show_boss_respawn_window) {
+                ShowBossRespawnWindow(show_boss_respawn_window);
             } else if (show_Skilltrainer_window) {
                 ShowSkilltrainer(show_Skilltrainer_window, g_pd3dDevice);
             } else {
@@ -625,267 +558,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 HANDLE hProcess = nullptr; // Handle to the target process (ROClientGame.exe)
 DWORD pid; // Process ID of the target process
-// Function to get the base address of a module
-uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName) {
-    // Initialize the module base address to 0
-    uintptr_t modBaseAddr = 0;
-    // Create a snapshot of the target process
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
-    // Check if the snapshot is valid
-    if (hSnap != INVALID_HANDLE_VALUE) {
-        MODULEENTRY32 modEntry;
-        modEntry.dwSize = sizeof(modEntry);
-        // Iterate through the modules in the target process
-        if (Module32First(hSnap, &modEntry)) {
-            do {
-                // Convert the module name to wide char
-                wchar_t wModuleName[MAX_PATH];
-                MultiByteToWideChar(CP_ACP, 0, modEntry.szModule, -1, wModuleName, MAX_PATH);
-                // Check if the module name matches the target module name
-                if (!_wcsicmp(wModuleName, modName)) {
-                    modBaseAddr = (uintptr_t)modEntry.modBaseAddr;
-                    break;
-                }
-                // Continue to the next module
-            } while (Module32Next(hSnap, &modEntry));
-        }
-    }
-    CloseHandle(hSnap);
-    // Return the base address of the target module
-    LogDebug(L"Base address of " + std::wstring(modName) + L": 0x" + std::to_wstring(reinterpret_cast<uintptr_t>(modBaseAddr)));
-    return modBaseAddr;
-}
 
-// Function to get the process ID by name
-DWORD GetProcessIdByName(const std::wstring& processName) {
-    // Initialize the process ID to 0
-    DWORD processId = 0;
-    // Create a snapshot of the running processes
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    // Check if the snapshot is valid
-    if (hSnap != INVALID_HANDLE_VALUE) {
-        // Initialize the process entry structure
-        PROCESSENTRY32 pe32;
-        pe32.dwSize = sizeof(PROCESSENTRY32);
-        // Iterate through the running processes
-        if (Process32First(hSnap, &pe32)) {
-            do {
-                // Convert the process name to wide char
-                std::wstring exeFile(pe32.szExeFile, pe32.szExeFile + strlen(pe32.szExeFile));
-                // Check if the process name matches the target process name
-                if (!_wcsicmp(exeFile.c_str(), processName.c_str())) {
-                    processId = pe32.th32ProcessID;
-                    break;
-                }
-                // Continue to the next process
-            } while (Process32Next(hSnap, &pe32));
-        }
-    }
-    CloseHandle(hSnap);
-    LogDebug(L"Process ID of " + processName + L": " + std::to_wstring(processId));
-    return processId;
-}
-
-// Define MemoryAddress struct
-struct MemoryAddress {
-    std::string name;
-    uintptr_t address;
-    std::vector<unsigned long> offsets;
-};
-
-// Memory class to handle memory operations
-class Memory {
-public:
-    uintptr_t GetBaseAddress(const MemoryAddress& memAddr);
-    bool WriteFloat(uintptr_t address, float value);
-};
-
-// function to get process path
-std::wstring GetProcessPath(DWORD pid) {
-    std::wstring path;
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    if (hProcess) {
-        wchar_t buffer[MAX_PATH];
-        DWORD size = MAX_PATH;
-        if (QueryFullProcessImageNameW(hProcess, 0, buffer, &size)) {
-            path = buffer;
-        }
-        CloseHandle(hProcess);
-    }
-    return path;
-}
-
-// Function to get the base address of a memory address
-uintptr_t Memory::GetBaseAddress(const MemoryAddress& memAddr) {
-    LogDebug(L"Getting base address of " + std::wstring(memAddr.name.begin(), memAddr.name.end()) + L" at address: " + std::to_wstring(memAddr.address));
-    LogDebug("ROClientGame.exe path:  " + WStringToString(GetProcessPath(pid)));
-    return GetModuleBaseAddress(pid, L"ROClientGame.exe") + memAddr.address;
-}
-
-// Function to write a float value to the game process memory
-bool Memory::WriteFloat(uintptr_t address, float value) {
-    LogDebug(L"Writing " + std::to_wstring(value) + L" to address: " + std::to_wstring(address));
-    return WriteProcessMemory(hProcess, (LPVOID)address, &value, sizeof(value), NULL);
-}
-
-// Function to manipulate memory values in the game process
-void MemoryManipulation(const std::string& option, float newValue) {
-    LogDebug("MemoryManipulation called with option: " + option);
-    pid = GetProcessIdByName(L"ROClientGame.exe");
-    // Check if the game process is running
-    if (pid == 0) {
-        LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
-        return;
-    }
-    // Open the game process
-    HANDLE hProcess = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_VM_READ, FALSE, pid);
-    // Check if the process is valid
-    if (!hProcess) {
-        LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
-        return;
-    } else {
-        LogDebug(L"Successfully opened ROClientGame.exe process: " + std::to_wstring(pid));
-    }
-    // Get the base address of the game module
-    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
-    // Check if the base address is valid
-    if (baseAddress == 0) {
-        LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
-        CloseHandle(hProcess);
-        return;
-    } else {
-        LogDebug(L"Base address of ROClientGame.exe: 0x" + std::to_wstring(baseAddress));
-    }
-
-    // Find the pointer with the given option
-    auto it = std::find_if(g_pointers.begin(), g_pointers.end(), [&option](const Pointer& ptr) {
-        return ptr.name == option;
-    });
-
-    if (it == g_pointers.end()) {
-        LogDebug(L"Pointer not found for option: " + std::wstring(option.begin(), option.end()));
-        CloseHandle(hProcess);
-        return;
-    }
-
-    const Pointer& pointer = *it;
-    uintptr_t finalAddress = baseAddress + pointer.address;
-    LogDebug(L"Calculated final address: 0x" + std::to_wstring(finalAddress));
-
-    // If there are offsets, apply them
-    if (!pointer.offsets.empty()) {
-        SIZE_T bytesRead;
-        for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-            if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
-                // Check if the read was successful
-                if (bytesRead != sizeof(finalAddress)) {
-                    LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
-                    CloseHandle(hProcess);
-                    return;
-                }
-                // Apply the offsets to the final address
-                finalAddress += pointer.offsets[i];
-                LogDebug(L"Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L"). Final address: " + std::to_wstring(finalAddress));
-            } else {
-                LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
-                CloseHandle(hProcess);
-                return;
-            }
-        }
-    }
-
-    // Check memory protection before writing
-    MEMORY_BASIC_INFORMATION mbi;
-    if (VirtualQueryEx(hProcess, (LPCVOID)finalAddress, &mbi, sizeof(mbi)) == 0) {
-        LogDebug(L"Failed to query memory protection. Error code: " + std::to_wstring(GetLastError()));
-        CloseHandle(hProcess);
-        return;
-    }
-
-    if (!(mbi.Protect & PAGE_READWRITE) && !(mbi.Protect & PAGE_WRITECOPY)) {
-        LogDebug(L"Memory region is not writable. Changing protection...");
-        DWORD oldProtect;
-        if (!VirtualProtectEx(hProcess, (LPVOID)finalAddress, sizeof(newValue), PAGE_READWRITE, &oldProtect)) {
-            LogDebug(L"Failed to change memory protection. Error code: " + std::to_wstring(GetLastError()));
-            CloseHandle(hProcess);
-            return;
-        }
-    }
-
-    // Write the new value to the final address
-    if (WriteProcessMemory(hProcess, (LPVOID)finalAddress, &newValue, sizeof(newValue), NULL)) {
-        LogDebug(L"Successfully wrote new " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(newValue));
-    } else {
-        LogDebug(L"Failed to write new " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()));
-    }
-
-    CloseHandle(hProcess);
-}
 
 std::atomic<bool> isWriting(false);
 std::thread memoryThread;
-
-std::vector<float> ReadMemoryValues(const std::vector<std::string>& options) {
-    std::vector<float> values;
-    pid = GetProcessIdByName(L"ROClientGame.exe");
-    if (pid == 0) {
-        LogDebug(L"Failed to find ROClientGame.exe process: " + std::to_wstring(GetLastError()));
-        return values;
-    }
-
-    HANDLE hProcess = OpenProcess(PROCESS_VM_READ, FALSE, pid);
-    if (!hProcess) {
-        LogDebug(L"Failed to open ROClientGame.exe process. Error code: " + std::to_wstring(GetLastError()));
-        return values;
-    }
-
-    uintptr_t baseAddress = GetModuleBaseAddress(pid, L"ROClientGame.exe");
-    if (baseAddress == 0) {
-        LogDebug(L"Failed to get the base address of ROClientGame.exe: " + std::to_wstring(GetLastError()));
-        CloseHandle(hProcess);
-        return values;
-    }
-
-    for (const auto& option : options) {
-        auto it = std::find_if(g_pointers.begin(), g_pointers.end(), [&option](const Pointer& ptr) {
-            return ptr.name == option;
-        });
-        if (it == g_pointers.end()) {
-            LogDebug(L"Pointer not found for option: " + std::wstring(option.begin(), option.end()));
-            continue;
-        }
-
-        const Pointer& pointer = *it;
-        uintptr_t finalAddress = baseAddress + pointer.address;
-        LogDebug(L"Base address for " + std::wstring(option.begin(), option.end()) + L": 0x" + std::to_wstring(baseAddress));
-        LogDebug(L"Initial final address for " + std::wstring(option.begin(), option.end()) + L": 0x" + std::to_wstring(finalAddress));
-
-        if (!pointer.offsets.empty()) {
-            SIZE_T bytesRead;
-            for (size_t i = 0; i < pointer.offsets.size(); ++i) {
-                if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &finalAddress, sizeof(finalAddress), &bytesRead)) {
-                    if (bytesRead != sizeof(finalAddress)) {
-                        LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()) + L". Got " + std::to_wstring(i) + L" offsets (to be specific: " + std::to_wstring(pointer.offsets[i]) + L")");
-                        break;
-                    }
-                    finalAddress += pointer.offsets[i];
-                    LogDebug(L"Updated final address for " + std::wstring(option.begin(), option.end()) + L" after offset " + std::to_wstring(i) + L": 0x" + std::to_wstring(finalAddress));
-                } else {
-                    LogDebug(L"Failed to read the " + std::wstring(option.begin(), option.end()) + L" pointer address. Error code: " + std::to_wstring(GetLastError()));
-                    break;
-                }
-            }
-        }
-
-        float value = 0.0f;
-        if (ReadProcessMemory(hProcess, (LPCVOID)finalAddress, &value, sizeof(value), NULL)) {
-            LogDebug(L"Successfully read " + std::wstring(option.begin(), option.end()) + L" value: " + std::to_wstring(value));
-            values.push_back(value);
-        } else {
-            LogDebug(L"Failed to read " + std::wstring(option.begin(), option.end()) + L" value. Error code: " + std::to_wstring(GetLastError()));
-        }
-    }
-
-    CloseHandle(hProcess);
-    return values;
-}

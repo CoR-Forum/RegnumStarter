@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Utils.h"
+#include "../../ui/Memory/Memory.h"
 #include "../InternetUtils/InternetUtils.cpp"
 #include <stdexcept>
 #include <sstream>
@@ -34,6 +35,12 @@ bool featureFreecam;
 bool featureFastfly;
 bool featureFakelag;
 
+// Declare the checkbox states as global variables
+extern bool enableMusic;
+extern bool enableSoundEffects;
+extern bool showLoadingScreen;
+extern bool ShowIntro;
+extern float soundVolume;
 
 // global variables for (checkbox) options
 bool optionGravity = false;
@@ -46,6 +53,7 @@ bool optionFastFly = false;
 bool optionSpeedHack = false;
 bool optionFakelag = false;
 
+
 // global variables for settings (from user account via API)
 float setting_fontSize = 14.0f;
 bool setting_enableRainbow = false;
@@ -53,7 +61,6 @@ float setting_rainbowSpeed = 0.1f;
 bool setting_excludeFromCapture = false;
 std::string setting_regnumInstallPath;
 bool setting_log_debug = true;
-bool isAdmin = false;
 
 // global variables for memory pointers and chat messages
 std::vector<Pointer> g_pointers;
@@ -89,11 +96,7 @@ void CheckChatMessages();
 
 bool Login(const std::string& login, const std::string& password);
 void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
-void LoadLoginCredentials(HINSTANCE hInstance);
-void SaveLoginCredentials(const std::string& login, const std::string& encryptedPassword);
 void ActivateLicense(const std::string& licenseKey);
-void GetMagnatCurrency();
-void SendFeedback(const std::string& type, const std::string& feedback, bool feedback_includeLogfile);
 void LoadRegnumAccounts();
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
 void DeleteRegnumAccount(int id);

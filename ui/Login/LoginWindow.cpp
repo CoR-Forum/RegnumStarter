@@ -30,28 +30,26 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username));
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
-    if (ImGui::Button("Login")) {
+    bool loginTriggered = ImGui::Button("Login");
+
+    // Check for Enter key press
+    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+        loginTriggered = true;
+    }
+
+    if (loginTriggered) {
         statusMessage = "Logging in...";
-        loginSuccess = false;
-        show_login_window = false; // Hide the login window
 
-        std::thread loginThread([&]() {
-            loginSuccess = Login(username, password);
-            if (loginSuccess) {
-                Log("Login successful");
-                SaveLoginCredentials(username, password);
-                show_main_window = true;
+        // Perform the login operation
+        loginSuccess = Login(username, password);
 
-                // Reapply color settings after manual login
-                ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
-                ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
-            } else {
-                Log("Login failed");
-                show_login_window = true; // Show the login window again if login fails
-            }
-        });
-
-        loginThread.detach();
+        if (loginSuccess) {
+            statusMessage = "Login successful";
+            show_login_window = false;
+            show_main_window = true;
+        } else {
+            statusMessage = "Login failed";
+        }
     }
 
     ImGui::Separator();

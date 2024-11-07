@@ -1,4 +1,40 @@
 #include "RegnumStarter.h"
+#include <fstream>
+#include <sstream>
+
+
+extern std::string setting_regnumInstallPath;
+
+void UpdateConfigValue(const std::string& key, const std::string& value) {
+    std::string configPath = setting_regnumInstallPath + "\\game.cfg";
+    std::ifstream configFileRead(configPath);
+    std::string configContent;
+    bool lineExists = false;
+
+    if (configFileRead.is_open()) {
+        std::string line;
+        while (std::getline(configFileRead, line)) {
+            if (line.find(key) != std::string::npos) {
+                line = key + " = " + value;
+                lineExists = true;
+            }
+            configContent += line + "\n";
+        }
+        configFileRead.close();
+    }
+
+    if (!lineExists) {
+        configContent += key + " = " + value + "\n";
+    }
+
+    std::ofstream configFileWrite(configPath);
+    if (configFileWrite.is_open()) {
+        configFileWrite << configContent;
+        configFileWrite.close();
+    } else {
+        Log("Failed to open game.cfg for writing");
+    }
+}
 
 void runRoClientGame(const std::string& regnumLoginUser, const std::string& regnumLoginPassword) {
     STARTUPINFO si;
@@ -10,11 +46,11 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     std::string regnumPath = setting_regnumInstallPath;
     
     std::string executablePath = regnumPath + "\\LiveServer\\ROClientGame.exe";
-    std::string command = "\"" + executablePath + "\" \"" + regnumLoginUser + "\" \"" + regnumLoginPassword + "\"";
+    std::string command = "powershell.exe -Command \"cd '" + regnumPath + "\\LiveServer'; .\\ROClientGame.exe '" + regnumLoginUser + "' '" + regnumLoginPassword + "'\"";
 
     LogDebug("Starting Regnum Online client with command: " + command);
     
-    if (!CreateProcess(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, regnumPath.c_str(), &si, &pi)) {
+    if (!CreateProcess(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, regnumPath.c_str(), &si, &pi)) {
         Log("Failed to start the Regnum Online client");
     } else {
         // Wait until child process exits.
@@ -26,29 +62,121 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     }
 }
 
+void CheckAndUpdateConfig() {
+    std::string configPath = setting_regnumInstallPath + "\\game.cfg";
+    std::ifstream configFileRead(configPath);
+    std::unordered_map<std::string, std::string> configMap;
+
+    if (configFileRead.is_open()) {
+        std::string line;
+        while (std::getline(configFileRead, line)) {
+            std::istringstream lineStream(line);
+            std::string key;
+            if (std::getline(lineStream, key, '=')) {
+                std::string value;
+                if (std::getline(lineStream, value)) {
+                    configMap[key] = value;
+                }
+            }
+        }
+        configFileRead.close();
+    }
+
+    bool updated = false;
+
+    auto updateIfDifferent = [&](const std::string& key, const std::string& value) {
+        if (configMap[key] != value) {
+            UpdateConfigValue(key, value);
+            updated = true;
+        }
+    };
+
+    updateIfDifferent("snd_sound_volume", std::to_string(soundVolume));
+    updateIfDifferent("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+    updateIfDifferent("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+    updateIfDifferent("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+    updateIfDifferent("show_intro", std::to_string(ShowIntro ? 1 : 0));
+
+    if (updated) {
+        Log("Configuration file updated with saved settings.");
+    }
+}
+
 void ShowRegnumStarter(bool& show_RegnumStarter) {
+
+    static bool configChecked = false;
+    if (!configChecked) {
+        CheckAndUpdateConfig();
+        configChecked = true;
+    }
+
     if (!show_RegnumStarter) return;
 
-    ImGui::Text("These settings are not working yet. Please use the Regnum Online client for now.");
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    static ImGui::FileBrowser fileDialog;
+    static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
     static bool showFileDialog = false;
 
     if (ImGui::Button("Select Regnum Online Installation Path")) {
+        fileDialog.Open();
         showFileDialog = true;
     }
 
     if (showFileDialog) {
         fileDialog.Display();
+        if (fileDialog.HasSelected()) {
+            setting_regnumInstallPath = fileDialog.GetSelected().string();
+            fileDialog.ClearSelected();
+            showFileDialog = false;
+        }
     }
 
-    if (fileDialog.HasSelected()) {
-        setting_regnumInstallPath = fileDialog.GetSelected().string();
-        fileDialog.ClearSelected();
-        showFileDialog = false;
+    static bool filesChecked = false; // Static flag to ensure the code runs only once
+
+    if (!filesChecked) {
+        // Check if splash_nge.ogg and splash_nge.png exist
+        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+        std::vector<std::string> filesToCheck = {
+            "splash_nge.png",
+            "splash_nge.ogg"
+        };
+        bool filesExist = true;
+        for (const auto& file : filesToCheck) {
+            std::string filePath = livePath + file;
+            std::ifstream infile(filePath);
+            if (!infile.good()) {
+                filesExist = false;
+                break;
+            }
+        }
+
+        // If files exist and the checkbox is saved as false, delete the files
+        if (filesExist && !ShowIntro) {
+            for (const auto& file : filesToCheck) {
+                std::string filePath = livePath + file;
+                if (remove(filePath.c_str()) != 0) {
+                    Log("Failed to delete file: " + filePath);
+                } else {
+                    Log("Deleted file: " + filePath);
+                }
+            }
+        }
+
+        // If files do not exist and the checkbox is saved as true, download the files
+        if (!filesExist && ShowIntro) {
+            std::vector<std::pair<std::string, std::string>> filesToDownload = {
+                {"https://patch.sylent-x.com/assets/splash_nge.png", livePath + "splash_nge.png"},
+                {"https://patch.sylent-x.com/assets/splash_nge.ogg", livePath + "splash_nge.ogg"}
+            };
+            for (const auto& file : filesToDownload) {
+                HRESULT hr = URLDownloadToFile(NULL, file.first.c_str(), file.second.c_str(), 0, NULL);
+                if (SUCCEEDED(hr)) {
+                    Log("Downloaded file: " + file.second);
+                } else {
+                    Log("Failed to download file: " + file.second);
+                }
+            }
+        }
+
+        filesChecked = true; // Set the flag to true after the operation is performed
     }
 
     ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
@@ -182,16 +310,64 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    static float soundVolume = 0.5f;
-    ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
 
-    static bool enableMusic = true;
+
     ImGui::Checkbox("Enable Music", &enableMusic);
 
-    static bool enableSoundEffects = true;
+
     ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
 
+
+    ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
+
+
+    ImGui::Checkbox("Show Intro", &ShowIntro);
+
     if (ImGui::Button("Save Settings")) {
+        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
+        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
         SaveSettings();
+
+        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+        std::vector<std::string> filesToDelete = {
+            "splash_nge.png",
+            "splash_nge.ogg"
+        };
+
+        if (ShowIntro) {
+            // Check if files exist and download if they don't
+            for (const auto& file : filesToDelete) {
+                std::string filePath = livePath + file;
+                std::ifstream infile(filePath);
+                if (!infile.good()) {
+                    Log("File does not exist: " + filePath + ". Downloading...");
+                    std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
+
+                    // Download file using URLDownloadToFile
+                    HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
+                    if (SUCCEEDED(hr)) {
+                        Log("Downloaded file: " + filePath);
+                    } else {
+                        Log("Failed to download file: " + filePath);
+                    }
+                } else {
+                    Log("File already exists: " + filePath);
+                }
+            }
+        } else {
+            // Delete files
+            for (const auto& file : filesToDelete) {
+                std::string filePath = livePath + file;
+                if (remove(filePath.c_str()) != 0) {
+                    Log("Failed to delete file: " + filePath);
+                } else {
+                    Log("Deleted file: " + filePath);
+                }
+            }
+        }
     }
 }

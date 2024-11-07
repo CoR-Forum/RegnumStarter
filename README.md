@@ -2,7 +2,14 @@
 
 ## Overview
 
-Sylent-X is a cross-platform application designed to run on both macOS and Windows. This guide provides detailed instructions on how to build the application on both operating systems.
+Sylent-X is an application designed to run on Windows, altough the development is also possible on macOS.
+
+This guide provides detailed instructions on how to build the application on both operating systems.
+
+## Branches
+
+* **main** - latest stable version
+* **dev** - current dev branch
 
 ## Build Instructions
 
@@ -48,7 +55,7 @@ Sylent-X is a cross-platform application designed to run on both macOS and Windo
     3. Create a [`bin`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fjoshua2504%2FProjekte%2FSylent-X%2Fbin%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%222b759d69-5410-4d40-a098-c12a87cc9835%22%5D "/Users/joshua2504/Projekte/Sylent-X/bin") folder.
     4. Run the build command:
         ```sh
-            windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp includes/md5/md5.cpp resource.o -Ilibs -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
+            windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp includes/md5/md5.cpp resource.o -Ilibs -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && ./bin/Sylent-X.exe
         ```
 
 ## Update Process
@@ -59,15 +66,3 @@ To update the application, place the new file on the server and update `latest_v
 0.1.1
 https://cor-forum.de/regnum/sylent/Sylent-X-0.1.1.exe
 ```
-
-## License
-
-Include licensing information here.
-
-## Contributing
-
-Include guidelines for contributing here.
-
-## Contact
-
-Provide contact information or links to relevant resources here.
