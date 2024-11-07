@@ -175,7 +175,7 @@ void SaveSettings() {
 
         std::string payload = payloadJson.dump();
         Log("Payload being sent: " + payload); // Log the payload
-
+ 
         std::string path = "/api/v2/save-settings";
 
         HINTERNET hInternet = OpenInternetConnection();
