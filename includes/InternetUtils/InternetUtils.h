@@ -46,7 +46,7 @@ HINTERNET ConnectToAPI(HINTERNET hInternet);
  * @param hInternet Handle to the internet session.
  * @return Handle to the internet connection.
  */
-HINTERNET ConnectToAPI(HINTERNET hInternet);
+HINTERNET ConnectToAPIv2(HINTERNET hInternet);
 
 /**
  * @brief Sends an HTTP request to the given path using the provided connection handle.

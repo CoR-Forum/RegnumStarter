@@ -22,14 +22,20 @@ HINTERNET OpenInternetConnection() {
 }
 
 HINTERNET ConnectToAPI(HINTERNET hInternet) {
-    HINTERNET hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) throw std::runtime_error("Failed to connect to API");
+    return hConnect;
+}
+
+HINTERNET ConnectToAPIv2(HINTERNET hInternet) {
+    HINTERNET hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect) throw std::runtime_error("Failed to connect to API");
     return hConnect;
 }
 
 HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std::string& session_id) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
 
     std::string headers = "Content-Type: application/json";
     if (!session_id.empty()) {
@@ -46,7 +52,7 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std
 
 HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& payload, const std::string& session_id) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
 
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
@@ -63,7 +69,7 @@ HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const
 
 HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& payload, const std::string& session_id) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "PUT", path.c_str(), NULL, NULL, acceptTypes, INTERNET_FLAG_SECURE, 0);
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "PUT", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
 
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
@@ -81,7 +87,7 @@ HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const 
 std::string FetchDataFromAPI(const std::string& url) {
     try {
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE, 0);
+        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
         if (!hConnect) throw std::runtime_error("Failed to open URL");
 
         std::string response = ReadResponse(hConnect);

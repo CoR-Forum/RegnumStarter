@@ -12,7 +12,7 @@ bool Login(const std::string& login, const std::string& password) {
         std::string payload = jsonPayload.dump();
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
 
@@ -179,7 +179,7 @@ void SaveSettings() {
         std::string path = "/api/v2/save-settings";
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload, session_id); // Pass session_id as a header
         std::string response = ReadResponse(hRequest);
         Log("Response received: " + response); // Log the response
@@ -206,7 +206,7 @@ void Logout() {
         std::string path = "/api/v2/logout";
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, "", session_id); // Pass session_id as a header
         std::string response = ReadResponse(hRequest);
         Log("Response received: " + response); // Log the response
@@ -241,7 +241,7 @@ void RegisterUser(const std::string& username, const std::string& nickname, cons
         std::string payload = jsonPayload.dump();
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         std::string path = "/api/v2/register";
         std::string headers = "Content-Type: application/json";
 
@@ -271,7 +271,7 @@ bool ResetPasswordRequest(const std::string& email) {
         std::string payload = jsonPayload.dump();
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         std::string path = "/api/v2/reset-password";
         std::string headers = "Content-Type: application/json";
 
@@ -306,7 +306,7 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
         std::string headers = "Content-Type: application/json";
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
@@ -341,7 +341,7 @@ void SendChatMessage(const std::string& message) {
         }
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
@@ -387,7 +387,7 @@ void CheckChatMessages() {
             }
 
             HINTERNET hInternet = OpenInternetConnection();
-            HINTERNET hConnect = ConnectToAPI(hInternet);
+            HINTERNET hConnect = ConnectToAPIv2(hInternet);
             HINTERNET hRequest = SendHTTPRequest(hConnect, path, headers);
             std::string response = ReadResponse(hRequest);
             CloseInternetHandles(hRequest, hConnect, hInternet);
@@ -434,7 +434,7 @@ void ActivateLicense(const std::string& licenseKey) {
         }
 
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hConnect = ConnectToAPIv2(hInternet);
         HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload, headers);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
