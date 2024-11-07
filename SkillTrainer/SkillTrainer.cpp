@@ -10,7 +10,7 @@
 #include <shlobj.h> 
 
 // Declare counts vector outside the function to maintain state
-std::vector<int> counts(60, 0); // Increase the size to 60
+std::vector<int> counts(70, 0); // Increase the size to 60
 std::vector<int> powerPoints(60, 0); // To store power points for levels 1-60
 int item_current_idx = 0;
 
@@ -140,7 +140,7 @@ void LoadConfig(const std::string& filePath) {
 }
 
 void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) {
-    static LPDIRECT3DTEXTURE9 textures[60] = { nullptr }; // Increase the size to 60
+    static LPDIRECT3DTEXTURE9 textures[70] = { nullptr }; // Increase the size to 70
 
     if (textures[0] == nullptr) {
         textures[0] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Ensaring_arrow);
@@ -203,6 +203,16 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
         textures[57] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Wits);
         textures[58] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Low_profile);
         textures[59] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassH_Son_of_the_wind);
+        textures[60] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Dead_eye);
+        textures[61] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_focus);
+        textures[62] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Skin_piercer);
+        textures[63] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Foresight);
+        textures[64] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Cyclops_curse);
+        textures[65] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Lethal_strike);
+        textures[66] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Strategic_positioning);
+        textures[67] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Trained_eye);
+        textures[68] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Seeking_strike);
+        textures[69] = LoadTextureFromResource(device, IDR_Skilltrainer_ClassM_Hawks_gaze);
     }
 
     if (show_Skilltrainer_window) {
@@ -250,11 +260,11 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
             remainingPoints = ConjurerWarlock[selected_level] - totalPointsUsed;
         }
 
-       ImGui::Text("Remaining Power Points: %d", remainingPoints);
-       ImGui::SameLine();
-       if (ImGui::Button("Reset")) {
-       std::fill(counts.begin(), counts.end(), 0); // Reset all counts to 0
-       }
+        ImGui::Text("Remaining Power Points: %d", remainingPoints);
+        ImGui::SameLine();
+        if (ImGui::Button("Reset")) {
+            std::fill(counts.begin(), counts.end(), 0); // Reset all counts to 0
+        }
 
         switch (item_current_idx) {
             case 0:
@@ -355,7 +365,21 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
                 ImGui::EndGroup();
                 break;
             case 1:
-                ImGui::Text("Marksman");
+                ImGui::BeginGroup();
+                for (int i = 60; i < 70; ++i) {
+                    ImGui::Text("%d", counts[i]);
+                    ImGui::SameLine();
+                    ImGui::Image((void*)textures[i], ImVec2(29, 28));
+                    ImGui::SameLine();
+                    if (ImGui::Button(("+##" + std::to_string(i)).c_str())) {
+                        IncrementCount(i);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button(("-##" + std::to_string(i)).c_str())) {
+                        DecrementCount(i);
+                    }
+                }
+                ImGui::EndGroup();
                 break;
             case 2:
                 ImGui::Text("Conjurer");
@@ -374,6 +398,8 @@ void ShowSkilltrainer(bool &show_Skilltrainer_window, LPDIRECT3DDEVICE9 device) 
                 break;
         }
 
+        ImGui::Text("Config:");
+        ImGui::SameLine();
         if (ImGui::BeginCombo("##ConfigCombo", selectedConfig.c_str())) {
             for (const auto& configFile : configFiles) {
                 const bool is_selected = (selectedConfig == configFile);
