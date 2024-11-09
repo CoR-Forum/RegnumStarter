@@ -55,7 +55,7 @@ HINTERNET ConnectToAPIv2(HINTERNET hInternet);
  * @param path The path to send the request to.
  * @return Handle to the HTTP request.
  */
-HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std::string& session_id = "");
+HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path);
 
 /**
  * @brief Sends an HTTP POST request to the given path using the provided connection handle.
@@ -65,7 +65,7 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std
  * @param payload The payload to send with the request.
  * @return Handle to the HTTP request.
  */
-HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody, const std::string& session_id = "");
+HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody);
 
 
 /** 
@@ -75,7 +75,7 @@ HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const
  * @param path The path to send the request to.
  * @param payload The payload to send with the request.
  */
-HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody, const std::string& session_id = "");
+HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody);
 
 /**
  * @brief Reads the response from the given HTTP request handle.
@@ -106,3 +106,5 @@ extern void LogDebug(const std::string& message);
  * @return The response as a string.
  */
 std::string FetchDataFromAPI(const std::string& url);
+
+extern std::string session_id;

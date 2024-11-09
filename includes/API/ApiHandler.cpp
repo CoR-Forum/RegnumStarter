@@ -170,7 +170,7 @@ void SaveSettings() {
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload, session_id); // Pass session_id as a header
+        HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
         Log("Response received: " + response); // Log the response
 
@@ -197,7 +197,7 @@ void Logout() {
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, "", session_id); // Pass session_id as a header
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, "");
         std::string response = ReadResponse(hRequest);
         Log("Response received: " + response); // Log the response
 
@@ -233,9 +233,8 @@ void RegisterUser(const std::string& username, const std::string& nickname, cons
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
         std::string path = "/api/v2/register";
-        std::string headers = "Content-Type: application/json";
 
-        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -263,9 +262,8 @@ bool ResetPasswordRequest(const std::string& email) {
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
         std::string path = "/api/v2/reset-password";
-        std::string headers = "Content-Type: application/json";
 
-        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -293,11 +291,10 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
             {"password", password}
         };
         std::string payload = jsonPayload.dump();
-        std::string headers = "Content-Type: application/json";
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -325,14 +322,10 @@ void SendChatMessage(const std::string& message) {
             {"message", message}
         };
         std::string payload = jsonPayload.dump();
-        std::string headers = "Content-Type: application/json";
-        if (!session_id.empty()) {
-            headers += "\r\nCookie: connect.sid=" + session_id;
-        }
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload, headers);
+        HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -371,14 +364,10 @@ void CheckChatMessages() {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         try {
             std::string path = "/api/v2/chat/receive";
-            std::string headers = "Content-Type: application/json";
-            if (!session_id.empty()) {
-                headers += "\r\nCookie: connect.sid=" + session_id;
-            }
 
             HINTERNET hInternet = OpenInternetConnection();
             HINTERNET hConnect = ConnectToAPIv2(hInternet);
-            HINTERNET hRequest = SendHTTPRequest(hConnect, path, headers);
+            HINTERNET hRequest = SendHTTPRequest(hConnect, path);
             std::string response = ReadResponse(hRequest);
             CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -418,14 +407,10 @@ void ActivateLicense(const std::string& licenseKey) {
             {"licenseKey", licenseKey}
         };
         std::string payload = jsonPayload.dump();
-        std::string headers = "Content-Type: application/json";
-        if (!session_id.empty()) {
-            headers += "\r\nCookie: connect.sid=" + session_id;
-        }
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPIv2(hInternet);
-        HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload, headers);
+        HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
