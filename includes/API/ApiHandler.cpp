@@ -1,7 +1,5 @@
 #include "ApiHandler.h"
 
-std::string session_id;
-
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/api/v2/login";
