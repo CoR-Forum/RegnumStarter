@@ -16,22 +16,6 @@ bool Login(const std::string& login, const std::string& password) {
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
 
-        // Extract session ID from response headers
-        DWORD dwSize = 0;
-        HttpQueryInfo(hRequest, HTTP_QUERY_SET_COOKIE, NULL, &dwSize, NULL);
-        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            std::vector<char> buffer(dwSize);
-            if (HttpQueryInfo(hRequest, HTTP_QUERY_SET_COOKIE, buffer.data(), &dwSize, NULL)) {
-                std::string headers(buffer.begin(), buffer.end());
-                std::regex sessionRegex("connect.sid=([^;]+);");
-                std::smatch match;
-                if (std::regex_search(headers, match, sessionRegex) && match.size() > 1) {
-                    session_id = match.str(1);
-                    LogDebug("Session ID: " + session_id);
-                }
-            }
-        }
-
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
@@ -42,6 +26,14 @@ bool Login(const std::string& login, const std::string& password) {
 
             if (message == "Login successful") {
                 LogDebug("User " + login + " logged in successfully");
+
+                if (jsonResponse.contains("token") && jsonResponse["token"].is_string()) {
+                    session_id = jsonResponse["token"];
+                    LogDebug("Session ID (JWT): " + session_id);
+                } else {
+                    Log("Invalid response: missing token");
+                    return false;
+                }
 
                 if (jsonResponse.contains("user") && jsonResponse["user"].is_object()) {
                     auto user = jsonResponse["user"];
