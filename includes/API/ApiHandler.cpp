@@ -35,13 +35,14 @@ bool Login(const std::string& login, const std::string& password) {
 
                 if (jsonResponse.contains("user") && jsonResponse["user"].is_object()) {
                     auto user = jsonResponse["user"];
+                    LogDebug("User object found");
 
                     std::string userId = user.value("id", "");
                     std::string username = user.value("username", "");
                     std::string nickname = user.value("nickname", "");
                     std::string settings = user.value("settings", "");
 
-                    LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname);
+                    LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings);
 
                     // Deserialize settings JSON string
                     auto settingsJson = nlohmann::json::parse(settings);
@@ -380,7 +381,7 @@ void CheckChatMessages() {
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
                     std::string createdAt = msg["timestamp"];
-                    std::string user = msg["nickname"];
+                    std::string user = msg.contains("nickname") ? msg["nickname"] : "Unknown";
                     std::string msgText = msg["message"];
                     std::string fullMessage = "[" + createdAt + "] " + user + ": " + msgText;
 
