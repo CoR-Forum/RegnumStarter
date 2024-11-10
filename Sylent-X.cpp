@@ -49,9 +49,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     // Register and create the main window
-    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
+    WNDCLASSEXW wc = { sizeof(wc), CS_DBLCLKS | CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 850, 580, NULL, NULL, wc.hInstance, NULL);
+
+    // Get the screen width and height
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, screenWidth, screenHeight, NULL, NULL, wc.hInstance, NULL);
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
@@ -578,6 +583,13 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+    case WM_NCHITTEST: {
+        LRESULT hit = DefWindowProc(hWnd, msg, wParam, lParam);
+        if (hit == HTCLIENT && !ImGui::IsAnyItemHovered()) {
+            hit = HTCAPTION;
+        }
+        return hit;
+    }
     }
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
