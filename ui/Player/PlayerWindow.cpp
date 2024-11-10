@@ -1,6 +1,12 @@
 #include "PlayerWindow.h"
 #include "../../includes/Utils.h" // Assuming ReadMemoryValues and IsProcessOpen are defined here
 #include "../../includes/process/process.h"
+#include <iostream>
+#include <fstream>
+
+// Redirect std::cout to a null stream to disable console output
+std::ofstream null_stream;
+std::streambuf* cout_buf = std::cout.rdbuf(null_stream.rdbuf());
 
 void ShowPlayerWindow(bool& show_player_window) {
     if (show_player_window) {
@@ -13,4 +19,6 @@ void ShowPlayerWindow(bool& show_player_window) {
             }
         }
     }
+    // Restore std::cout to its original state
+    std::cout.rdbuf(cout_buf);
 }
