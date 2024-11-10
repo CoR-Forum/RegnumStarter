@@ -7,7 +7,17 @@ extern std::string sylentx_status;
 
 // Function to get the key name from the virtual key code
 std::string GetKeyName(int virtualKey) {
+    if (virtualKey < 0x08 || virtualKey > 0xFF) {
+        std::cout << "Invalid virtualKey: " << virtualKey << std::endl;
+        return "Unknown";
+    }
+
     UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
+    if (scanCode == 0) {
+        std::cout << "Failed to map virtualKey: " << virtualKey << std::endl;
+        return "Unknown";
+    }
+
     char keyName[128];
     int result = GetKeyNameText(scanCode << 16, keyName, sizeof(keyName));
     
