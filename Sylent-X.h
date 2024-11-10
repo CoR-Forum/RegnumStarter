@@ -42,6 +42,7 @@
 #include "includes/Bosses/BossSpawns.cpp"
 #include "ui/Bosses/BossRespawnWindow.cpp"
 #include "includes/OpenUrl/OpenUrl.cpp"
+#include "includes/md5/md5.cpp"
 
 #pragma comment(lib, "wininet.lib")
 #pragma comment(lib, "urlmon.lib")
