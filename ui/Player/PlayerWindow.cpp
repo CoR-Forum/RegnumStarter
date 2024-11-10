@@ -20,7 +20,7 @@ void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
                 ImGui::Text("Failed to read position values.");
             }
         } else {
-            ImGui::Text("Ragnarok Online is not running.");
+            ImGui::Text("ROClientGame.exe is not running.");
         }
         ImGui::Spacing();
         ImGui::SeparatorText("TrollOptions");
