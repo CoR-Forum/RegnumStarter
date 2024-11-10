@@ -1,6 +1,8 @@
 #include "PlayerWindow.h"
 #include "../../includes/Utils.h" // Assuming ReadMemoryValues and IsProcessOpen are defined here
 #include "../../includes/process/process.h"
+#include "../../ui/helper/Markers/LicenseMarker.h"
+
 extern std::string sylentx_status;
 
 static float CharValue = 0.9700000286f; // Default small Nordo Value
@@ -40,5 +42,9 @@ void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
 
         prevCharState = optionCharacter; // Update previous state
         ImGui::EndDisabled();
+        if (!featureCharacter) {
+        ImGui::SameLine();
+        ShowLicenseMarker();
+    }
     }
 }
