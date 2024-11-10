@@ -22,7 +22,7 @@ std::string GetKeyName(int virtualKey) {
     int result = GetKeyNameText(scanCode << 16, keyName, sizeof(keyName));
     
     // Debugging information
-    std::cout << "virtualKey: " << virtualKey << ", scanCode: " << scanCode << ", result: " << result << std::endl;
+    // std::cout << "virtualKey: " << virtualKey << ", scanCode: " << scanCode << ", result: " << result << std::endl;
 
     if (result > 0) {
         return std::string(keyName);
