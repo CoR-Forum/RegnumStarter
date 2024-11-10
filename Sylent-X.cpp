@@ -133,6 +133,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             // Add a small delay to prevent rapid toggling
             Sleep(200);
         }
+        // Add a delay to limit the frame rate when the UI is shown
+        if (g_ShowUI) {
+            Sleep(16); // Approximately 60 FPS
+        }
         // Check for global key press and release events using Windows API
         if (optionGravity && (GetAsyncKeyState(VK_SPACE) & 0x8000)) {
             MemoryManipulation("gravity", -8.0f);
