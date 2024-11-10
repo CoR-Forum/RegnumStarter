@@ -21,7 +21,7 @@ void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
         ImGui::SeparatorText("TrollOptions");
         ImGui::Spacing();
 
-        ImGui::BeginDisabled(disableCheckboxes);
+        ImGui::BeginDisabled(disableCheckboxes ||!featureCharacter);
         ImGui::Checkbox("Character Height", &optionCharacter);
         if (optionCharacter) {
             ImGui::SameLine();
