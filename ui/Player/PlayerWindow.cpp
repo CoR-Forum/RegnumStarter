@@ -4,9 +4,10 @@
 #include <iostream>
 #include <fstream>
 
-// Redirect std::cout to a null stream to disable console output
+// Redirect std::cout and std::cerr to a null stream to disable console output
 std::ofstream null_stream;
 std::streambuf* cout_buf = std::cout.rdbuf(null_stream.rdbuf());
+std::streambuf* cerr_buf = std::cerr.rdbuf(null_stream.rdbuf());
 
 void ShowPlayerWindow(bool& show_player_window) {
     if (show_player_window) {
@@ -19,6 +20,7 @@ void ShowPlayerWindow(bool& show_player_window) {
             }
         }
     }
-    // Restore std::cout to its original state
+    // Restore std::cout and std::cerr to their original state
     std::cout.rdbuf(cout_buf);
+    std::cerr.rdbuf(cerr_buf);
 }
