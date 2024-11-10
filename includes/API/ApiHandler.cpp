@@ -35,6 +35,7 @@ bool Login(const std::string& login, const std::string& password) {
                 featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
                 featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
                 featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
+                featureCharacter = std::find(licensedFeatures.begin(), licensedFeatures.end(), "character") != licensedFeatures.end();
 
                 Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                     std::string(featureGravity ? ", Gravity" : "") + 
@@ -44,7 +45,8 @@ bool Login(const std::string& login, const std::string& password) {
                     std::string(featureSpeedhack ? ", Speedhack" : "") + 
                     std::string(featureFastfly ? ", Fastfly" : "") + 
                     std::string(featureFakelag ? ", fakelag" : "") + 
-                    std::string(featureFreecam ? ", Freecam" : ""));
+                    std::string(featureFreecam ? ", Freecam" : "") +
+                    std::string(featureCharacter ? ", Character" : ""));
                     
                 // Check if role is not null
                 if (jsonResponse.contains("role") && !jsonResponse["role"].is_null()) {
