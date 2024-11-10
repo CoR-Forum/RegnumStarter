@@ -1,19 +1,11 @@
 #include "PlayerWindow.h"
 #include "../../includes/Utils.h" // Assuming ReadMemoryValues and IsProcessOpen are defined here
 #include "../../includes/process/process.h"
-#include <iostream>
-#include <fstream>
-
-// Redirect std::cout and std::cerr to a null stream to disable console output
-std::ofstream null_stream;
-std::streambuf* cout_buf = std::cout.rdbuf(null_stream.rdbuf());
-std::streambuf* cerr_buf = std::cerr.rdbuf(null_stream.rdbuf());
 extern std::string sylentx_status;
 
 static float CharValue = 0.9700000286f; // Default small Nordo Value
 static bool prevCharState = false; // Track previous state of the checkbox
 bool disableCheckboxes = (sylentx_status == "Detected");
-std::streambuf* cerr_buf = std::cerr.rdbuf(null_stream.rdbuf());
 
 void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
     if (show_player_window) {
@@ -26,7 +18,4 @@ void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
             }
         }  
     }
-    // Restore std::cout and std::cerr to their original state
-    std::cout.rdbuf(cout_buf);
-    std::cerr.rdbuf(cerr_buf);
 }
