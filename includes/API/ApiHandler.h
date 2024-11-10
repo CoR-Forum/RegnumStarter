@@ -14,6 +14,8 @@ extern HWND hwnd;
 std::string login;
 std::string password;
 
+std::string session_id;
+
 // variable to store current amount of Magnat currency for the user
 int magnatCurrency;
 

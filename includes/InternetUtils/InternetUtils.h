@@ -41,21 +41,13 @@ HINTERNET OpenInternetConnection();
 HINTERNET ConnectToAPI(HINTERNET hInternet);
 
 /**
- * @brief Connects to the API using the given internet session handle.
- * 
- * @param hInternet Handle to the internet session.
- * @return Handle to the internet connection.
- */
-HINTERNET ConnectToAPIv2(HINTERNET hInternet);
-
-/**
  * @brief Sends an HTTP request to the given path using the provided connection handle.
  * 
  * @param hConnect Handle to the internet connection.
  * @param path The path to send the request to.
  * @return Handle to the HTTP request.
  */
-HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std::string& session_id = "");
+HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path);
 
 /**
  * @brief Sends an HTTP POST request to the given path using the provided connection handle.
@@ -65,7 +57,7 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path, const std
  * @param payload The payload to send with the request.
  * @return Handle to the HTTP request.
  */
-HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody, const std::string& session_id = "");
+HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody);
 
 
 /** 
@@ -75,7 +67,7 @@ HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const
  * @param path The path to send the request to.
  * @param payload The payload to send with the request.
  */
-HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody, const std::string& session_id = "");
+HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& requestBody);
 
 /**
  * @brief Reads the response from the given HTTP request handle.
@@ -106,3 +98,10 @@ extern void LogDebug(const std::string& message);
  * @return The response as a string.
  */
 std::string FetchDataFromAPI(const std::string& url);
+
+extern std::string session_id;
+
+// declarations for API servers
+// Selection between Production and Development API
+static int apiSelection = 1;
+const char* apiOptions[] = { "Production", "Development" };
