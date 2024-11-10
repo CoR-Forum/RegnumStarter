@@ -15,7 +15,7 @@ void ShowPasswordResetWindow(bool& show_password_reset_window, bool& show_login_
         PostQuitMessage(0);
     }
 
-    static char passwordResetToken[128] = "";
+    static char passwordResetToken[256] = "";
     static char newPassword[128] = "";
 
     // Input field for token
@@ -29,7 +29,6 @@ void ShowPasswordResetWindow(bool& show_password_reset_window, bool& show_login_
     // Function to handle the submit button click
     auto handleSubmit = [&]() {
         if (SetNewPassword(passwordResetToken, newPassword)) {
-            MessageBox(NULL, "Password updated successfully. You may now login.", "Success", MB_ICONINFORMATION);
             show_password_reset_window = false;
             show_login_window = true;
         } else {
