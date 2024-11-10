@@ -22,20 +22,20 @@ HINTERNET OpenInternetConnection() {
 }
 
 HINTERNET ConnectToAPI(HINTERNET hInternet) {
-    HINTERNET hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    HINTERNET hConnect;
+    if (apiSelection == 0) {
+        hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    } else {
+        hConnect = InternetConnect(hInternet, "localhost", 3000, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    }
     if (!hConnect) throw std::runtime_error("Failed to connect to API");
-    return hConnect;
-}
-
-HINTERNET ConnectToAPIv2(HINTERNET hInternet) {
-    HINTERNET hConnect = InternetConnect(hInternet, "localhost", 3000, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
-    if (!hConnect) throw std::runtime_error("Failed to connect to API on 5.161.184.121:3000");
     return hConnect;
 }
 
 HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+    DWORD flags = (apiSelection == 0) ? INTERNET_FLAG_SECURE : 0;
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, acceptTypes, flags, 0);
     std::string headers = "Content-Type: application/json";
     if (!session_id.empty()) {
         headers += "\r\nAuthorization: " + session_id;
@@ -51,7 +51,8 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
 
 HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& payload) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+    DWORD flags = (apiSelection == 0) ? INTERNET_FLAG_SECURE : 0;
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, flags, 0);
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
         headers += "Authorization: " + session_id + "\r\n";
@@ -67,7 +68,8 @@ HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const
 
 HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& payload) {
     const char* acceptTypes[] = { "application/json", NULL };
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "PUT", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
+    DWORD flags = (apiSelection == 0) ? INTERNET_FLAG_SECURE : 0;
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "PUT", path.c_str(), NULL, NULL, acceptTypes, flags, 0);
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
         headers += "Authorization: " + session_id + "\r\n";
