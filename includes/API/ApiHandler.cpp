@@ -35,7 +35,9 @@ bool Login(const std::string& login, const std::string& password) {
                 featureSpeedhack = std::find(licensedFeatures.begin(), licensedFeatures.end(), "speedhack") != licensedFeatures.end();
                 featureFastfly = std::find(licensedFeatures.begin(), licensedFeatures.end(), "fastfly") != licensedFeatures.end();
                 featureFreecam = std::find(licensedFeatures.begin(), licensedFeatures.end(), "freecam") != licensedFeatures.end();
-                featureCharacter = std::find(licensedFeatures.begin(), licensedFeatures.end(), "character") != licensedFeatures.end();
+                featureCharacter = std::find(licensedFeatures.begin(), licensedFeatures.end(), "cl") != licensedFeatures.end();
+                featureCharacter = std::find(licensedFeatures.begin(), licensedFeatures.end(), "ch") != licensedFeatures.end();
+                featureCharacter = std::find(licensedFeatures.begin(), licensedFeatures.end(), "cb") != licensedFeatures.end();
 
                 Log("Licensed features: " + std::string(featureZoom ? "Zoom" : "") + 
                     std::string(featureGravity ? ", Gravity" : "") + 
