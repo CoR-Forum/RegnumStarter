@@ -1,6 +1,7 @@
 #include "ViewWindow.h"
 #include "../../includes/Utils.h" // Assuming MemoryManipulation is declared here
 #include "../../ui/helper/Markers/LicenseMarker.h"
+#include <iostream> // For debugging
 
 extern std::string sylentx_status;
 
@@ -8,7 +9,12 @@ extern std::string sylentx_status;
 std::string GetKeyName(int virtualKey) {
     UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
     char keyName[128];
-    if (GetKeyNameText(scanCode << 16, keyName, sizeof(keyName)) > 0) {
+    int result = GetKeyNameText(scanCode << 16, keyName, sizeof(keyName));
+    
+    // Debugging information
+    std::cout << "virtualKey: " << virtualKey << ", scanCode: " << scanCode << ", result: " << result << std::endl;
+
+    if (result > 0) {
         return std::string(keyName);
     }
     return "Unknown";
