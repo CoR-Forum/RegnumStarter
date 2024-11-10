@@ -82,6 +82,7 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
                 for (int key = 0x08; key <= 0xFF; key++) {
                     if (GetAsyncKeyState(key) & 0x8000) {
                         userDefinedHotkey = key;
+                        std::cout << "Hotkey set to: " << userDefinedHotkey << std::endl; // Debugging information
                         waitingForHotkey = false;
                         break;
                     }
