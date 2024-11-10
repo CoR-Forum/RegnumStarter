@@ -37,6 +37,9 @@ void UpdateConfigValue(const std::string& key, const std::string& value) {
 }
 
 void runRoClientGame(const std::string& regnumLoginUser, const std::string& regnumLoginPassword) {
+    // Update cl_update_all_resources in game.cfg
+    UpdateConfigValue("cl_update_all_resources", "1");
+
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
