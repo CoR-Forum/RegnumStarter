@@ -463,7 +463,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     
             } else if (show_player_window) {
 
-                ShowPlayerWindow(show_player_window);
+                ShowPlayerWindow(show_player_window, optionCharacter);
       
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);

@@ -8,8 +8,14 @@
 std::ofstream null_stream;
 std::streambuf* cout_buf = std::cout.rdbuf(null_stream.rdbuf());
 std::streambuf* cerr_buf = std::cerr.rdbuf(null_stream.rdbuf());
+extern std::string sylentx_status;
 
-void ShowPlayerWindow(bool& show_player_window) {
+static float CharValue = 0.9700000286f; // Default small Nordo Value
+static bool prevCharState = false; // Track previous state of the checkbox
+bool disableCheckboxes = (sylentx_status == "Detected");
+std::streambuf* cerr_buf = std::cerr.rdbuf(null_stream.rdbuf());
+
+void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
     if (show_player_window) {
         if (IsProcessOpen("ROClientGame.exe")) {
             std::vector<float> values = ReadMemoryValues({"posx", "posy", "posz"});
@@ -18,7 +24,7 @@ void ShowPlayerWindow(bool& show_player_window) {
             } else {
                 ImGui::Text("Failed to read position values.");
             }
-        }
+        }  
     }
     // Restore std::cout and std::cerr to their original state
     std::cout.rdbuf(cout_buf);
