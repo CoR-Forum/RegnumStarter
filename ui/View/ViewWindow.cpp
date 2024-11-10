@@ -81,6 +81,10 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
             if (waitingForHotkey) {
                 for (int key = 0x08; key <= 0xFF; key++) {
                     if (GetAsyncKeyState(key) & 0x8000) {
+                        if (key == 231) { // Example of excluding a specific invalid key code
+                            std::cout << "Invalid key code: " << key << std::endl;
+                            continue;
+                        }
                         userDefinedHotkey = key;
                         std::cout << "Hotkey set to: " << userDefinedHotkey << std::endl; // Debugging information
                         waitingForHotkey = false;
