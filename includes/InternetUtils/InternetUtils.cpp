@@ -36,10 +36,9 @@ HINTERNET ConnectToAPIv2(HINTERNET hInternet) {
 HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
     const char* acceptTypes[] = { "application/json", NULL };
     HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
-
     std::string headers = "Content-Type: application/json";
     if (!session_id.empty()) {
-        headers += "\r\nAuthorization:" + session_id;
+        headers += "\r\nAuthorization: " + session_id;
     }
 
     BOOL result = HttpSendRequest(hRequest, headers.c_str(), headers.length(), NULL, 0);
@@ -53,7 +52,6 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
 HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& payload) {
     const char* acceptTypes[] = { "application/json", NULL };
     HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
-
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
         headers += "Authorization: " + session_id + "\r\n";
@@ -70,10 +68,9 @@ HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const
 HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& payload) {
     const char* acceptTypes[] = { "application/json", NULL };
     HINTERNET hRequest = HttpOpenRequest(hConnect, "PUT", path.c_str(), NULL, NULL, acceptTypes, 0, 0);
-
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
-        headers += "Authorization: Bearer " + session_id + "\r\n";
+        headers += "Authorization: " + session_id + "\r\n";
     }
 
     BOOL result = HttpSendRequest(hRequest, headers.c_str(), headers.length(), (LPVOID)payload.c_str(), payload.length());
