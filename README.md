@@ -18,7 +18,7 @@ This guide provides detailed instructions on how to build the application on bot
 1. **Build the application:**
     ```sh
     i686-w64-mingw32-windres resource.rc resource.o && \
-    i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp includes/md5/md5.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && wine bin/Sylent-X.exe
+    i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && wine bin/Sylent-X.exe
     ```
 
     The first part of the command compiles the resource file, which is then included in the program file.
