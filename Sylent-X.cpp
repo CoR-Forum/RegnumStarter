@@ -4,7 +4,7 @@ bool g_DeviceLost = false;
 UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 bool spaceKeyPressed = false;
 bool ctrlKeyPressed = false;
-bool fovToggled = false; // Initialize the FOV state
+bool fovToggled = false;
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -20,15 +20,13 @@ std::vector<Pointer> pointers;
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
 
-// Function to check if a hotkey is pressed
 bool IsHotkeyPressed(int hotkey) {
     return GetAsyncKeyState(hotkey) & 0x8000;
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + sylentx_version + ". Made with hate in Germany.");
-    // Create a named mutex
-    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex"));
+    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex")); // Create a named mutexf
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
         return 1;
@@ -44,10 +42,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     // Get the screen width and height based on API selection
     int screenWidth, screenHeight;
-    if (apiSelection == 0) { // Production
+    if (apiSelection == 0) {
         screenWidth = GetSystemMetrics(SM_CXSCREEN);
         screenHeight = GetSystemMetrics(SM_CYSCREEN);
-    } else { // Development
+    } else {
         screenWidth = 800;
         screenHeight = 600;
     }
@@ -71,7 +69,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.MouseDrawCursor = false; // Hide ImGui cursor
+    io.MouseDrawCursor = false;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
@@ -523,7 +521,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
         if (wParam == SIZE_MINIMIZED)
             return 0;
-        g_ResizeWidth = (UINT)LOWORD(lParam); // Queue resize
+        g_ResizeWidth = (UINT)LOWORD(lParam);
         g_ResizeHeight = (UINT)HIWORD(lParam);
         return 0;
     case WM_SYSCOMMAND:
