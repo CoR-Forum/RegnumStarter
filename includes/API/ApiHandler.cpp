@@ -86,25 +86,21 @@ bool Login(const std::string& login, const std::string& password) {
                                 auto pointerObj = feature["pointer"];
                                 std::string featureName = feature.value("name", "");
                                 std::string address = pointerObj.value("address", "");
-                                std::string offsets = pointerObj.value("offsets", "");
+                                auto offsets = pointerObj.value("offsets", std::vector<std::string>());
 
-                                LogDebug("Pointer: " + featureName + ", Address: " + address + ", Offsets: " + offsets);
+                                LogDebug("Pointer: " + featureName + ", Address: " + address + ", Offsets: " + nlohmann::json(offsets).dump());
 
                                 Pointer pointer;
                                 pointer.name = featureName;
                                 pointer.address = std::stoul(address, nullptr, 16);
 
-                                if (!offsets.empty()) {
-                                    std::stringstream ss(offsets);
-                                    std::string offset;
-                                    while (std::getline(ss, offset, ',')) {
-                                        pointer.offsets.push_back(std::stoul(offset, nullptr, 16));
-                                    }
+                                for (const auto& offset : offsets) {
+                                    pointer.offsets.push_back(std::stoul(offset, nullptr, 16));
                                 }
 
                                 std::stringstream addressHex;
                                 addressHex << std::hex << pointer.address;
-                                LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + offsets);
+                                LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + nlohmann::json(offsets).dump());
                                 g_pointers.push_back(pointer);
                             }
                         }
@@ -141,7 +137,6 @@ bool Login(const std::string& login, const std::string& password) {
         return false;
     }
 }
-
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
