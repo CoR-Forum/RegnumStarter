@@ -27,7 +27,7 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     ImGui::Spacing();
 
-    ImGui::Combo("API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));
+    ImGui::Combo("##API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));
 
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username));
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
