@@ -42,7 +42,7 @@ bool Login(const std::string& login, const std::string& password) {
                     std::string nickname = user.value("nickname", "");
                     std::string settings = user.value("settings", "");
 
-                    LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings);
+                    LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings + ", Features: " + user["features"].dump());
 
                     // Deserialize settings JSON string
                     auto settingsJson = nlohmann::json::parse(settings);
@@ -63,20 +63,6 @@ bool Login(const std::string& login, const std::string& password) {
                     showLoadingScreen = settingsJson.value("showLoadingScreen", true);
                     ShowIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
-
-                    // Log the loaded settings
-                    LogDebug("Loaded settings: logDebug=" + std::to_string(setting_log_debug) +
-                             ", textColor=(" + std::to_string(textColor.x) + ", " + std::to_string(textColor.y) + ", " + std::to_string(textColor.z) + ", " + std::to_string(textColor.w) + ")" +
-                             ", fontSize=" + std::to_string(setting_fontSize) +
-                             ", enableRainbow=" + std::to_string(setting_enableRainbow) +
-                             ", rainbowSpeed=" + std::to_string(setting_rainbowSpeed) +
-                             ", excludeFromCapture=" + std::to_string(setting_excludeFromCapture) +
-                             ", regnumInstallPath=" + setting_regnumInstallPath +
-                             ", enableMusic=" + std::to_string(enableMusic) +
-                             ", enableSoundEffects=" + std::to_string(enableSoundEffects) +
-                             ", showLoadingScreen=" + std::to_string(showLoadingScreen) +
-                             ", showIntro=" + std::to_string(ShowIntro) +
-                             ", soundVolume=" + std::to_string(soundVolume));
 
                     if (user.contains("features") && user["features"].is_array()) {
                         auto features = user["features"];
@@ -102,6 +88,29 @@ bool Login(const std::string& login, const std::string& password) {
                                 addressHex << std::hex << pointer.address;
                                 LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + nlohmann::json(offsets).dump());
                                 g_pointers.push_back(pointer);
+
+                                // Update feature flags based on feature name
+                                if (featureName == "zoom") {
+                                    featureZoom = true;
+                                } else if (featureName == "gravity") {
+                                    featureGravity = true;
+                                } else if (featureName == "moonjump") {
+                                    featureMoonjump = true;
+                                } else if (featureName == "moonwalk") {
+                                    featureMoonwalk = true;
+                                } else if (featureName == "fov") {
+                                    featureFov = true;
+                                } else if (featureName == "speedhack") {
+                                    featureSpeedhack = true;
+                                } else if (featureName == "freecam") {
+                                    featureFreecam = true;
+                                } else if (featureName == "fastfly") {
+                                    featureFastfly = true;
+                                } else if (featureName == "fakelag") {
+                                    featureFakelag = true;
+                                } else if (featureName == "character") {
+                                    featureCharacter = true;
+                                }
                             }
                         }
                         LogDebug("Pointers fetched and parsed successfully");
