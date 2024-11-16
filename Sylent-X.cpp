@@ -191,14 +191,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     // Calculate the padding to center the image
                     ImVec2 padding = ImVec2((availableSpace.x - imageSize.x) * 0.5f, (availableSpace.y - imageSize.y) * 0.5f);
 
-                    // Add padding
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + padding.x);
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding.y);
 
-                    // Draw the image
                     ImGui::Image((void*)texture_sylent_icon, imageSize);
 
-                    // Detect click on the image
                     if (ImGui::IsItemClicked()) {
                         OpenURL("https://sylent-x.com/");
                     }
