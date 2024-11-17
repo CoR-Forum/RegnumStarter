@@ -21,7 +21,7 @@ void ShowPasswordResetWindow(bool& show_password_reset_window, bool& show_login_
     // Input field for token
     ImGui::InputText("Token", passwordResetToken, IM_ARRAYSIZE(passwordResetToken));
     ImGui::SameLine();
-    ShowHelpMarker("Sent to you by e-mail");
+    ShowHelpMarker("The token was sent to your e-mail address. If you did not receive it, please check your spam folder or request a new token.");
 
     // Input field for new password
     ImGui::InputText("New Password", newPassword, IM_ARRAYSIZE(newPassword), ImGuiInputTextFlags_Password);
