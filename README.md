@@ -1,5 +1,7 @@
 # Sylent-X
 
+This tool requires the [Sylent-X-API](https://github.com/Sylent-X/Sylent-X-API).
+
 ## Overview
 
 Sylent-X is an application designed to run on Windows, although development is also possible on macOS.
