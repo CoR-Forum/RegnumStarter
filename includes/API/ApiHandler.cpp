@@ -2,7 +2,7 @@
 
 bool Login(const std::string& login, const std::string& password) {
     try {
-        std::string path = "/api/v2/login";
+        std::string path = "/v1/login";
         nlohmann::json jsonPayload = {
             {"username", login},
             {"password", password}
@@ -172,7 +172,7 @@ void SaveSettings() {
         std::string payload = payloadJson.dump();
         Log("Payload being sent: " + payload); // Log the payload
  
-        std::string path = "/api/v2/save-settings";
+        std::string path = "/v1/save-settings";
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
@@ -199,7 +199,7 @@ void SaveSettings() {
 void Logout() {
     SaveSettings(); // Save settings before logging out
     try {
-        std::string path = "/api/v2/logout";
+        std::string path = "/v1/logout";
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
@@ -238,7 +238,7 @@ void RegisterUser(const std::string& username, const std::string& nickname, cons
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
-        std::string path = "/api/v2/register";
+        std::string path = "/v1/register";
 
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
@@ -267,7 +267,7 @@ bool ResetPasswordRequest(const std::string& email) {
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
-        std::string path = "/api/v2/reset-password";
+        std::string path = "/v1/reset-password";
 
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
@@ -292,7 +292,7 @@ bool ResetPasswordRequest(const std::string& email) {
 
 bool SetNewPassword(const std::string& token, const std::string& password) {
     try {
-        std::string path = "/api/v2/reset-password/" + token;
+        std::string path = "/v1/reset-password/" + token;
         nlohmann::json jsonPayload = {
             {"password", password}
         };
@@ -323,7 +323,7 @@ bool SetNewPassword(const std::string& token, const std::string& password) {
 
 void SendChatMessage(const std::string& message) {
     try {
-        std::string path = "/api/v2/chat/send";
+        std::string path = "/v1/chat/send";
         nlohmann::json jsonPayload = {
             {"message", message}
         };
@@ -369,7 +369,7 @@ void CheckChatMessages() {
     while (keepRunning) {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         try {
-            std::string path = "/api/v2/chat/receive";
+            std::string path = "/v1/chat/receive";
 
             HINTERNET hInternet = OpenInternetConnection();
             HINTERNET hConnect = ConnectToAPI(hInternet);
@@ -408,7 +408,7 @@ void CheckChatMessages() {
 
 void ActivateLicense(const std::string& licenseKey) {
     try {
-        std::string path = "/api/v2/license/activate";
+        std::string path = "/v1/license/activate";
         nlohmann::json jsonPayload = {
             {"licenseKey", licenseKey}
         };
