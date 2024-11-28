@@ -37,6 +37,9 @@ void UpdateConfigValue(const std::string& key, const std::string& value) {
 }
 
 void runRoClientGame(const std::string& regnumLoginUser, const std::string& regnumLoginPassword) {
+    // Update cl_update_all_resources in game.cfg
+    UpdateConfigValue("cl_update_all_resources", "1");
+
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
@@ -363,7 +366,8 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             for (const auto& file : filesToDelete) {
                 std::string filePath = livePath + file;
                 if (remove(filePath.c_str()) != 0) {
-                    Log("Failed to delete file: " + filePath);
+                    Log("Failed to delete file make sure to select your Game Path: " + filePath);
+                    MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK);
                 } else {
                     Log("Deleted file: " + filePath);
                 }

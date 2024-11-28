@@ -95,6 +95,9 @@ void ShowMovementWindow(bool& show_movement_window) {
         ShowLicenseMarker();
     }
 
+    // delcare isAdmin as true
+    bool isAdmin = true;
+
     if (isAdmin) {
         ImGui::Spacing();
         ImGui::Separator();

@@ -4,7 +4,7 @@ bool g_DeviceLost = false;
 UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 bool spaceKeyPressed = false;
 bool ctrlKeyPressed = false;
-bool fovToggled = false; // Initialize the FOV state
+bool fovToggled = false;
 
 ImVec4 textColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -20,38 +20,37 @@ std::vector<Pointer> pointers;
 const std::string regnumLoginUser = "username";
 const std::string regnumLoginPassword = "password";
 
-// Function to check if a hotkey is pressed
 bool IsHotkeyPressed(int hotkey) {
     return GetAsyncKeyState(hotkey) & 0x8000;
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     Log("Sylent-X " + sylentx_version + ". Made with hate in Germany.");
-    // Create a named mutex
-    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex"));
+    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex")); // Create a named mutexf
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
         return 1;
     }
 
     SelfUpdate();
-    LoadLoginCredentials(hInstanceGlobal);
 
-    bool loginSuccess = Login(login, password);
-    if (loginSuccess) {
-        LogDebug("Auto-login successful");
-        LoadSettings();
-        show_login_window = false;
-        show_main_window = true;
-    } else {
-        LogDebug("Auto-login failed");
-        show_login_window = true;
-    }
+    show_login_window = true;
 
     // Register and create the main window
-    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
+    WNDCLASSEXW wc = { sizeof(wc), CS_DBLCLKS | CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 850, 580, NULL, NULL, wc.hInstance, NULL);
+
+    // Get the screen width and height based on API selection
+    int screenWidth, screenHeight;
+    if (apiSelection == 0) {
+        screenWidth = GetSystemMetrics(SM_CXSCREEN);
+        screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    } else {
+        screenWidth = 1000;
+        screenHeight = 600;
+    }
+
+    HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, screenWidth, screenHeight, NULL, NULL, wc.hInstance, NULL);
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
@@ -70,7 +69,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.MouseDrawCursor = false; // Hide ImGui cursor
+    io.MouseDrawCursor = false;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
@@ -192,14 +191,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     // Calculate the padding to center the image
                     ImVec2 padding = ImVec2((availableSpace.x - imageSize.x) * 0.5f, (availableSpace.y - imageSize.y) * 0.5f);
 
-                    // Add padding
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + padding.x);
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding.y);
 
-                    // Draw the image
                     ImGui::Image((void*)texture_sylent_icon, imageSize);
 
-                    // Detect click on the image
                     if (ImGui::IsItemClicked()) {
                         OpenURL("https://sylent-x.com/");
                     }
@@ -211,8 +207,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 // Create a child window for the texture
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
-                float buttonWidth = 150.0f; // Assuming each button has a width of 150
-                float buttonHeight = 30.0f; // Assuming each button has a height of 40
+                float buttonWidth = 150.0f;
+                float buttonHeight = 30.0f;
                 float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
 
                 // Calculate total width of all buttons and spacing
@@ -229,7 +225,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -243,7 +238,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
                     show_view_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -257,7 +251,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -271,8 +264,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 // Calculate the size of the largest button
                 ImVec2 buttonSize = ImVec2(0, 0);
                 const char* buttonLabels[] = {
-                    "Sylent-X", "Admin", "Chat", "Settings", "RegnumStarter", 
-                    "Feedback", "License", "Info", "Logout"
+                    "Sylent-X", "Chat", "Settings", "RegnumStarter", 
+                    "License", "Info", "Logout"
                 };
                 for (const char* label : buttonLabels) {
                     ImVec2 size = ImGui::CalcTextSize(label);
@@ -281,7 +274,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(120, 0), true);
 
                 // Calculate the padding to center the buttons
                 float childWidth = ImGui::GetWindowWidth();
@@ -290,7 +283,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -298,17 +290,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_movement_window = false;
                     show_player_window = false;
                     show_boss_respawn_window = false;
-                }
-
-                if (isAdmin) {
-                    ImGui::SetCursorPosX(buttonPadding);
-                    if (ImGui::Button(ICON_FA_USER_REGULAR " Admin", buttonSize)) {
-                        GetAllUsers();
-                        GetAllLicenses();
-                        show_admin_window = true; // Show the admin window
-                    }
-
-                    ShowAdminPanel(&show_admin_window);
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
@@ -319,7 +300,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button("RegnumStarter", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_view_window = false;
@@ -332,7 +312,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
@@ -343,22 +322,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COMMENT " Feedback", buttonSize)) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    show_feedback_window = true;
-                }
-
-                ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
@@ -370,7 +335,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -384,7 +348,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
                     show_settings_window = false;
-                    show_feedback_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
@@ -403,7 +366,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
 
-                // Main content area
                 ImGui::BeginChild("MainContent", ImVec2(0, 0), true);
 
                 if (show_settings_window) {
@@ -444,11 +406,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     if (ImGui::Button("Create Ticket")) {
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
                     }
-
-            } else if (show_feedback_window) {
-
-                ShowFeedbackWindow(show_feedback_window);
-
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
 
@@ -463,7 +420,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     
             } else if (show_player_window) {
 
-                ShowPlayerWindow(show_player_window);
+                ShowPlayerWindow(show_player_window, optionCharacter);
       
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
@@ -561,7 +518,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
         if (wParam == SIZE_MINIMIZED)
             return 0;
-        g_ResizeWidth = (UINT)LOWORD(lParam); // Queue resize
+        g_ResizeWidth = (UINT)LOWORD(lParam);
         g_ResizeHeight = (UINT)HIWORD(lParam);
         return 0;
     case WM_SYSCOMMAND:
@@ -578,6 +535,13 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+    case WM_NCHITTEST: {
+        LRESULT hit = DefWindowProc(hWnd, msg, wParam, lParam);
+        if (hit == HTCLIENT && !ImGui::IsAnyItemHovered()) {
+            hit = HTCAPTION;
+        }
+        return hit;
+    }
     }
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }

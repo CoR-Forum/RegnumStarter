@@ -1,8 +1,17 @@
 # Sylent-X
 
+This tool requires the [Sylent-X-API](https://github.com/Sylent-X/Sylent-X-API).
+
 ## Overview
 
-Sylent-X is a cross-platform application designed to run on both macOS and Windows. This guide provides detailed instructions on how to build the application on both operating systems.
+Sylent-X is an application designed to run on Windows, although development is also possible on macOS.
+
+This guide provides detailed instructions on how to build the application on both operating systems.
+
+## Branches
+
+* **main** - Latest stable version
+* **dev** - Current development branch
 
 ## Build Instructions
 
@@ -11,7 +20,7 @@ Sylent-X is a cross-platform application designed to run on both macOS and Windo
 1. **Build the application:**
     ```sh
     i686-w64-mingw32-windres resource.rc resource.o && \
-    i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp includes/md5/md5.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && wine bin/Sylent-X.exe
+    i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && wine bin/Sylent-X.exe
     ```
 
     The first part of the command compiles the resource file, which is then included in the program file.
@@ -45,10 +54,10 @@ Sylent-X is a cross-platform application designed to run on both macOS and Windo
         cd /c
         ```
     2. Navigate to the project directory.
-    3. Create a [`bin`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fjoshua2504%2FProjekte%2FSylent-X%2Fbin%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%222b759d69-5410-4d40-a098-c12a87cc9835%22%5D "/Users/joshua2504/Projekte/Sylent-X/bin") folder.
+    3. Create a `bin` folder.
     4. Run the build command:
         ```sh
-        windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp includes/md5/md5.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && ./bin/Sylent-X.exe
+        windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && ./bin/Sylent-X.exe
         ```
 
 ## Update Process
@@ -59,15 +68,3 @@ To update the application, place the new file on the server and update `latest_v
 0.1.1
 https://cor-forum.de/regnum/sylent/Sylent-X-0.1.1.exe
 ```
-
-## License
-
-Include licensing information here.
-
-## Contributing
-
-Include guidelines for contributing here.
-
-## Contact
-
-Provide contact information or links to relevant resources here.

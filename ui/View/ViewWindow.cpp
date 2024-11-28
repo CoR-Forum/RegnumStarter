@@ -1,14 +1,30 @@
 #include "ViewWindow.h"
 #include "../../includes/Utils.h" // Assuming MemoryManipulation is declared here
 #include "../../ui/helper/Markers/LicenseMarker.h"
+#include <iostream> // For debugging
 
 extern std::string sylentx_status;
 
 // Function to get the key name from the virtual key code
 std::string GetKeyName(int virtualKey) {
+    if (virtualKey < 0x08 || virtualKey > 0xFF) {
+        std::cout << "Invalid virtualKey: " << virtualKey << std::endl;
+        return "Unknown";
+    }
+
     UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
+    if (scanCode == 0) {
+        std::cout << "Failed to map virtualKey: " << virtualKey << std::endl;
+        return "Unknown";
+    }
+
     char keyName[128];
-    if (GetKeyNameText(scanCode << 16, keyName, sizeof(keyName)) > 0) {
+    int result = GetKeyNameText(scanCode << 16, keyName, sizeof(keyName));
+    
+    // Debugging information
+    // std::cout << "virtualKey: " << virtualKey << ", scanCode: " << scanCode << ", result: " << result << std::endl;
+
+    if (result > 0) {
         return std::string(keyName);
     }
     return "Unknown";
@@ -65,7 +81,12 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
             if (waitingForHotkey) {
                 for (int key = 0x08; key <= 0xFF; key++) {
                     if (GetAsyncKeyState(key) & 0x8000) {
+                        if (key == 231) { // Example of excluding a specific invalid key code
+                            std::cout << "Invalid key code: " << key << std::endl;
+                            continue;
+                        }
                         userDefinedHotkey = key;
+                        std::cout << "Hotkey set to: " << userDefinedHotkey << std::endl; // Debugging information
                         waitingForHotkey = false;
                         break;
                     }
