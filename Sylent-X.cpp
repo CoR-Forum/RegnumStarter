@@ -232,8 +232,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SameLine();
-                ImGui::SetCursorPosY(startY);
-                if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button("RegnumStarter", ImVec2(buttonWidth, buttonHeight))) {
+                    show_settings_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    LoadRegnumAccounts();
+                    show_RegnumStarter = true;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", ImVec2(buttonWidth, buttonHeight))) {
+                    show_settings_window = false;
+                    show_license_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_info_window = false;
+                    show_boss_respawn_window = true;
+                }
+
+                /*if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
                     show_view_window = false;
                     show_settings_window = false;
                     show_license_window = false;
@@ -255,7 +277,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_boss_respawn_window = false;
                     show_player_window = true;
-                }
+                }*/
 
                 ImGui::EndChild();
 
@@ -293,30 +315,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(buttonPadding);
                 if (ImGui::Button(ICON_FA_COMMENTS " Chat", buttonSize)) {
                     show_chat_window = true;
-                }
-
-                ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("RegnumStarter", buttonSize)) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    LoadRegnumAccounts();
-                    show_RegnumStarter = true;
-                }
-                ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", buttonSize)) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_info_window = false;
-                    show_boss_respawn_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
