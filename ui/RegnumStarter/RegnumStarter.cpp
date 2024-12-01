@@ -99,6 +99,7 @@ void CheckAndUpdateConfig() {
     updateIfDifferent("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
     updateIfDifferent("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
     updateIfDifferent("show_intro", std::to_string(ShowIntro ? 1 : 0));
+    updateIfDifferent("cl_cpu_idle_time", "0");
 
     if (updated) {
         Log("Configuration file updated with saved settings.");
