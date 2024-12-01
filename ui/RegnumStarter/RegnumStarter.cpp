@@ -101,6 +101,8 @@ void CheckAndUpdateConfig() {
     updateIfDifferent("show_intro", std::to_string(ShowIntro ? 1 : 0));
     updateIfDifferent("cl_cpu_idle_time", "0");
     updateIfDifferent("cl_update_all_resources", "0");
+    updateIfDifferent("vg_fullscreen_borderless", "1");
+    updateIfDifferent("vg_fullscreen_mode", "0");
 
     if (updated) {
         Log("Configuration file updated with saved settings.");
