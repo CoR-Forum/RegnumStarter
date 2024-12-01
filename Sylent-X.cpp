@@ -178,8 +178,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
                 ImGui::Text("Status: %s", sylentx_status.c_str());
-                ImGui::SameLine();
-                ImGui::Text("Magnat: %d", magnatCurrency);
                 
                 // Create a child window for the texture
                 ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
