@@ -82,8 +82,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                         settingsJson["textColor"][2],
                         settingsJson["textColor"][3]
                     );
-                    setting_enableRainbow = settingsJson.value("enableRainbow", false);
-                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "");
                     enableMusic = settingsJson.value("enableMusic", true);
@@ -181,8 +179,6 @@ void SaveSettings() {
         nlohmann::json settingsJson;
         settingsJson["logDebug"] = setting_log_debug;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
-        settingsJson["enableRainbow"] = setting_enableRainbow;
-        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;  
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
         settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
         settingsJson["enableMusic"] = enableMusic;

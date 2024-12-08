@@ -157,10 +157,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                 ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
 
-                if (setting_enableRainbow) {
-                    UpdateRainbowColor(setting_rainbowSpeed);
-                }
-
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
                     SaveSettings();
@@ -341,15 +337,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::Text("Font Color");
                     ImGui::ShowColorWheel(textColor);
-
-                    ImGui::Text("Rainbow Color");
-                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
-                    ImGui::SameLine();
-                    ImGui::Text("Speed");
-                    ImGui::SameLine();
-                    ImGui::SliderFloat("##Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
-
-                    ImGui::SeparatorText("Misc");
 
                     if (ImGui::Button("Save Settings")) {
                         SaveSettings();

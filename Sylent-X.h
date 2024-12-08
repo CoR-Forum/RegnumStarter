@@ -28,7 +28,6 @@
 #include "includes/streamproof/streamproof.cpp"
 #include "ui/login/pwreset/ForgotPasswordWindow.cpp"
 #include "ui/login/pwreset/PasswordResetWindow.cpp"
-#include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
 #include "ui/login/LoginWindow.cpp"
 #include "ui/login/register/RegisterWindow.cpp"
 #include "ui/RegnumStarter/RegnumStarter.cpp"
