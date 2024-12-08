@@ -211,7 +211,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(startX);
                 ImGui::SetCursorPosY(startY);
-                if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button(ICON_FA_GHOST " Features", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
                     show_license_window = false;
