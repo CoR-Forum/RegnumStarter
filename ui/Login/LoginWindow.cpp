@@ -4,6 +4,9 @@
 
 void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor) {
     static bool settingsWindowIsOpen = true;
+    static bool focusSet = false; // Track if the focus has been set
+    static bool usernameSet = false; // Track if the username has been set
+
     ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     
     if (!settingsWindowIsOpen) {
@@ -14,8 +17,9 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static char username[128] = "";
     static char password[128] = "";
 
-    if (saveUsername) {
+    if (saveUsername && !usernameSet) {
         strncpy(username, login.c_str(), sizeof(username));
+        usernameSet = true;
     }
 
     // Load the texture
@@ -32,6 +36,16 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::Spacing();
 
     ImGui::Combo("##API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));
+
+    // Set focus on the username or password field only once
+    if (!focusSet) {
+        if (saveUsername && username[0] != '\0') {
+            ImGui::SetKeyboardFocusHere(1); // Focus on the password field
+        } else {
+            ImGui::SetKeyboardFocusHere(0); // Focus on the username field
+        }
+        focusSet = true;
+    }
 
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username));
 
