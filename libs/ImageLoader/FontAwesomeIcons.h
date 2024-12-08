@@ -15,3 +15,4 @@
 #define ICON_FA_USER_REGULAR "\uf007"
 #define ICON_FA_WHEELCHAIR_MOVE "\uf2e2"
 #define ICON_FA_WHEELCHAIR "\uf193"
+#define ICON_FA_GHOST "\uf6e2"
