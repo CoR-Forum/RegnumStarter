@@ -46,7 +46,6 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
         }
 
         prevZoomState = optionZoom; // Update previous state
-        ImGui::EndDisabled();
 
         // Check if the checkbox is checked
         ImGui::BeginDisabled(!featureFov);
