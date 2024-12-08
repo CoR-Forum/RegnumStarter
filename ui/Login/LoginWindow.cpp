@@ -53,9 +53,12 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
+    ImGui::BeginDisabled(isLoading); // Disable the login button if loading
     if (ImGui::Button("Login", ImVec2(100, 0))) { // Adjust the width as needed
         loginTriggered = true;
     }
+    ImGui::EndDisabled();
+    
     ImGui::SameLine();
     ImGui::Checkbox("Save Username", &saveUsername);
 
@@ -63,15 +66,28 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::TextColored(ImVec4(0.75f, 0.0f, 0.75f, 1.0f), "%s", statusMessage.c_str());
 
     // Check for Enter key press
-    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+    if (!isLoading && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
         loginTriggered = true;
     }
 
-    if (loginTriggered) {
+    if (loginTriggered && !isLoading) {
         statusMessage = "Logging in...";
         isLoading = true;
         loginTriggered = false;
         ImGui::End();
+        // Perform the login operation asynchronously
+        std::thread([&]() {
+            auto loginResult = Login(username, password);
+            loginSuccess = loginResult.first;
+            statusMessage = loginResult.second;
+
+            isLoading = false;
+
+            if (loginSuccess) {
+                show_login_window = false;
+                show_main_window = true;
+            }
+        }).detach();
         return; // Return immediately to allow the UI to update
     }
 
@@ -79,18 +95,6 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         // Display loading animation
         ImGui::Text("Logging in...");
         ImGui::SameLine();
-
-        // Perform the login operation
-        auto loginResult = Login(username, password);
-        loginSuccess = loginResult.first;
-        statusMessage = loginResult.second;
-
-        isLoading = false;
-
-        if (loginSuccess) {
-            show_login_window = false;
-            show_main_window = true;
-        }
     }
 
     ImGui::Separator();
