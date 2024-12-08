@@ -12,8 +12,8 @@ void ShowMovementWindow(bool& show_movement_window) {
         static bool prevflyState = false; // Track previous state of the checkbox
 
     ImGui::BeginDisabled(!featureSpeedhack);
-    if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
-        float newValue = optionSpeedHack ? 5.6f : 4.8f;
+    if (ImGui::Checkbox("SpeedHack", &optionSpeedhack)) {
+        float newValue = optionSpeedhack ? 5.6f : 4.8f;
         MemoryManipulation("speedhack", newValue);
     }
     if (featureSpeedhack) {

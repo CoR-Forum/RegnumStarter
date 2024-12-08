@@ -50,7 +50,7 @@ bool optionFreecam = false;
 bool optionMoonwalk = false;
 bool optionFov = false;
 bool optionFastFly = false;
-bool optionSpeedHack = false;
+bool optionSpeedhack = false;
 bool optionFakelag = false;
 bool optionCharacter = false;
 
