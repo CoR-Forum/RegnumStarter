@@ -166,9 +166,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     SaveSettings();
                     PostQuitMessage(0);
                 }
-
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
-                ImGui::Text("Status: %s", sylentx_status.c_str());
                 
                 // Create a child window for the texture
                 ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
@@ -353,6 +350,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     Logout();
                 }
                 ImGui::PopStyleVar();
+
+                ImGui::Text("Status: %s", sylentx_status.c_str());
 
                 ImGui::EndChild();
 
