@@ -330,9 +330,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                     ImGui::SameLine();
                     ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
-
-                    ImGui::Separator();
-
+                    
                     ImGui::SeparatorText("Appearance");
 
                     static ImVec4 backupColor = textColor;
