@@ -50,7 +50,7 @@ void calculateNextRespawns(const std::string& boss) {
     }
 
     bossRespawns[boss].previousRespawn = bossRespawns[boss].nextRespawns[0] - respawnTime;
-    LogDebug(boss + " previous respawn is " + unixstamp2human(bossRespawns[boss].previousRespawn));
+    LogDebug(boss + " previous respawn should be " + unixstamp2human(bossRespawns[boss].previousRespawn));
 }
 
 void initializeBossRespawns() {
