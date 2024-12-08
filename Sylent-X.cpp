@@ -335,8 +335,27 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::SeparatorText("Appearance");
 
-                    ImGui::Text("Font Color");
-                    ImGui::ShowColorWheel(textColor);
+                    static ImVec4 backupColor = textColor;
+
+                    if (ImGui::Button("Font Color")) {
+                        backupColor = textColor; // Backup the current color
+                        ImGui::OpenPopup("Font Color Picker");
+                    }
+
+                    if (ImGui::BeginPopup("Font Color Picker")) {
+                        ImGui::Text("Font Color");
+                        ImGui::ColorPicker4("##picker", (float*)&textColor);
+                        if (ImGui::Button("Save")) {
+                            SaveSettings();
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Cancel")) {
+                            textColor = backupColor; // Revert to the backup color
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::EndPopup();
+                    }
 
                     ImGui::Separator();
                     if (ImGui::Button("Save Settings")) {
