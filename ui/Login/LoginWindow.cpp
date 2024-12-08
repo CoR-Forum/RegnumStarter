@@ -8,6 +8,8 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static bool usernameSet = false; // Track if the username has been set
     static bool isLoading = false; // Track if the login is in progress
     static bool loginTriggered = false; // Track if the login button was pressed
+    static bool showPassword = false; // Track if the password should be shown
+    static bool showUsername = false; // Track if the username should be shown
 
     ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     
@@ -48,10 +50,20 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         }
         focusSet = true;
     }
+    
+    ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username), showUsername ? 0 : ImGuiInputTextFlags_Password);
 
-    ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username));
+    ImGui::SameLine();
+    if (ImGui::Button(showUsername ? "Hide" : "Show")) {
+        showUsername = !showUsername;
+    }
 
-    ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
+    ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), showPassword ? 0 : ImGuiInputTextFlags_Password);
+
+    ImGui::SameLine();
+    if (ImGui::Button(showPassword ? "Hide" : "Show")) {
+        showPassword = !showPassword;
+    }
 
     ImGui::BeginDisabled(isLoading); // Disable the login button if loading
     if (ImGui::Button("Login", ImVec2(100, 0))) { // Adjust the width as needed
