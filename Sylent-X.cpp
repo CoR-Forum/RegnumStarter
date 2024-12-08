@@ -189,7 +189,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 // Create a child window for the texture
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
-                float buttonWidth = 150.0f;
+                float buttonWidth = 130.0f;
                 float buttonHeight = 30.0f;
                 float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
 
