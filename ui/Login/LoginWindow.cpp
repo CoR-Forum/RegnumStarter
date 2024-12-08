@@ -56,7 +56,7 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::Checkbox("Save Username", &saveUsername);
 
     // Display the status message underneath the login button
-    ImGui::TextColored(textColor, "%s", statusMessage.c_str());
+    ImGui::TextColored(ImVec4(0.75f, 0.0f, 0.75f, 1.0f), "%s", statusMessage.c_str());
 
     // Check for Enter key press
     if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
