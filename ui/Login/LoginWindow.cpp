@@ -91,12 +91,6 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         return; // Return immediately to allow the UI to update
     }
 
-    if (isLoading) {
-        // Display loading animation
-        ImGui::Text("Logging in...");
-        ImGui::SameLine();
-    }
-
     ImGui::Separator();
     
     if (ImGui::Button("Register")) {
