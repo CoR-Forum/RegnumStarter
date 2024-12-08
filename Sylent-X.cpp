@@ -33,6 +33,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     SelfUpdate();
+    LoadLoginSettings();
 
     show_login_window = true;
 

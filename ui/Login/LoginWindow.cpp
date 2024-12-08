@@ -14,6 +14,10 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static char username[128] = "";
     static char password[128] = "";
 
+    if (saveUsername) {
+        strncpy(username, login.c_str(), sizeof(username));
+    }
+
     // Load the texture
     static LPDIRECT3DTEXTURE9 texture_sylent_logo = nullptr;
     if (!texture_sylent_logo) {
@@ -30,9 +34,12 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::Combo("##API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));
 
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username));
+
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
-    bool loginTriggered = ImGui::Button("Login");
+    bool loginTriggered = ImGui::Button("Login", ImVec2(100, 0)); // Adjust the width as needed
+    ImGui::SameLine();
+    ImGui::Checkbox("Save Username", &saveUsername);
 
     // Check for Enter key press
     if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {

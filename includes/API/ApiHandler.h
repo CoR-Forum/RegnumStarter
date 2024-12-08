@@ -13,6 +13,7 @@ extern HWND hwnd;
 // global variables for user login and password
 std::string login;
 std::string password;
+bool saveUsername = false;
 
 std::string session_id;
 
@@ -100,4 +101,6 @@ void ActivateLicense(const std::string& licenseKey);
 void LoadRegnumAccounts();
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
 void DeleteRegnumAccount(int id);
+void SaveLoginSettings(const std::string& username, bool saveUsername);
+void LoadLoginSettings();
 std::vector<Pointer> InitializePointers();

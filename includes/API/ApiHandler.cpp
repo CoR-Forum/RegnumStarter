@@ -1,5 +1,34 @@
 #include "ApiHandler.h"
 
+void SaveLoginSettings(const std::string& username, bool saveUsername) {
+    std::string configFilePath = std::string(getenv("APPDATA")) + "\\Sylent-X\\login-settings.json";
+    nlohmann::json loginSettingsJson;
+
+    if (saveUsername) {
+        loginSettingsJson["username"] = username;
+    } else {
+        loginSettingsJson["username"] = "";
+    }
+    loginSettingsJson["saveUsername"] = saveUsername;
+
+    std::ofstream outFile(configFilePath);
+    outFile << loginSettingsJson.dump(4);
+    outFile.close();
+}
+
+void LoadLoginSettings() {
+    std::string configFilePath = std::string(getenv("APPDATA")) + "\\Sylent-X\\login-settings.json";
+    std::ifstream inFile(configFilePath);
+    if (inFile.is_open()) {
+        nlohmann::json loginSettingsJson;
+        inFile >> loginSettingsJson;
+        inFile.close();
+
+        login = loginSettingsJson.value("username", "");
+        saveUsername = loginSettingsJson.value("saveUsername", false);
+    }
+}
+
 bool Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/v1/login";
@@ -63,6 +92,9 @@ bool Login(const std::string& login, const std::string& password) {
                     showLoadingScreen = settingsJson.value("showLoadingScreen", true);
                     ShowIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
+
+                    // Save username and saveUsername flag to file
+                    SaveLoginSettings(username, saveUsername);
 
                     if (user.contains("features") && user["features"].is_array()) {
                         auto features = user["features"];
