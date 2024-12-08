@@ -16,3 +16,5 @@
 #define ICON_FA_WHEELCHAIR_MOVE "\uf2e2"
 #define ICON_FA_WHEELCHAIR "\uf193"
 #define ICON_FA_GHOST "\uf6e2"
+// icon for external links
+#define ICON_FA_EXTERNAL_LINK "\uf08e"

@@ -293,7 +293,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("Sylent-X", buttonSize)) {
+                if (ImGui::Button("Chat", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -302,13 +302,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_movement_window = false;
                     show_player_window = false;
                     show_boss_respawn_window = false;
-                }
-                ImGui::PopStyleVar();
-
-                ImGui::SetCursorPosX(buttonPadding);
-                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("Chat", buttonSize)) {
-                    show_chat_window = true;
                 }
                 ImGui::PopStyleVar();
 
@@ -454,6 +447,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             SendChatMessage(chatInput);
                             chatInput[0] = '\0'; // Clear input field
                         }
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button(ICON_FA_EXTERNAL_LINK "##Chat")) {
+                        show_chat_window = true;
                     }
                 }
                 ImGui::EndChild();
