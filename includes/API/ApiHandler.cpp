@@ -29,7 +29,7 @@ void LoadLoginSettings() {
     }
 }
 
-bool Login(const std::string& login, const std::string& password) {
+std::pair<bool, std::string> Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/v1/login";
         nlohmann::json jsonPayload = {
@@ -59,7 +59,7 @@ bool Login(const std::string& login, const std::string& password) {
                     LogDebug("Session ID (JWT): " + session_id);
                 } else {
                     Log("Invalid response: missing token");
-                    return false;
+                    return {false, "Invalid response: missing token"};
                 }
 
                 if (jsonResponse.contains("user") && jsonResponse["user"].is_object()) {
@@ -153,29 +153,27 @@ bool Login(const std::string& login, const std::string& password) {
                     std::thread chatThread(CheckChatMessages);
                     chatThread.detach();
 
-                    return true;
+                    return {true, "Login successful"};
                 } else {
                     Log("Invalid response: missing user object");
-                    return false;
+                    return {false, "Invalid response: missing user object"};
                 }
             } else {
                 Log("Login failed: " + message);
-                MessageBox(NULL, message.c_str(), "Login failed", MB_ICONERROR | MB_TOPMOST);
-                return false;
+                return {false, message};
             }
         } else if (jsonResponse.contains("status") && jsonResponse["status"] == "error" &&
                    jsonResponse.contains("message") && jsonResponse["message"].is_string()) {
             std::string message = jsonResponse["message"];
             Log("Login failed: " + message);
-            MessageBox(NULL, message.c_str(), "Login failed", MB_ICONERROR | MB_TOPMOST);
-            return false;
+            return {false, message};
         } else {
             Log("Invalid response: missing or invalid status/message");
-            return false;
+            return {false, "Invalid response: missing or invalid status/message"};
         }
     } catch (const std::exception& e) {
         Log(e.what());
-        return false;
+        return {false, "LOGIN EXCEPTION: " + std::string(e.what())};
     }
 }
 

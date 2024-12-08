@@ -55,6 +55,9 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::SameLine();
     ImGui::Checkbox("Save Username", &saveUsername);
 
+    // Display the status message underneath the login button
+    ImGui::TextColored(textColor, "%s", statusMessage.c_str());
+
     // Check for Enter key press
     if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
         loginTriggered = true;
@@ -64,14 +67,13 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         statusMessage = "Logging in...";
 
         // Perform the login operation
-        loginSuccess = Login(username, password);
+        auto loginResult = Login(username, password);
+        loginSuccess = loginResult.first;
+        statusMessage = loginResult.second;
 
         if (loginSuccess) {
-            statusMessage = "Login successful";
             show_login_window = false;
             show_main_window = true;
-        } else {
-            statusMessage = "Login failed";
         }
     }
 

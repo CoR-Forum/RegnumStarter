@@ -95,7 +95,7 @@ std::vector<RegnumAccount> regnumAccounts;
 void SendChatMessage(const std::string& message);
 void CheckChatMessages();
 
-bool Login(const std::string& login, const std::string& password);
+std::pair<bool, std::string> Login(const std::string& login, const std::string& password);
 void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
 void ActivateLicense(const std::string& licenseKey);
 void LoadRegnumAccounts();
