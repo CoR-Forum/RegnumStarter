@@ -177,10 +177,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding.y);
 
                     ImGui::Image((void*)texture_sylent_icon, imageSize);
-
-                    if (ImGui::IsItemClicked()) {
-                        OpenURL("https://sylent-x.com/");
-                    }
                 } else {
                     ImGui::Text("Texture is null");
                 }
@@ -330,7 +326,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     }
                     ImGui::SameLine();
                     ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
-                    
+
                     ImGui::SeparatorText("Appearance");
 
                     static ImVec4 backupColor = textColor;
