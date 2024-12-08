@@ -292,6 +292,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 float buttonPadding = (childWidth - buttonSize.x) / 2.0f;
 
                 ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Sylent-X", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
@@ -302,13 +303,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_player_window = false;
                     show_boss_respawn_window = false;
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Chat", buttonSize)) {
                     show_chat_window = true;
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("License", buttonSize)) {
                     show_settings_window = false;
                     show_info_window = false;
@@ -319,8 +324,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_boss_respawn_window = false;
                     show_license_window = true;
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Settings", buttonSize)) {
                     show_license_window = false;
                     show_info_window = false;
@@ -331,8 +338,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_boss_respawn_window = false;
                     show_settings_window = true;
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Info", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
@@ -343,11 +352,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_boss_respawn_window = false;
                     show_info_window = true;
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Logout", buttonSize)) {
                     Logout();
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::EndChild();
 
