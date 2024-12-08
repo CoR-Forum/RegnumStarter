@@ -243,46 +243,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_boss_respawn_window = true;
                 }
 
-                /*if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
-                    show_view_window = false;
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    show_movement_window = true;
-                }
-
-                ImGui::SameLine();
-                ImGui::SetCursorPosY(startY);
-                if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
-                    show_movement_window = false;
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_boss_respawn_window = false;
-                    show_player_window = true;
-                }*/
-
                 ImGui::EndChild();
 
-                // Calculate the size of the largest button
-                ImVec2 buttonSize = ImVec2(0, 0);
-                const char* buttonLabels[] = {
-                    "Sylent-X", "Chat", "Settings", "RegnumStarter", 
-                    "License", "Info", "Logout"
-                };
-                for (const char* label : buttonLabels) {
-                    ImVec2 size = ImGui::CalcTextSize(label);
-                    buttonSize.x = std::max(buttonSize.x, size.x + ImGui::GetStyle().FramePadding.x * 2.0f);
-                    buttonSize.y = std::max(buttonSize.y, size.y + ImGui::GetStyle().FramePadding.y * 2.0f);
-                }
+                ImVec2 buttonSize = ImVec2(120, 30);
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(120, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(140, 0), true);
 
                 // Calculate the padding to center the buttons
                 float childWidth = ImGui::GetWindowWidth();
@@ -375,10 +341,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::Text("Font Color");
                     ImGui::ShowColorWheel(textColor);
-                    ImGui::SameLine();
-                    ImGui::Text("Font Size");
-                    ImGui::SameLine();
-                    ImGui::SliderFloat("##Font Size", &setting_fontSize, 0.5f, 2.0f);
 
                     ImGui::Text("Rainbow Color");
                     ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);

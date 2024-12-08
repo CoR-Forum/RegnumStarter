@@ -63,7 +63,7 @@ void ApplyCustomStyle()
             DWORD size = SizeofResource(NULL, hResource);
             if (pData && size > 0)
             {
-                io.Fonts->AddFontFromMemoryTTF(pData, size, 14.0f);
+                io.Fonts->AddFontFromMemoryTTF(pData, size, 15.0f);
                 io.FontDefault = io.Fonts->Fonts.back();
             }
         }
@@ -83,7 +83,7 @@ void ApplyCustomStyle()
                 ImFontConfig icons_config;
                 icons_config.MergeMode = true;
                 icons_config.PixelSnapH = true;
-                io.Fonts->AddFontFromMemoryTTF(pDataAwesome, sizeAwesome, 14.0f, &icons_config, icons_ranges);
+                io.Fonts->AddFontFromMemoryTTF(pDataAwesome, sizeAwesome, 15.0f, &icons_config, icons_ranges);
             }
         }
     }
