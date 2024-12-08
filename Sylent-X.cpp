@@ -304,20 +304,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("License", buttonSize)) {
-                    show_settings_window = false;
-                    show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    show_license_window = true;
-                }
-                ImGui::PopStyleVar();
-
-                ImGui::SetCursorPosX(buttonPadding);
-                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Settings", buttonSize)) {
                     show_license_window = false;
                     show_info_window = false;
@@ -327,6 +313,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_player_window = false;
                     show_boss_respawn_window = false;
                     show_settings_window = true;
+                }
+                ImGui::PopStyleVar();
+
+                ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("License", buttonSize)) {
+                    show_settings_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_view_window = false;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_boss_respawn_window = false;
+                    show_license_window = true;
                 }
                 ImGui::PopStyleVar();
 
