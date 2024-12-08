@@ -3,11 +3,8 @@
 #include "../../includes/process/process.h"
 #include "../../ui/helper/Markers/LicenseMarker.h"
 
-extern std::string sylentx_status;
-
 static float CharValue = 0.9700000286f; // Default small Nordo Value
 static bool prevCharState = false; // Track previous state of the checkbox
-bool disableCheckboxes = (sylentx_status == "Detected");
 
 void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
     static float prevCharValue = CharValue; // Track previous value of the slider
@@ -26,7 +23,7 @@ void ShowPlayerWindow(bool& show_player_window, bool& optionCharacter) {
         ImGui::SeparatorText("TrollOptions");
         ImGui::Spacing();
 
-        ImGui::BeginDisabled(disableCheckboxes ||!featureCharacter);
+        ImGui::BeginDisabled(!featureCharacter);
         ImGui::Checkbox("Character Height", &optionCharacter);
         if (optionCharacter) {
             ImGui::SameLine();
