@@ -6,6 +6,8 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static bool settingsWindowIsOpen = true;
     static bool focusSet = false; // Track if the focus has been set
     static bool usernameSet = false; // Track if the username has been set
+    static bool isLoading = false; // Track if the login is in progress
+    static bool loginTriggered = false; // Track if the login button was pressed
 
     ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     
@@ -51,7 +53,9 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
-    bool loginTriggered = ImGui::Button("Login", ImVec2(100, 0)); // Adjust the width as needed
+    if (ImGui::Button("Login", ImVec2(100, 0))) { // Adjust the width as needed
+        loginTriggered = true;
+    }
     ImGui::SameLine();
     ImGui::Checkbox("Save Username", &saveUsername);
 
@@ -65,11 +69,23 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     if (loginTriggered) {
         statusMessage = "Logging in...";
+        isLoading = true;
+        loginTriggered = false;
+        ImGui::End();
+        return; // Return immediately to allow the UI to update
+    }
+
+    if (isLoading) {
+        // Display loading animation
+        ImGui::Text("Logging in...");
+        ImGui::SameLine();
 
         // Perform the login operation
         auto loginResult = Login(username, password);
         loginSuccess = loginResult.first;
         statusMessage = loginResult.second;
+
+        isLoading = false;
 
         if (loginSuccess) {
             show_login_window = false;
