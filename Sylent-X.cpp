@@ -235,7 +235,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_RegnumStarter = true;
                 }
                 ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button("BossSpawn", ImVec2(buttonWidth, buttonHeight))) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
@@ -292,7 +292,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 float buttonPadding = (childWidth - buttonSize.x) / 2.0f;
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
+                if (ImGui::Button("Sylent-X", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -304,12 +304,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COMMENTS " Chat", buttonSize)) {
+                if (ImGui::Button("Chat", buttonSize)) {
                     show_chat_window = true;
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
+                if (ImGui::Button("License", buttonSize)) {
                     show_settings_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -321,7 +321,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
+                if (ImGui::Button("Settings", buttonSize)) {
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
@@ -333,7 +333,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
+                if (ImGui::Button("Info", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
@@ -345,7 +345,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_RIGHT_FROM_BRACKET " Logout", buttonSize)) {
+                if (ImGui::Button("Logout", buttonSize)) {
                     Logout();
                 }
 
