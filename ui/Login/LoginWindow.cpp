@@ -86,6 +86,8 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
             if (loginSuccess) {
                 show_login_window = false;
                 show_main_window = true;
+            } else {
+                focusSet = false; // Reset focus to password field on next frame
             }
         }).detach();
         return; // Return immediately to allow the UI to update
