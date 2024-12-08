@@ -5,7 +5,7 @@
 #include "../../includes/API/ApiHandler.h"
 #include <chrono>
 
-void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
+void ShowBossRespawnWindow(bool& show_calendar_window) {
     static LPDIRECT3DTEXTURE9 texture_evendim = nullptr;
     static LPDIRECT3DTEXTURE9 texture_daen = nullptr;
     static LPDIRECT3DTEXTURE9 texture_thorkul = nullptr;
@@ -24,7 +24,7 @@ void ShowBossRespawnWindow(bool& show_boss_respawn_window) {
         texture_server = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SERVER_ICON);
     }
 
-    if (show_boss_respawn_window) {
+    if (show_calendar_window) {
         for (auto& pair : bossRespawns) {
             BossRespawn& boss = pair.second;
             ImGui::SeparatorText(boss.name.c_str());
