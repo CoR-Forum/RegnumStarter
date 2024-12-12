@@ -1,13 +1,11 @@
 #include "LoginWindow.h"
 #include "../WindowStates.h"
-#include "../../libs/ImageLoader/ImageLoader.h" 
-#include "LoginWindow.h"
-#include "../WindowStates.h"
 #include "../../libs/ImageLoader/ImageLoader.h"
+
 void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor) {
     static bool settingsWindowIsOpen = true;
     static bool focusSet = false;
-    static bool usernameSet = false
+    static bool usernameSet = false;
     static bool isLoading = false;
     static bool loginTriggered = false;
     static bool showPassword = false;
@@ -58,17 +56,7 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username), showUsername ? 0 : ImGuiInputTextFlags_Password);
 
-    ImGui::SameLine();
-    if (ImGui::Button(showUsername ? "Hide" : "Show")) {
-        showUsername = !showUsername;
-    }
-
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), showPassword ? 0 : ImGuiInputTextFlags_Password);
-
-    ImGui::SameLine();
-    if (ImGui::Button(showPassword ? "Hide" : "Show")) {
-        showPassword = !showPassword;
-    }
 
     ImGui::BeginDisabled(isLoading);
     if (ImGui::Button("Login", ImVec2(100, 0))) {
@@ -81,6 +69,14 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     // Display the status message underneath the login button
     ImGui::TextColored(ImVec4(0.75f, 0.0f, 0.75f, 1.0f), "%s", statusMessage.c_str());
+
+    // Add checkboxes for showing username and password
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
+    ImGui::Checkbox("Show Username", &showUsername);
+    ImGui::SameLine();
+    ImGui::Checkbox("Show Password", &showPassword);
+    ImGui::PopStyleVar(2);
 
     // Check for Enter key press
     if (!isLoading && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
