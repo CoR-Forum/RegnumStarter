@@ -70,8 +70,8 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         showPassword = !showPassword;
     }
 
-    ImGui::BeginDisabled(isLoading); // Disable the login button if loading
-    if (ImGui::Button("Login", ImVec2(100, 0))) { // Adjust the width as needed
+    ImGui::BeginDisabled(isLoading);
+    if (ImGui::Button("Login", ImVec2(100, 0))) {
         loginTriggered = true;
     }
     ImGui::EndDisabled();
@@ -104,10 +104,10 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
                 show_login_window = false;
                 show_main_window = true;
             } else {
-                focusSet = false; // Reset focus to password field on next frame
+                focusSet = false;
             }
         }).detach();
-        return; // Return immediately to allow the UI to update
+        return;
     }
 
     ImGui::Separator();
