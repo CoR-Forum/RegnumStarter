@@ -19,6 +19,7 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     
     if (!settingsWindowIsOpen) {
         SaveSettings();
+        SaveLoginSettings(login, saveUsername);
         PostQuitMessage(0);
     }
 
