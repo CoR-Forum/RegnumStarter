@@ -67,8 +67,10 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::SameLine();
     ImGui::Checkbox("Save Username", &saveUsername);
 
-    // Display the status message underneath the login button
-    ImGui::TextColored(ImVec4(0.75f, 0.0f, 0.75f, 1.0f), "%s", statusMessage.c_str());
+    // Display the status message underneath the login button if it's set
+    if (!statusMessage.empty()) {
+        ImGui::TextColored(ImVec4(0.75f, 0.0f, 0.75f, 1.0f), "%s", statusMessage.c_str());
+    }
 
     // Add checkboxes for showing username and password
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
