@@ -1,19 +1,17 @@
 #include "LoginWindow.h"
-#include "../WindowStates.h" // Include the header file where the window state variables are declared
-#include "../../libs/ImageLoader/ImageLoader.h" // Include the ImageLoader header
-
+#include "../WindowStates.h"
+#include "../../libs/ImageLoader/ImageLoader.h" 
 #include "LoginWindow.h"
-#include "../WindowStates.h" // Include the header file where the window state variables are declared
-#include "../../libs/ImageLoader/ImageLoader.h" // Include the ImageLoader header
-
+#include "../WindowStates.h"
+#include "../../libs/ImageLoader/ImageLoader.h"
 void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor) {
     static bool settingsWindowIsOpen = true;
-    static bool focusSet = false; // Track if the focus has been set
-    static bool usernameSet = false; // Track if the username has been set
-    static bool isLoading = false; // Track if the login is in progress
-    static bool loginTriggered = false; // Track if the login button was pressed
-    static bool showPassword = false; // Track if the password should be shown
-    static bool showUsername = false; // Track if the username should be shown
+    static bool focusSet = false;
+    static bool usernameSet = false
+    static bool isLoading = false;
+    static bool loginTriggered = false;
+    static bool showPassword = false;
+    static bool showUsername = false;
 
     ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     
@@ -30,18 +28,18 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     if (saveUsername && !usernameSet) {
         strncpy(username, login.c_str(), sizeof(username));
         usernameSet = true;
-        showUsername = false; // Obfuscate username if set from config file
+        showUsername = false;
     }
 
     // Load the texture
     static LPDIRECT3DTEXTURE9 texture_sylent_logo = nullptr;
     if (!texture_sylent_logo) {
-        texture_sylent_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_LOGO); // Assuming you have a resource ID for the logo
+        texture_sylent_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_LOGO); 
     }
 
     // Display the texture at the top
     if (texture_sylent_logo) {
-        ImGui::Image((void*)texture_sylent_logo, ImVec2(231, 38.5)); // Adjust the size as needed
+        ImGui::Image((void*)texture_sylent_logo, ImVec2(231, 38.5));
     }
 
     ImGui::Spacing();
@@ -51,9 +49,9 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     // Set focus on the username or password field only once
     if (!focusSet) {
         if (saveUsername && username[0] != '\0') {
-            ImGui::SetKeyboardFocusHere(1); // Focus on the password field
+            ImGui::SetKeyboardFocusHere(1);
         } else {
-            ImGui::SetKeyboardFocusHere(0); // Focus on the username field
+            ImGui::SetKeyboardFocusHere(0);
         }
         focusSet = true;
     }
