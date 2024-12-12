@@ -21,6 +21,7 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static char username[128] = "";
     static char password[128] = "";
 
+    // Set the username from saved settings only once
     if (saveUsername && !usernameSet) {
         strncpy(username, login.c_str(), sizeof(username));
         usernameSet = true;
