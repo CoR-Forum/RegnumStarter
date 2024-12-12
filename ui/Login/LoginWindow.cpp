@@ -2,6 +2,10 @@
 #include "../WindowStates.h" // Include the header file where the window state variables are declared
 #include "../../libs/ImageLoader/ImageLoader.h" // Include the ImageLoader header
 
+#include "LoginWindow.h"
+#include "../WindowStates.h" // Include the header file where the window state variables are declared
+#include "../../libs/ImageLoader/ImageLoader.h" // Include the ImageLoader header
+
 void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor) {
     static bool settingsWindowIsOpen = true;
     static bool focusSet = false; // Track if the focus has been set
@@ -25,6 +29,7 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     if (saveUsername && !usernameSet) {
         strncpy(username, login.c_str(), sizeof(username));
         usernameSet = true;
+        showUsername = false; // Obfuscate username if set from config file
     }
 
     // Load the texture
