@@ -50,8 +50,6 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     
     std::string executablePath = regnumPath + "\\LiveServer\\ROClientGame.exe";
     std::string command = "powershell.exe -Command \"cd '" + regnumPath + "\\LiveServer'; .\\ROClientGame.exe '" + regnumLoginUser + "' '" + regnumLoginPassword + "'\"";
-
-    LogDebug("Starting Regnum Online client with command: " + command);
     
     if (!CreateProcess(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, regnumPath.c_str(), &si, &pi)) {
         Log("Failed to start the Regnum Online client");
@@ -370,6 +368,8 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             for (const auto& file : filesToDelete) {
                 std::string filePath = livePath + file;
                 if (remove(filePath.c_str()) != 0) {
+                    Log("Failed to delete file make sure to select your Game Path: " + filePath);
+                    MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK);
                 } else {
                     Log("Deleted file: " + filePath);
                 }

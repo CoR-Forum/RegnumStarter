@@ -242,7 +242,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImVec2 buttonSize = ImVec2(120, 30);
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(140, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
 
                 // Calculate the padding to center the buttons
                 float childWidth = ImGui::GetWindowWidth();
@@ -415,7 +415,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SameLine();
                     if (ImGui::Button(ICON_FA_EXTERNAL_LINK "##Chat")) {
                         show_chat_window = true;
-                    }
+                    }   
                 }
                 ImGui::EndChild();
                 ImGui::End();

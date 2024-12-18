@@ -103,8 +103,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                                 std::string address = pointerObj.value("address", "");
                                 auto offsets = pointerObj.value("offsets", std::vector<std::string>());
 
-                                //LogDebug("Pointer: " + featureName + ", Address: " + address + ", Offsets: " + nlohmann::json(offsets).dump());
-
                                 Pointer pointer;
                                 pointer.name = featureName;
                                 pointer.address = std::stoul(address, nullptr, 16);
@@ -115,7 +113,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
 
                                 std::stringstream addressHex;
                                 addressHex << std::hex << pointer.address;
-                                //LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + nlohmann::json(offsets).dump());
                                 g_pointers.push_back(pointer);
 
                                 // Update feature flags based on feature name
@@ -142,7 +139,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                                 }
                             }
                         }
-                        LogDebug("Pointers fetched and parsed successfully");
                     }
 
                     // Initialize other necessary variables and features here
@@ -468,11 +464,7 @@ std::string GenerateMD5(const std::string& input) {
 // Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
-    std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
-
-
-    std::filesystem::create_directories(folderPath);
-
+    
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
 
