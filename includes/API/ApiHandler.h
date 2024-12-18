@@ -7,6 +7,8 @@
 #include <sstream>
 #include <regex>
 #include "../md5/md5.h"
+#include <windows.h>
+#include "../streamproof/streamproof.h"
 
 extern HWND hwnd;
 

@@ -71,7 +71,7 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     std::string nickname = user.value("nickname", "");
                     std::string settings = user.value("settings", "");
 
-                    //LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings + ", Features: " + user["features"].dump());
+                    LogDebug("Loading settings: User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings + ", Features: " + user["features"].dump());
 
                     // Deserialize settings JSON string
                     auto settingsJson = nlohmann::json::parse(settings);
@@ -146,7 +146,7 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     }
 
                     // Initialize other necessary variables and features here
-
+                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     std::thread chatThread(CheckChatMessages);
                     chatThread.detach();
 
@@ -211,7 +211,7 @@ void SaveSettings() {
         std::string message = jsonResponse.value("message", "");
 
         if (status == "success") {
-            Log("Settings saved successfully: " + message);
+            Log("Settings saved successfully: " + message + ", Payload: " + payload);
         } else {
             Log("Failed to save settings: " + message);
         }
