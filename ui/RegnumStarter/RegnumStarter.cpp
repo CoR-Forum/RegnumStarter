@@ -96,7 +96,7 @@ void CheckAndUpdateConfig() {
     updateIfDifferent("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
     updateIfDifferent("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
     updateIfDifferent("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-    updateIfDifferent("show_intro", std::to_string(ShowIntro ? 1 : 0));
+    updateIfDifferent("show_intro", std::to_string(showIntro ? 1 : 0));
     updateIfDifferent("cl_cpu_idle_time", "0");
     updateIfDifferent("cl_update_all_resources", "0");
     updateIfDifferent("vg_fullscreen_borderless", "1");
@@ -154,7 +154,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         }
 
         // If files exist and the checkbox is saved as false, delete the files
-        if (filesExist && !ShowIntro) {
+        if (filesExist && !showIntro) {
             for (const auto& file : filesToCheck) {
                 std::string filePath = livePath + file;
                 if (remove(filePath.c_str()) != 0) {
@@ -166,7 +166,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         }
 
         // If files do not exist and the checkbox is saved as true, download the files
-        if (!filesExist && ShowIntro) {
+        if (!filesExist && showIntro) {
             std::vector<std::pair<std::string, std::string>> filesToDownload = {
                 {"https://patch.sylent-x.com/assets/splash_nge.png", livePath + "splash_nge.png"},
                 {"https://patch.sylent-x.com/assets/splash_nge.ogg", livePath + "splash_nge.ogg"}
@@ -328,14 +328,14 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
 
 
-    ImGui::Checkbox("Show Intro", &ShowIntro);
+    ImGui::Checkbox("Show Intro", &showIntro);
 
     if (ImGui::Button("Save Settings")) {
         UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
         UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
         UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
         UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
+        UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
         SaveSettings();
 
         std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
@@ -344,7 +344,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             "splash_nge.ogg"
         };
 
-        if (ShowIntro) {
+        if (showIntro) {
             // Check if files exist and download if they don't
             for (const auto& file : filesToDelete) {
                 std::string filePath = livePath + file;

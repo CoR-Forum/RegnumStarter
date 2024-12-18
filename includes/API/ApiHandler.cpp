@@ -87,7 +87,7 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     enableMusic = settingsJson.value("enableMusic", true);
                     enableSoundEffects = settingsJson.value("enableSoundEffects", true);
                     showLoadingScreen = settingsJson.value("showLoadingScreen", true);
-                    ShowIntro = settingsJson.value("showIntro", true);
+                    showIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
 
                     // Save username and saveUsername flag to file
@@ -184,7 +184,7 @@ void SaveSettings() {
         settingsJson["enableMusic"] = enableMusic;
         settingsJson["enableSoundEffects"] = enableSoundEffects;
         settingsJson["showLoadingScreen"] = showLoadingScreen;
-        settingsJson["showIntro"] = ShowIntro;
+        settingsJson["showIntro"] = showIntro;
         settingsJson["SoundVolume"] = soundVolume;
 
         // Serialize settingsJson to a string

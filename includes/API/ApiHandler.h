@@ -39,7 +39,7 @@ bool featureCharacter;
 extern bool enableMusic;
 extern bool enableSoundEffects;
 extern bool showLoadingScreen;
-extern bool ShowIntro;
+extern bool showIntro;
 extern float soundVolume;
 
 // global variables for (checkbox) options
