@@ -25,17 +25,22 @@ bool IsHotkeyPressed(int hotkey) {
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    
     Log("Sylent-X " + sylentx_version + ". Made with hate in Germany.");
     HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex")); // Create a named mutexf
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
         return 1;
     }
-   
+  
     SelfUpdate();
+    LoadLoginSettings();
+    if (setting_excludeFromCapture == true) {
+        SetWindowCaptureExclusion(GetConsoleWindow(), true);
+    }
     std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
     std::filesystem::create_directories(folderPath);
-    LoadLoginSettings();
+   
 
     show_login_window = true;
 

@@ -197,6 +197,8 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Text("Actions");
     ImGui::NextColumn();
     ImGui::Separator();
+    static int selectedAccount = -1;
+  
 
     static char regnumId[128] = "";
     static char regnumUsername[128] = "";
@@ -204,7 +206,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     static char regnumServer[128] = "";
     static char regnumReferrer[128] = "";
 
-    ServerOption serverOptions[] = { {"val", "Valhalla"}, {"ra", "Ra"} };
+    ServerOption serverOptions[] = { {"ra", "Ra"} };
     ReferrerOption referrerOptions[] = { {"nge", "NGE"}, {"gmg", "Gamigo"}, {"boa", "Boacompra"} };
     static int currentServer = 0;
     static int currentReferrer = 0;
@@ -266,7 +268,15 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
     ImGui::Columns(1);
     ImGui::Separator();
-
+    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
+        for (int i = 0; i < regnumAccounts.size(); i++) {
+            bool isSelected = (selectedAccount == i);
+            if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
+                selectedAccount = i;
+            }
+        }
+        ImGui::EndCombo();
+    }
     ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
     ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
     ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
@@ -292,16 +302,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    static int selectedAccount = -1;
-    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
-        for (int i = 0; i < regnumAccounts.size(); i++) {
-            bool isSelected = (selectedAccount == i);
-            if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
-                selectedAccount = i;
-            }
-        }
-        ImGui::EndCombo();
-    }
+
 
     ImGui::SameLine();
     if (ImGui::Button("Play")) {
