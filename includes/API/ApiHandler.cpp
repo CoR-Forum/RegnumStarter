@@ -468,6 +468,11 @@ std::string GenerateMD5(const std::string& input) {
 // Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
+
+
+    std::filesystem::create_directories(folderPath);
+
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
 
