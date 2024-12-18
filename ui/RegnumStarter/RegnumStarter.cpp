@@ -50,8 +50,6 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     
     std::string executablePath = regnumPath + "\\LiveServer\\ROClientGame.exe";
     std::string command = "powershell.exe -Command \"cd '" + regnumPath + "\\LiveServer'; .\\ROClientGame.exe '" + regnumLoginUser + "' '" + regnumLoginPassword + "'\"";
-
-    LogDebug("Starting Regnum Online client with command: " + command);
     
     if (!CreateProcess(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, regnumPath.c_str(), &si, &pi)) {
         Log("Failed to start the Regnum Online client");

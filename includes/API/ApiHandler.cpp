@@ -103,8 +103,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                                 std::string address = pointerObj.value("address", "");
                                 auto offsets = pointerObj.value("offsets", std::vector<std::string>());
 
-                                LogDebug("Pointer: " + featureName + ", Address: " + address + ", Offsets: " + nlohmann::json(offsets).dump());
-
                                 Pointer pointer;
                                 pointer.name = featureName;
                                 pointer.address = std::stoul(address, nullptr, 16);
@@ -115,7 +113,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
 
                                 std::stringstream addressHex;
                                 addressHex << std::hex << pointer.address;
-                                LogDebug("Got pointer: Name = " + pointer.name + ", Address = 0x" + addressHex.str() + ", Offsets = " + nlohmann::json(offsets).dump());
                                 g_pointers.push_back(pointer);
 
                                 // Update feature flags based on feature name
@@ -142,7 +139,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                                 }
                             }
                         }
-                        LogDebug("Pointers fetched and parsed successfully");
                     }
 
                     // Initialize other necessary variables and features here
