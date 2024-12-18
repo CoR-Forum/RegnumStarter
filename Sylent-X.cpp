@@ -31,8 +31,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
         return 1;
     }
-
+   
     SelfUpdate();
+    std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
+    std::filesystem::create_directories(folderPath);
     LoadLoginSettings();
 
     show_login_window = true;
