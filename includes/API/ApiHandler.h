@@ -58,7 +58,7 @@ bool optionCharacter = false;
 
 
 // global variables for settings (from user account via API)
-bool setting_excludeFromCapture = true;
+bool setting_excludeFromCapture = false;
 std::string setting_regnumInstallPath;
 bool setting_log_debug = true;
 
