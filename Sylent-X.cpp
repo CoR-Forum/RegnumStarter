@@ -32,12 +32,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
         return 1;
     }
-  
+    
     SelfUpdate();
     LoadLoginSettings();
-    if (setting_excludeFromCapture == true) {
-        SetWindowCaptureExclusion(GetConsoleWindow(), true);
-    }
+
     std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
     std::filesystem::create_directories(folderPath);
    
