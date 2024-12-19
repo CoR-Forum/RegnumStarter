@@ -4,6 +4,14 @@ void SaveLoginSettings(const std::string& username, bool saveUsername) {
     std::string configFilePath = std::string(getenv("APPDATA")) + "\\Sylent-X\\login-settings.json";
     nlohmann::json loginSettingsJson;
 
+    // Load existing settings if the file exists
+    std::ifstream inFile(configFilePath);
+    if (inFile.is_open()) {
+        inFile >> loginSettingsJson;
+        inFile.close();
+    }
+
+    // Update only the relevant fields
     if (saveUsername) {
         loginSettingsJson["username"] = username;
     } else {
@@ -13,6 +21,7 @@ void SaveLoginSettings(const std::string& username, bool saveUsername) {
     loginSettingsJson["showUsername"] = showUsername;
     loginSettingsJson["showPassword"] = showPassword;
 
+    // Save the updated settings back to the file
     std::ofstream outFile(configFilePath);
     outFile << loginSettingsJson.dump(4);
     outFile.close();
@@ -30,6 +39,7 @@ void LoadLoginSettings() {
         saveUsername = loginSettingsJson.value("saveUsername", false);
         showUsername = loginSettingsJson.value("showUsername", true);
         showPassword = loginSettingsJson.value("showPassword", false);
+        setting_log_debug = loginSettingsJson.value("debug", false);
         
     }
 }
@@ -80,7 +90,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
 
                     // Deserialize settings JSON string
                     auto settingsJson = nlohmann::json::parse(settings);
-                    setting_log_debug = settingsJson.value("logDebug", false);
                     textColor = ImVec4(
                         settingsJson["textColor"][0],
                         settingsJson["textColor"][1],
@@ -184,7 +193,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
-        settingsJson["logDebug"] = setting_log_debug;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
         settingsJson["regnumInstallPath"] = setting_regnumInstallPath;

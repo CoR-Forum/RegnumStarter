@@ -62,7 +62,7 @@ bool optionCharacter = false;
 // global variables for settings (from user account via API)
 bool setting_excludeFromCapture = false;
 std::string setting_regnumInstallPath;
-bool setting_log_debug = true;
+bool setting_log_debug = false;
 
 // global variables for memory pointers and chat messages
 std::vector<Pointer> g_pointers;

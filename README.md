@@ -71,3 +71,17 @@ To update the application, place the new file on the server and update `latest_v
 0.1.1
 https://cor-forum.de/regnum/sylent/Sylent-X-0.1.1.exe
 ```
+
+## Debugging
+
+To enable debugging, you need to add ``"debug": true`` to your login-settings.json, for example:
+
+```
+{
+    "saveUsername": true,
+    "showPassword": false,
+    "showUsername": false,
+    "username": "joshua2504"
+    "debug": true
+}
+```
