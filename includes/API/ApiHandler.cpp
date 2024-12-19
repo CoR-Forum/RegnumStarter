@@ -586,3 +586,58 @@ void DeleteRegnumAccount(int id) {
 
     LoadRegnumAccounts();
 }
+
+// function to load boss respawns from the API
+void InitializeBossRespawns() {
+    LogDebug("Initializing boss respawns...");
+    try {
+        std::string path = "/v1/bossRespawns";
+
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        LogDebug("Response received: " + response); // Log the response
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        if (jsonResponse.contains("status") && jsonResponse["status"].is_string()) {
+            std::string status = jsonResponse["status"];
+            std::string message = jsonResponse.value("message", "");
+
+            if (status == "success") {
+                if (jsonResponse.contains("bosses") && jsonResponse["bosses"].is_object()) {
+                    auto bosses = jsonResponse["bosses"];
+                    for (const auto& boss : bosses.items()) {
+                        std::string bossName = boss.key();
+                        BossRespawn bossRespawn;
+                        bossRespawn.name = bossName;
+                        if (boss.value().contains("previousRespawn") && boss.value()["previousRespawn"].is_number()) {
+                            bossRespawn.previousRespawn = boss.value()["previousRespawn"];
+                        }
+                        if (boss.value().contains("nextRespawns") && boss.value()["nextRespawns"].is_array()) {
+                            for (const auto& nextRespawn : boss.value()["nextRespawns"]) {
+                                if (nextRespawn.is_number()) {
+                                    bossRespawn.nextRespawns.push_back(nextRespawn);
+                                }
+                            }
+                        }
+                        bossRespawns[bossName] = bossRespawn;
+                        LogDebug("Boss respawn loaded: " + bossName); // Log each boss respawn
+                    }
+                    LogDebug("Boss respawns initialized successfully");
+                } else {
+                    LogDebug("Failed to initialize boss respawns: 'bosses' field is missing or not an object");
+                }
+            } else {
+                LogDebug("Failed to initialize boss respawns: " + message);
+            }
+        } else {
+            LogDebug("Failed to initialize boss respawns: 'status' field is missing or not a string");
+        }
+    } catch (const nlohmann::json::exception& e) {
+        LogDebug("JSON Exception: " + std::string(e.what()));
+    } catch (const std::exception& e) {
+        LogDebug("Exception: " + std::string(e.what()));
+    }
+}

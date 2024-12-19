@@ -6,9 +6,9 @@
 #include <ctime>
 
 const std::unordered_map<std::string, time_t> firstRespawns = {
-    {"Thorkul", 1721681749},
-    {"Evendim", 1721348488},
-    {"Daen", 1721042368},
+    {"Thorkul", 1},
+    {"Evendim", 1},
+    {"Daen", 1},
     {"ServerRestart", 1721210400 + 37 * 60}
 };
 
@@ -51,36 +51,4 @@ void calculateNextRespawns(const std::string& boss) {
 
     bossRespawns[boss].previousRespawn = bossRespawns[boss].nextRespawns[0] - respawnTime;
     LogDebug(boss + " previous respawn should be " + unixstamp2human(bossRespawns[boss].previousRespawn));
-}
-
-void initializeBossRespawns() {
-    for (const auto& pair : firstRespawns) {
-        bossRespawns[pair.first] = BossRespawn{pair.first, {}, pair.second};
-        calculateNextRespawns(pair.first);
-    }
-}
-
-void getNextRespawns(const std::string& boss) {
-    time_t triedRespawn = firstRespawns.at(boss);
-    time_t now = getCurrentTimestamp();
-    time_t respawnTime = 0;
-
-    bossRespawns[boss].nextRespawns.clear();
-
-    while (true) {
-        if (boss == "ServerRestart")
-            respawnTime = SERVER_RESPAWN_TIME;
-        else
-            respawnTime = BOSS_RESPAWN_TIME;
-
-        triedRespawn += respawnTime;
-        if (triedRespawn >= now)
-            bossRespawns[boss].nextRespawns.push_back(triedRespawn);
-
-        if (bossRespawns[boss].nextRespawns.size() == 3)
-            break;
-    }
-
-    bossRespawns[boss].previousRespawn = bossRespawns[boss].nextRespawns[0] - respawnTime;
-    std::cout << boss << " previous respawn (to put in js file) is " << bossRespawns[boss].previousRespawn << std::endl;
 }

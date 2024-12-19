@@ -76,7 +76,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
-    initializeBossRespawns();
 
     static char username[128] = "";
     static char password[128] = "";
@@ -243,6 +242,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_player_window = false;
                     show_info_window = false;
                     show_calendar_window = true;
+                    InitializeBossRespawns();
                 }
 
                 ImGui::EndChild();

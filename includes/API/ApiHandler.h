@@ -9,6 +9,7 @@
 #include "../md5/md5.h"
 #include <windows.h>
 #include "../streamproof/streamproof.h"
+#include "../Bosses/BossSpawns.h"
 
 extern HWND hwnd;
 
@@ -104,4 +105,4 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
 void DeleteRegnumAccount(int id);
 void SaveLoginSettings(const std::string& username, bool saveUsername);
 void LoadLoginSettings();
-std::vector<Pointer> InitializePointers();
+void InitializeBossRespawns();

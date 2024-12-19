@@ -11,6 +11,8 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
     static LPDIRECT3DTEXTURE9 texture_thorkul = nullptr;
     static LPDIRECT3DTEXTURE9 texture_server = nullptr;
 
+    static bool bossRespawnTimesLoaded = false;
+
     if (!texture_evendim) {
         texture_evendim = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_EVENDIM_ICON);
     }
@@ -35,12 +37,6 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
             // Calculate the time difference for the next respawn
             auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             auto diff = std::difftime(boss.nextRespawns[0], now);
-
-            if (diff <= 0) {
-                // If the boss has spawned, recalculate the next respawns
-                calculateNextRespawns(boss.name);
-                diff = std::difftime(boss.nextRespawns[0], now);
-            }
 
             int days = static_cast<int>(diff) / 86400;
             int hours = (static_cast<int>(diff) % 86400) / 3600;
