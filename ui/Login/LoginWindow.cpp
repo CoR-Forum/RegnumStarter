@@ -39,7 +39,9 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     ImGui::Spacing();
 
-    ImGui::Combo("##API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));
+    if (setting_log_debug) {
+        ImGui::Combo("##API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));
+    }
 
     // Set focus on the username or password field only once
     if (!focusSet) {

@@ -103,5 +103,5 @@ extern std::string session_id;
 
 // declarations for API servers
 // Selection between Production and Development API
-static int apiSelection = 1;
+static int apiSelection = 0;
 const char* apiOptions[] = { "Production", "Development" };
