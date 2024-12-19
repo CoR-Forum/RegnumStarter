@@ -9,7 +9,7 @@
 #include "../md5/md5.h"
 #include <windows.h>
 #include "../streamproof/streamproof.h"
-#include "../Bosses/BossSpawns.h"
+#include <unordered_map>
 
 extern HWND hwnd;
 
@@ -92,6 +92,17 @@ struct ReferrerOption {
 
 // global variable to store the loaded regnum accounts
 std::vector<RegnumAccount> regnumAccounts;
+
+struct BossRespawn {
+    std::string name;
+    std::vector<time_t> nextRespawns;
+    time_t previousRespawn;
+};
+
+const std::unordered_map<std::string, time_t> firstRespawns;
+extern const int SERVER_RESPAWN_TIME;
+extern const int BOSS_RESPAWN_TIME;
+std::unordered_map<std::string, BossRespawn> bossRespawns;
 
 // global functions for chat
 void SendChatMessage(const std::string& message);

@@ -35,7 +35,6 @@
 #include "ui/Credits/CreditsWindow.cpp"
 #include "ui/Chat/ChatWindow.cpp"
 #include "ui/WindowStates.h"
-#include "includes/Bosses/BossSpawns.cpp"
 #include "ui/Bosses/BossRespawnWindow.cpp"
 #include "includes/OpenUrl/OpenUrl.cpp"
 #include "includes/md5/md5.cpp"
