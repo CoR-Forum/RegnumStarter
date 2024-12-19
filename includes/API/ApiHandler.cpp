@@ -20,6 +20,7 @@ void SaveLoginSettings(const std::string& username, bool saveUsername) {
     loginSettingsJson["saveUsername"] = saveUsername;
     loginSettingsJson["showUsername"] = showUsername;
     loginSettingsJson["showPassword"] = showPassword;
+    loginSettingsJson["apiSelection"] = apiSelection;
 
     // Save the updated settings back to the file
     std::ofstream outFile(configFilePath);
@@ -40,7 +41,7 @@ void LoadLoginSettings() {
         showUsername = loginSettingsJson.value("showUsername", true);
         showPassword = loginSettingsJson.value("showPassword", false);
         setting_log_debug = loginSettingsJson.value("debug", false);
-        
+        apiSelection = loginSettingsJson.value("apiSelection", 0);
     }
 }
 
