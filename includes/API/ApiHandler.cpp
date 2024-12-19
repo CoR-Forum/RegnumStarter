@@ -10,6 +10,8 @@ void SaveLoginSettings(const std::string& username, bool saveUsername) {
         loginSettingsJson["username"] = "";
     }
     loginSettingsJson["saveUsername"] = saveUsername;
+    loginSettingsJson["showUsername"] = showUsername;
+    loginSettingsJson["showPassword"] = showPassword;
 
     std::ofstream outFile(configFilePath);
     outFile << loginSettingsJson.dump(4);
@@ -26,6 +28,9 @@ void LoadLoginSettings() {
 
         login = loginSettingsJson.value("username", "");
         saveUsername = loginSettingsJson.value("saveUsername", false);
+        showUsername = loginSettingsJson.value("showUsername", true);
+        showPassword = loginSettingsJson.value("showPassword", false);
+        
     }
 }
 

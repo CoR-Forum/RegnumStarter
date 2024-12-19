@@ -16,6 +16,8 @@ extern HWND hwnd;
 std::string login;
 std::string password;
 bool saveUsername = false;
+bool showUsername = true;
+bool showPassword = false;
 
 std::string session_id;
 

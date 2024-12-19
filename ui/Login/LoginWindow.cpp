@@ -8,8 +8,6 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static bool usernameSet = false;
     static bool isLoading = false;
     static bool loginTriggered = false;
-    static bool showPassword = false;
-    static bool showUsername = true;
 
     ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     
@@ -26,7 +24,6 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     if (saveUsername && !usernameSet) {
         strncpy(username, login.c_str(), sizeof(username));
         usernameSet = true;
-        showUsername = false;
     }
 
     // Load the texture
