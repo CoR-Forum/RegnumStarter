@@ -196,7 +196,7 @@ void SaveSettings() {
         payloadJson["settings"] = settingsString; // Store the serialized JSON string
 
         std::string payload = payloadJson.dump();
-        Log("Payload being sent: " + payload); // Log the payload
+        LogDebug("Payload being sent: " + payload); // Log the payload
  
         std::string path = "/v1/save-settings";
 
@@ -204,7 +204,7 @@ void SaveSettings() {
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
-        Log("Response received: " + response); // Log the response
+        LogDebug("Response received: " + response); // Log the response
 
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -231,7 +231,7 @@ void Logout() {
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, "");
         std::string response = ReadResponse(hRequest);
-        Log("Response received: " + response); // Log the response
+        LogDebug("Response received: " + response); // Log the response
 
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
