@@ -51,7 +51,7 @@ extern void GetAllUsers();
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
-const std::string sylentx_version = "0.1.66";
+const std::string sylentx_version = "0.0.9";
 const std::string sylentx_appname = "Sylent-X";
 
 extern ImVec4 textColor;
