@@ -47,7 +47,6 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
-extern void GetAllUsers();
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
