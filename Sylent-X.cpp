@@ -319,8 +319,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
                 ImGui::PopStyleVar();
 
-                ImGui::Text("Status: %s", sylentx_status.c_str());
-
                 ImGui::EndChild();
 
                 ImGui::SameLine();

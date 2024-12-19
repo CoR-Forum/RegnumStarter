@@ -22,9 +22,6 @@ bool showPassword = false;
 
 std::string session_id;
 
-// global variables for sylent-x
-std::string sylentx_status;
-
 // global variables for user license information
 std::string license_runtime_end;
 std::string license_features;
