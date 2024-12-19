@@ -50,8 +50,9 @@ DWORD GetProcessIdByName(const std::wstring& processName);
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
-const std::string sylentx_version = "0.0.9";
+const std::string sylentx_version = "0.1.0";
 const std::string sylentx_appname = "Sylent-X";
+const std::string sylentx_windowname = "Sylent-X " + sylentx_version;
 
 extern ImVec4 textColor;
 

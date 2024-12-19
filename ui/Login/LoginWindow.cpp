@@ -10,7 +10,8 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     static bool isLoading = false;
     static bool loginTriggered = false;
 
-    ImGui::Begin("Login", &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+    std::string windowTitle = "Login - " + sylentx_windowname;
+    ImGui::Begin(windowTitle.c_str(), &settingsWindowIsOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     
     if (!settingsWindowIsOpen) {
         SaveSettings();

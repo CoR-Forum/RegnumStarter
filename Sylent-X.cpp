@@ -152,7 +152,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } 
 
             if (show_main_window) {
-                std::string windowTitle = sylentx_appname + " " + sylentx_version;
+                std::string windowTitle = sylentx_windowname;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::SetNextWindowSize(ImVec2(770, 400), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
