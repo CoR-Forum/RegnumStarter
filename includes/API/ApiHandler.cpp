@@ -411,6 +411,7 @@ void CheckChatMessages() {
     while (keepRunning) {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         try {
+            LogDebug("Checking for new chat messages...");
             std::string path = "/v1/chat/receive";
 
             HINTERNET hInternet = OpenInternetConnection();
