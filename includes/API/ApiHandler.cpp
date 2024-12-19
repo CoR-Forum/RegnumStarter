@@ -405,11 +405,10 @@ void SendChatMessage(const std::string& message) {
     }
 }
 
-// Check for new chat messages every 2 seconds and store them in g_chatMessages
+// Check for new chat messages 500ms after the last API request finished and store them in g_chatMessages
 void CheckChatMessages() {
     bool keepRunning = true;
     while (keepRunning) {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
         try {
             LogDebug("Checking for new chat messages...");
             std::string path = "/v1/chat/receive";
@@ -460,6 +459,7 @@ void CheckChatMessages() {
         } catch (const std::exception& e) {
             LogDebug("Exception: " + std::string(e.what()));
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
