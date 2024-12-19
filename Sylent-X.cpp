@@ -386,6 +386,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } else if (show_calendar_window) {
                 ShowBossRespawnWindow(show_calendar_window);
             } else {
+                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
 
