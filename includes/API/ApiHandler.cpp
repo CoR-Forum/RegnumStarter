@@ -422,10 +422,14 @@ void CheckChatMessages() {
             auto jsonResponse = nlohmann::json::parse(response);
             std::string status = jsonResponse["status"];
             if (status == "success") {
-                LogDebug("Successfully fetched chat messages.");
-
                 // Process the messages array
                 auto messages = jsonResponse["messages"];
+                
+                // Sort messages by timestamp
+                std::sort(messages.begin(), messages.end(), [](const auto& a, const auto& b) {
+                    return a["timestamp"] < b["timestamp"];
+                });
+
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
                     std::string createdAt = msg["timestamp"];
