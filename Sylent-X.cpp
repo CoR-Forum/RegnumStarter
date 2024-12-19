@@ -38,7 +38,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
     std::filesystem::create_directories(folderPath);
-   
 
     show_login_window = true;
 
@@ -158,6 +157,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::SetNextWindowSize(ImVec2(770, 400), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+                static bool captureExclusionSet = false;
+                if (!captureExclusionSet) {
+                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+                    captureExclusionSet = true;
+                }
 
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                 ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
@@ -386,7 +391,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } else if (show_calendar_window) {
                 ShowBossRespawnWindow(show_calendar_window);
             } else {
-                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
 
