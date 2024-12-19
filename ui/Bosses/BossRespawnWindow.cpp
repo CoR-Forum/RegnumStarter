@@ -26,12 +26,14 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
     }
 
     if (show_calendar_window) {
+        int bossCount = 0;
+        ImGui::Columns(2, nullptr, false);
+
         for (auto& pair : bossRespawns) {
             BossRespawn& boss = pair.second;
             ImGui::SeparatorText(boss.name.c_str());
 
             ImGui::BeginChild(boss.name.c_str(), ImVec2(0, 80), false, ImGuiWindowFlags_NoScrollbar);
-            ImGui::Columns(2, nullptr, false);
 
             // Calculate the time difference for the next respawn
             auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -44,7 +46,7 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
 
             ImGui::Text("Next Spawn in: %d d, %02d h, %02d m, %02d s", days, hours, minutes, seconds);
 
-            // Display the text lines on the left side
+            // Display the text lines
             for (const auto& respawnTime : boss.nextRespawns) {
                 std::tm* tm = std::localtime(&respawnTime);
                 char buffer[64];
@@ -52,9 +54,7 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
                 ImGui::Text("%s", buffer);
             }
 
-            ImGui::NextColumn();
-
-            // Display the boss image on the right side
+            // Display the boss image
             if (boss.name == "Evendim" && texture_evendim) {
                 ImGui::Image((void*)texture_evendim, ImVec2(70, 70));
             } else if (boss.name == "Daen" && texture_daen) {
@@ -65,8 +65,14 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
                 ImGui::Image((void*)texture_server, ImVec2(70, 70));
             }
 
-            ImGui::Columns(1);
             ImGui::EndChild();
+
+            bossCount++;
+            if (bossCount % 2 == 0) {
+                ImGui::NextColumn();
+            }
         }
+
+        ImGui::Columns(1);
     }
 }
