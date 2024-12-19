@@ -203,14 +203,13 @@ void SaveSettings() {
         settingsJson["showIntro"] = showIntro;
         settingsJson["SoundVolume"] = soundVolume;
 
-        // Serialize settingsJson to a string
         std::string settingsString = settingsJson.dump();
 
         nlohmann::json payloadJson;
-        payloadJson["settings"] = settingsString; // Store the serialized JSON string
+        payloadJson["settings"] = settingsString; 
 
         std::string payload = payloadJson.dump();
-        LogDebug("Payload being sent: " + payload); // Log the payload
+        LogDebug("Payload being sent: " + payload);
  
         std::string path = "/v1/save-settings";
 
@@ -218,7 +217,7 @@ void SaveSettings() {
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
-        LogDebug("Response received: " + response); // Log the response
+        LogDebug("Response received: " + response);
 
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -237,7 +236,7 @@ void SaveSettings() {
 }
 
 void Logout() {
-    SaveSettings(); // Save settings before logging out
+    SaveSettings();
     try {
         std::string path = "/v1/logout";
 
@@ -245,7 +244,7 @@ void Logout() {
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, "");
         std::string response = ReadResponse(hRequest);
-        LogDebug("Response received: " + response); // Log the response
+        LogDebug("Response received: " + response);
 
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
