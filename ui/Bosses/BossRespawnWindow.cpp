@@ -3,6 +3,22 @@
 #include "../../libs/ImageLoader/ImageLoader.h"
 #include "../../includes/API/ApiHandler.h"
 #include <chrono>
+#include <unordered_map>
+#include <string>
+
+// Texture cache
+std::unordered_map<std::string, LPDIRECT3DTEXTURE9> textureCache;
+
+LPDIRECT3DTEXTURE9 LoadTextureWithCache(const std::string& textureName, int resourceId) {
+    auto it = textureCache.find(textureName);
+    if (it != textureCache.end()) {
+        return it->second;
+    }
+
+    LPDIRECT3DTEXTURE9 texture = LoadTextureFromResource(g_pd3dDevice, resourceId);
+    textureCache[textureName] = texture;
+    return texture;
+}
 
 void ShowBossRespawnWindow(bool& show_calendar_window) {
     static LPDIRECT3DTEXTURE9 texture_evendim = nullptr;
@@ -13,16 +29,16 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
     static bool bossRespawnTimesLoaded = false;
 
     if (!texture_evendim) {
-        texture_evendim = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_EVENDIM_ICON);
+        texture_evendim = LoadTextureWithCache("evendim", IDR_PNG_EVENDIM_ICON);
     }
     if (!texture_daen) {
-        texture_daen = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_DAEN_ICON);
+        texture_daen = LoadTextureWithCache("daen", IDR_PNG_DAEN_ICON);
     }
     if (!texture_thorkul) {
-        texture_thorkul = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_THORKUL_ICON);
+        texture_thorkul = LoadTextureWithCache("thorkul", IDR_PNG_THORKUL_ICON);
     }
     if (!texture_server) {
-        texture_server = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SERVER_ICON);
+        texture_server = LoadTextureWithCache("server", IDR_PNG_SERVER_ICON);
     }
 
     if (show_calendar_window) {
