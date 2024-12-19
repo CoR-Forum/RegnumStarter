@@ -10,7 +10,7 @@ void ShowCreditsWindow(bool& show_info_window) {
         ImGui::Text("Special thanks to the Champions of Regnum community for their support and feedback.");
         ImGui::Text("Contributions are highly appreciated. Feel free to get in touch with us on Discord.");
         ImGui::Spacing();
-        ImGui::Text("Big shoutout to Adrian Lastres. You're the best and we love you! Thank you for keeping Regnum running!");
+        ImGui::Text("Big shoutout to Kailer. Thank you for keeping Regnum running!");
         ImGui::SameLine();
         ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "<3");
         ImGui::Spacing();
