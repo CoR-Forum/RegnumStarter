@@ -51,6 +51,8 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
 
             ImGui::BeginChild(boss.name.c_str(), ImVec2(0, 80), false, ImGuiWindowFlags_NoScrollbar);
 
+            ImGui::BeginGroup(); // Begin grouping text and image
+
             // Calculate the time difference for the next respawn
             auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             auto diff = std::difftime(boss.nextRespawns[0], now);
@@ -70,7 +72,10 @@ void ShowBossRespawnWindow(bool& show_calendar_window) {
                 ImGui::Text("%s", buffer);
             }
 
-            // Display the boss image
+            ImGui::EndGroup(); // End grouping text and image
+
+            // Display the boss image on the right side
+            ImGui::SameLine();
             if (boss.name == "Evendim" && texture_evendim) {
                 ImGui::Image((void*)texture_evendim, ImVec2(70, 70));
             } else if (boss.name == "Daen" && texture_daen) {
