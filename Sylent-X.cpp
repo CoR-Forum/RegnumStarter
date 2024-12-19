@@ -420,10 +420,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             chatInput[0] = '\0'; // Clear input field
                         }
                     }
-                    ImGui::SameLine();
-                    if (ImGui::Button(ICON_FA_EXTERNAL_LINK "##Chat")) {
-                        show_chat_window = true;
-                    }   
                 }
                 ImGui::EndChild();
                 ImGui::End();
@@ -436,9 +432,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             MemoryManipulation("fov", newValue); // Apply the new FOV value
             // Add a small delay to prevent rapid toggling
             Sleep(200);
-        }
-        if (show_chat_window) {
-            ShowChatWindow(show_chat_window);
         }
         // Rendering
         ImGui::EndFrame();

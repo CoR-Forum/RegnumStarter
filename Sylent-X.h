@@ -33,7 +33,6 @@
 #include "ui/RegnumStarter/RegnumStarter.cpp"
 #include "ui/License/LicenseWindow.cpp"
 #include "ui/Credits/CreditsWindow.cpp"
-#include "ui/Chat/ChatWindow.cpp"
 #include "ui/WindowStates.h"
 #include "ui/Bosses/BossRespawnWindow.cpp"
 #include "includes/OpenUrl/OpenUrl.cpp"
@@ -45,7 +44,6 @@
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern bool show_chat_window;
 extern ImVec4 textColor;
 
 extern bool g_ShowUI;

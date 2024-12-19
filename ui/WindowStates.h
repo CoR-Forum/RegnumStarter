@@ -3,7 +3,6 @@
 bool show_login_window = true;
 bool show_main_window = false;
 bool show_register_window = false;
-bool show_chat_window = false;
 bool show_forgot_password_window = false;
 bool show_password_reset_window = false;
 bool show_settings_window = false; 
