@@ -90,6 +90,9 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     showIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
 
+                    // Run SetWindowCaptureExclusion after settings are loaded
+                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+
                     // Save username and saveUsername flag to file
                     SaveLoginSettings(username, saveUsername);
 
@@ -146,7 +149,6 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     }
 
                     // Initialize other necessary variables and features here
-                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
                     std::thread chatThread(CheckChatMessages);
                     chatThread.detach();
 
