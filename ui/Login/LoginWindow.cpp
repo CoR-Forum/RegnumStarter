@@ -1,6 +1,7 @@
 #include "LoginWindow.h"
 #include "../WindowStates.h"
 #include "../../libs/ImageLoader/ImageLoader.h"
+#include <windows.h> // Include the Windows API header
 
 void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor) {
     static bool settingsWindowIsOpen = true;
@@ -56,6 +57,11 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username), showUsername ? 0 : ImGuiInputTextFlags_Password);
 
     ImGui::InputTextWithHint("##Password", "Password", password, IM_ARRAYSIZE(password), showPassword ? 0 : ImGuiInputTextFlags_Password);
+
+    // Check if Caps Lock is enabled
+    if ((GetKeyState(VK_CAPITAL) & 0x0001) != 0) {
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Caps Lock is enabled!");
+    }
 
     ImGui::BeginDisabled(isLoading);
     if (ImGui::Button("Login", ImVec2(100, 0))) {
