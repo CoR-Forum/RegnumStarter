@@ -314,14 +314,27 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
         if (ImGui::Button("Save Account")) {
             if (strlen(regnumUsername) > 0 && strlen(regnumPassword) > 0) {
-                SaveRegnumAccount(
-                    regnumUsername, 
-                    regnumPassword, 
-                    serverOptions[currentServer].id, 
-                    referrerOptions[currentReferrer].id, 
-                    regnumId[0] == '\0' ? 0 : atoi(regnumId)
-                );
-                ImGui::CloseCurrentPopup();
+                bool accountExists = false;
+                for (const auto& account : regnumAccounts) {
+                    if (strcmp(account.username.c_str(), regnumUsername) == 0) {
+                        accountExists = true;
+                        break;
+                    }
+                }
+
+                if (!accountExists) {
+                    SaveRegnumAccount(
+                        regnumUsername, 
+                        regnumPassword, 
+                        serverOptions[currentServer].id, 
+                        referrerOptions[currentReferrer].id, 
+                        regnumId[0] == '\0' ? 0 : atoi(regnumId)
+                    );
+                    ImGui::CloseCurrentPopup();
+                } else {
+                    MessageBox(NULL, "Account already exists.", "Sylent-X", MB_OK);
+                    Log("Account already exists.");
+                }
             } else {
                 MessageBox(NULL, "Username or password cannot be empty.", "Sylent-X", MB_OK);
                 Log("Username or password cannot be empty.");
