@@ -191,7 +191,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
+    if (ImGui::BeginCombo("##SelectAccountCombo", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
         if (regnumAccounts.empty()) {
             ImGui::Selectable("No accounts available", false, ImGuiSelectableFlags_Disabled);
         } else {
@@ -217,10 +217,10 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Spacing();
 
     if (ImGui::Button("Add Account")) {
-        ImGui::OpenPopup("Regnum Account");
+        ImGui::OpenPopup("Regnum Account##AddAccountPopup");
     }
 
-    if (ImGui::BeginPopup("Regnum Account")) {
+    if (ImGui::BeginPopup("Regnum Account##AddAccountPopup")) {
     ImGui::Columns(4, "RegnumAccounts");
     ImGui::Separator();
     ImGui::Text("Username");
@@ -313,13 +313,21 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
 
         if (ImGui::Button("Save Account")) {
-            SaveRegnumAccount(
-                regnumUsername, 
-                regnumPassword, 
-                serverOptions[currentServer].id, 
-                referrerOptions[currentReferrer].id, 
-                regnumId[0] == '\0' ? 0 : atoi(regnumId)
-            );
+            if (strlen(regnumUsername) > 0 && strlen(regnumPassword) > 0) {
+                SaveRegnumAccount(
+                    regnumUsername, 
+                    regnumPassword, 
+                    serverOptions[currentServer].id, 
+                    referrerOptions[currentReferrer].id, 
+                    regnumId[0] == '\0' ? 0 : atoi(regnumId)
+                );
+                ImGui::CloseCurrentPopup();
+            } else {
+                MessageBox(NULL, "Username or password cannot be empty.", "Sylent-X", MB_OK);
+                Log("Username or password cannot be empty.");
+            }
+        }
+        if (ImGui::Button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }
 
