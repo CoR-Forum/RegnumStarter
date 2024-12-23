@@ -121,7 +121,7 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                                 std::string address = pointerObj.value("address", "");
                                 auto offsets = pointerObj.value("offsets", std::vector<std::string>());
 
-                                //LogDebug("Pointer: " + featureName + ", Address: " + address + ", Offsets: " + nlohmann::json(offsets).dump());
+                                LogDebug("Pointer: " + featureName + ", Address: " + address + ", Offsets: " + nlohmann::json(offsets).dump());
 
                                 Pointer pointer;
                                 pointer.name = featureName;
