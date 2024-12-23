@@ -85,17 +85,17 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     std::string userId = user.value("id", "");
                     std::string username = user.value("username", "");
                     std::string nickname = user.value("nickname", "");
-                    std::string settings = user.value("settings", "");
+                    std::string settings = user.value("settings", "{}"); // Default to empty JSON object if settings are empty
 
                     LogDebug("Loading settings: User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings + ", Features: " + user["features"].dump());
 
                     // Deserialize settings JSON string
                     auto settingsJson = nlohmann::json::parse(settings);
                     textColor = ImVec4(
-                        settingsJson["textColor"][0],
-                        settingsJson["textColor"][1],
-                        settingsJson["textColor"][2],
-                        settingsJson["textColor"][3]
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[0],
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[1],
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[2],
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[3]
                     );
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "");
