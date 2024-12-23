@@ -44,11 +44,12 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
             zoomValue = 15.0f;
             MemoryManipulation("zoom", zoomValue);
         }
-        if (featureZoom){
+        ImGui::EndDisabled();
+        
+        if (!featureZoom){
         ImGui::SameLine();
         ShowLicenseMarker();
         }
-        ImGui::EndDisabled();
 
         prevZoomState = optionZoom; // Update previous state
 
