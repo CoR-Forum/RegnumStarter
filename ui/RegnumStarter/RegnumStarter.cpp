@@ -3,6 +3,7 @@
 #include <sstream>
 
 
+static int selectedAccount = -1;
 extern std::string setting_regnumInstallPath;
 
 void UpdateConfigValue(const std::string& key, const std::string& value) {
@@ -185,7 +186,41 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     }
 
     ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
+    
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
 
+    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
+        if (regnumAccounts.empty()) {
+            ImGui::Selectable("No accounts available", false, ImGuiSelectableFlags_Disabled);
+        } else {
+            for (int i = 0; i < regnumAccounts.size(); i++) {
+                bool isSelected = (selectedAccount == i);
+                if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
+                    selectedAccount = i;
+                }
+            }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Play")) {
+        if (selectedAccount != -1) {
+            const auto& account = regnumAccounts[selectedAccount];
+            runRoClientGame(account.username, account.password);
+        }
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    if (ImGui::Button("Add Account")) {
+        ImGui::OpenPopup("Regnum Account");
+    }
+
+    if (ImGui::BeginPopup("Regnum Account")) {
     ImGui::Columns(4, "RegnumAccounts");
     ImGui::Separator();
     ImGui::Text("Username");
@@ -197,7 +232,6 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Text("Actions");
     ImGui::NextColumn();
     ImGui::Separator();
-    static int selectedAccount = -1;
   
 
     static char regnumId[128] = "";
@@ -267,49 +301,29 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     }
 
     ImGui::Columns(1);
-    ImGui::Separator();
-    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
-        for (int i = 0; i < regnumAccounts.size(); i++) {
-            bool isSelected = (selectedAccount == i);
-            if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
-                selectedAccount = i;
-            }
+        ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
+        ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
+        ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
+            *out_text = ((ServerOption*)data)[idx].name;
+            return true;
+        }, serverOptions, IM_ARRAYSIZE(serverOptions));
+        ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
+            *out_text = ((ReferrerOption*)data)[idx].name;
+            return true;
+        }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
+
+        if (ImGui::Button("Save Account")) {
+            SaveRegnumAccount(
+                regnumUsername, 
+                regnumPassword, 
+                serverOptions[currentServer].id, 
+                referrerOptions[currentReferrer].id, 
+                regnumId[0] == '\0' ? 0 : atoi(regnumId)
+            );
+            ImGui::CloseCurrentPopup();
         }
-        ImGui::EndCombo();
-    }
-    ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
-    ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
-    ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
-        *out_text = ((ServerOption*)data)[idx].name;
-        return true;
-    }, serverOptions, IM_ARRAYSIZE(serverOptions));
-    ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
-        *out_text = ((ReferrerOption*)data)[idx].name;
-        return true;
-    }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
 
-    if (ImGui::Button("Save Account")) {
-        SaveRegnumAccount(
-            regnumUsername, 
-            regnumPassword, 
-            serverOptions[currentServer].id, 
-            referrerOptions[currentReferrer].id, 
-            regnumId[0] == '\0' ? 0 : atoi(regnumId)
-        );
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-
-
-    ImGui::SameLine();
-    if (ImGui::Button("Play")) {
-        if (selectedAccount != -1) {
-            const auto& account = regnumAccounts[selectedAccount];
-            runRoClientGame(account.username, account.password);
-        }
+        ImGui::EndPopup();
     }
 
     ImGui::Spacing();
