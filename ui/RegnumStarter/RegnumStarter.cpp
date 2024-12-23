@@ -204,18 +204,13 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         }
         ImGui::TreePop();
     }
-    ImGui::SameLine();
+    
     if (ImGui::Button("Play")) {
         if (selectedAccount != -1) {
             const auto& account = regnumAccounts[selectedAccount];
             runRoClientGame(account.username, account.password);
         }
     }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
     if (ImGui::Button("Add Account")) {
         ImGui::OpenPopup("Regnum Account##AddAccountPopup");
     }
