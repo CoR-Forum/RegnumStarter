@@ -33,8 +33,8 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
         static float zoomValue = 15.0f; // Default zoom value
         static bool prevZoomState = false; // Track previous state of the checkbox
 
-        ImGui::Checkbox("Enable Zoom", &optionZoom);
-        if (optionZoom) {
+        ImGui::BeginDisabled(!featureZoom);
+        if (ImGui::Checkbox("Enable Zoom", &optionZoom)) {
             ImGui::SameLine();
             if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
                 MemoryManipulation("zoom", zoomValue);
@@ -43,6 +43,12 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
             // Reset zoom value to 15.0f when checkbox is unchecked
             zoomValue = 15.0f;
             MemoryManipulation("zoom", zoomValue);
+        }
+        ImGui::EndDisabled();
+        
+        if (!featureZoom){
+        ImGui::SameLine();
+        ShowLicenseMarker();
         }
 
         prevZoomState = optionZoom; // Update previous state
