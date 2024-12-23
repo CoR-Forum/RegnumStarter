@@ -121,6 +121,8 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
     static bool showFileDialog = false;
 
+    ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
+
     if (ImGui::Button("Select Regnum Online Installation Path")) {
         fileDialog.Open();
         showFileDialog = true;
@@ -184,8 +186,6 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
         filesChecked = true; // Set the flag to true after the operation is performed
     }
-
-    ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
     
     ImGui::Spacing();
     ImGui::Separator();
