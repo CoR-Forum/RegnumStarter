@@ -89,7 +89,8 @@ std::pair<std::string, std::string> FetchLatestVersion() {
     LogDebug("Fetching latest version from: " + url);
 
     HRESULT hr = URLDownloadToFile(NULL, url.c_str(), "latest_version.txt", 0, NULL);
-    if (SUCCEEDED(hr))        std::ifstream versionFile("latest_version.txt");
+    if (SUCCEEDED(hr)) {
+        std::ifstream versionFile("latest_version.txt");
         if (versionFile.is_open()) {
             std::getline(versionFile, latestVersion);
             std::getline(versionFile, downloadURL);
