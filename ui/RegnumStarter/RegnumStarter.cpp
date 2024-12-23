@@ -191,9 +191,9 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    if (ImGui::BeginCombo("##SelectAccountCombo", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
+    if (ImGui::TreeNode("Account Selection")) {
         if (regnumAccounts.empty()) {
-            ImGui::Selectable("No accounts available", false, ImGuiSelectableFlags_Disabled);
+            ImGui::Text("No accounts available");
         } else {
             for (int i = 0; i < regnumAccounts.size(); i++) {
                 bool isSelected = (selectedAccount == i);
@@ -202,7 +202,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                 }
             }
         }
-        ImGui::EndCombo();
+        ImGui::TreePop();
     }
     ImGui::SameLine();
     if (ImGui::Button("Play")) {
@@ -351,65 +351,60 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Separator();
     ImGui::Spacing();
 
-    ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
+    if (ImGui::TreeNode("Settings")) {
+        ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
+        ImGui::Checkbox("Enable Music", &enableMusic);
+        ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
+        ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
+        ImGui::Checkbox("Show Intro", &showIntro);
 
+        if (ImGui::Button("Save Settings")) {
+            UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
+            UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+            UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+            UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+            UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
+            SaveSettings();
 
-    ImGui::Checkbox("Enable Music", &enableMusic);
+            std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+            std::vector<std::string> filesToDelete = {
+                "splash_nge.png",
+                "splash_nge.ogg"
+            };
 
+            if (showIntro) {
+                // Check if files exist and download if they don't
+                for (const auto& file : filesToDelete) {
+                    std::string filePath = livePath + file;
+                    std::ifstream infile(filePath);
+                    if (!infile.good()) {
+                        Log("File does not exist: " + filePath + ". Downloading...");
+                        std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
 
-    ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
-
-
-    ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
-
-
-    ImGui::Checkbox("Show Intro", &showIntro);
-
-    if (ImGui::Button("Save Settings")) {
-        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
-        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
-        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
-        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-        UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
-        SaveSettings();
-
-        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
-        std::vector<std::string> filesToDelete = {
-            "splash_nge.png",
-            "splash_nge.ogg"
-        };
-
-        if (showIntro) {
-            // Check if files exist and download if they don't
-            for (const auto& file : filesToDelete) {
-                std::string filePath = livePath + file;
-                std::ifstream infile(filePath);
-                if (!infile.good()) {
-                    Log("File does not exist: " + filePath + ". Downloading...");
-                    std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
-
-                    // Download file using URLDownloadToFile
-                    HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
-                    if (SUCCEEDED(hr)) {
-                        Log("Downloaded file: " + filePath);
+                        // Download file using URLDownloadToFile
+                        HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
+                        if (SUCCEEDED(hr)) {
+                            Log("Downloaded file: " + filePath);
+                        } else {
+                            Log("Failed to download file: " + filePath);
+                        }
                     } else {
-                        Log("Failed to download file: " + filePath);
+                        Log("File already exists: " + filePath);
                     }
-                } else {
-                    Log("File already exists: " + filePath);
                 }
-            }
-        } else {
-            // Delete files
-            for (const auto& file : filesToDelete) {
-                std::string filePath = livePath + file;
-                if (remove(filePath.c_str()) != 0) {
-                    Log("Failed to delete file make sure to select your Game Path: " + filePath);
-                    MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK);
-                } else {
-                    Log("Deleted file: " + filePath);
+            } else {
+                // Delete files
+                for (const auto& file : filesToDelete) {
+                    std::string filePath = livePath + file;
+                    if (remove(filePath.c_str()) != 0) {
+                        Log("Failed to delete file make sure to select your Game Path: " + filePath);
+                        MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK);
+                    } else {
+                        Log("Deleted file: " + filePath);
+                    }
                 }
             }
         }
+        ImGui::TreePop();
     }
 }
