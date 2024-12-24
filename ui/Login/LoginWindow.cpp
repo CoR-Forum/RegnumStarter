@@ -41,6 +41,9 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     ImGui::Spacing();
 
+    // Add title above login fields
+    ImGui::Text("Login with your Sylent-X account");
+
     if (setting_log_debug) {
         ImGui::Combo("##API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));
     }
