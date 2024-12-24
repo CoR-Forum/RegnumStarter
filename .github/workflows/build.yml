@@ -22,9 +22,9 @@ jobs:
           mingw-w64-i686-toolchain
 
     - name: Create Temporary Directories
-      run: 
-        mkdir -p bin
-        mkdir -p tmp
+      run: |
+        mkdir bin
+        mkdir tmp
 
     - name: Extract Version Number
       id: version
