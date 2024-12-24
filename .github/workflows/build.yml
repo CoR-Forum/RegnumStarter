@@ -46,9 +46,10 @@ jobs:
         path: deploy/Sylent-X.exe
 
     - name: Create latest.txt
+      shell: pwsh
       run: |
-        echo ${{ env.version }} > deploy/latest.txt
-        echo "https://patch.sylent-x.com/Sylent-X-${{ env.version }}.exe" >> latest.txt
+        Write-Output ${{ env.version }} > deploy/latest.txt
+        Write-Output "https://patch.sylent-x.com/Sylent-X-${{ env.version }}.exe" >> deploy/latest.txt
 
     - name: Deploy to FTP server
       uses: SamKirkland/FTP-Deploy-Action@4.1.0
