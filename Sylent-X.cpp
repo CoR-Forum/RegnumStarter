@@ -29,7 +29,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     Log("Sylent-X " + sylentx_version + ". Made with hate in Germany.");
     HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex")); // Create a named mutexf
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
+        MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK) | MB_TOPMOST;
         return 1;
     }
     

@@ -5,20 +5,20 @@
 LPDIRECT3DTEXTURE9 LoadTextureFromResource(LPDIRECT3DDEVICE9 device, int resourceID) {
     HRSRC hResource = FindResource(NULL, MAKEINTRESOURCE(resourceID), RT_RCDATA);
     if (!hResource) {
-        MessageBox(NULL, "Failed to find resource", "Error", MB_ICONERROR | MB_OK);
+        MessageBox(NULL, "Failed to find resource", "Error", MB_ICONERROR | MB_OK | MB_TOPMOST);
         return nullptr;
     }
 
     HGLOBAL hLoadedResource = LoadResource(NULL, hResource);
     if (!hLoadedResource) {
-        MessageBox(NULL, "Failed to load resource", "Error", MB_ICONERROR | MB_OK);
+        MessageBox(NULL, "Failed to load resource", "Error", MB_ICONERROR | MB_OK | MB_TOPMOST);
         return nullptr;
     }
 
     void* pResourceData = LockResource(hLoadedResource);
     DWORD resourceSize = SizeofResource(NULL, hResource);
     if (!pResourceData || resourceSize == 0) {
-        MessageBox(NULL, "Failed to lock resource", "Error", MB_ICONERROR | MB_OK);
+        MessageBox(NULL, "Failed to lock resource", "Error", MB_ICONERROR | MB_OK | MB_TOPMOST);
         return nullptr;
     }
 
@@ -26,7 +26,7 @@ LPDIRECT3DTEXTURE9 LoadTextureFromResource(LPDIRECT3DDEVICE9 device, int resourc
     // Ensure the last parameter is 4 to force RGBA format
     unsigned char* data = stbi_load_from_memory((unsigned char*)pResourceData, resourceSize, &width, &height, &channels, 4);
     if (!data) {
-        MessageBox(NULL, "Failed to load texture from memory", "Error", MB_ICONERROR | MB_OK);
+        MessageBox(NULL, "Failed to load texture from memory", "Error", MB_ICONERROR | MB_OK | MB_TOPMOST);
         return nullptr;
     }
 
