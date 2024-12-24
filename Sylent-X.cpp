@@ -359,11 +359,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::EndPopup();
                     }
 
-                    ImGui::SeparatorText("Misc");
+                    ImGui::SeparatorText("Help");
                     if (ImGui::Button("Create Ticket")) {
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
                     }
-                    
+
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
 
