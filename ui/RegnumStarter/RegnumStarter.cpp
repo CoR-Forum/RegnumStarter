@@ -327,11 +327,11 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                     );
                     ImGui::CloseCurrentPopup();
                 } else {
-                    MessageBox(NULL, "Account already exists.", "Sylent-X", MB_OK);
+                    MessageBox(NULL, "Account already exists.", "Sylent-X", MB_OK | MB_TOPMOST);
                     Log("Account already exists.");
                 }
             } else {
-                MessageBox(NULL, "Username or password cannot be empty.", "Sylent-X", MB_OK);
+                MessageBox(NULL, "Username or password cannot be empty.", "Sylent-X", MB_OK | MB_TOPMOST);
                 Log("Username or password cannot be empty.");
             }
         }
@@ -393,7 +393,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                     std::string filePath = livePath + file;
                     if (remove(filePath.c_str()) != 0) {
                         Log("Failed to delete file make sure to select your Game Path: " + filePath);
-                        MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK);
+                        MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK | MB_TOPMOST);
                     } else {
                         Log("Deleted file: " + filePath);
                     }
