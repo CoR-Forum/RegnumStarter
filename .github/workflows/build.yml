@@ -22,7 +22,9 @@ jobs:
           mingw-w64-i686-toolchain
 
     - name: Create Temporary Directories
-      run: mkdir bin tmp
+      run: |
+        mkdir bin
+        mkdir tmp
 
     - name: Build Sylent-X
       shell: msys2 {0}
