@@ -344,8 +344,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::OpenPopup("Font Color Picker");
                     }
 
-                    if (ImGui::IsPopupOpen("Font Color Picker")) {
-                        ImGui::Begin("Font Color Picker", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
+                    if (ImGui::BeginPopup("Font Color Picker")) {
                         ImGui::Text("Font Color");
                         ImGui::ColorPicker4("##picker", (float*)&textColor);
                         if (ImGui::Button("Save")) {
@@ -357,7 +356,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                             textColor = backupColor; // Revert to the backup color
                             ImGui::CloseCurrentPopup();
                         }
-                        ImGui::End();
+                        ImGui::EndPopup();
                     }
 
                     ImGui::Separator();
