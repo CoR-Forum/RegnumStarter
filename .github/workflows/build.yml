@@ -31,7 +31,8 @@ jobs:
       run: |
         echo "Version content:"
         cat version.txt
-        echo "version=$(cat version.txt)" >> $GITHUB_ENV
+        version=$(cat version.txt)
+        echo "version=$version" >> $GITHUB_ENV
 
     - name: Build Sylent-X
       shell: msys2 {0}
@@ -40,7 +41,7 @@ jobs:
         g++ -o deploy/Sylent-X.exe Sylent-X.cpp \
         libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
         libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
-        cp deploy/Sylent-X.exe deploy/Sylent-X-${{ env.version }}.exe
+        cp deploy/Sylent-X.exe deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
@@ -51,7 +52,7 @@ jobs:
     - name: Create latest.txt
       shell: pwsh
       run: |
-        $version = "${{ env.version }}"
+        $version = "${{ steps.version.outputs.version }}"
         $version | Out-File -FilePath deploy/latest.txt
         "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest.txt -Append
 
