@@ -46,7 +46,7 @@ jobs:
 
     - name: Push Binary to FTP Server
       run: |
-        curl --ftp-ssl -T bin/Sylent-X.exe ftps://${{ vars.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+        curl --ftp-ssl --ftp-port 21 -T bin/Sylent-X.exe ftps://${{ vars.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
 
     - name: Create latest.txt
       run: |
@@ -55,4 +55,4 @@ jobs:
 
     - name: Upload latest.txt to FTP Server
       run: |
-        curl --ftp-ssl -T latest.txt ftps://${{ vars.FTP_HOST }}/latest.txt --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+        curl --ftp-ssl --ftp-port 21 -T latest.txt ftps://${{ vars.FTP_HOST }}/latest.txt --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
