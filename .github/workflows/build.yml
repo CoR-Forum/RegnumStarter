@@ -3,7 +3,7 @@ name: Build and Publish Sylent-X (Windows)
 on:
   push:
     branches:
-      - main
+      - none
 
 jobs:
   build:
