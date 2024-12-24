@@ -371,7 +371,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ShowCreditsWindow(show_info_window);  
 
             } else if (show_view_window) {
-                ShowViewWindow(show_view_window, optionZoom, optionFov, featureFov, waitingForHotkey, userDefinedHotkey); 
+                ShowViewWindow(show_view_window, optionZoom, optionFov, featureFov, featureZoom, waitingForHotkey, userDefinedHotkey);
             } else if (show_movement_window) {
 
                 ShowMovementWindow(show_movement_window);
