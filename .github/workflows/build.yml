@@ -28,7 +28,10 @@ jobs:
 
     - name: Extract Version Number
       id: version
-      run: echo "version=$(cat version.txt)" >> $GITHUB_ENV
+      run: |
+        echo "Version content:"
+        cat version.txt
+        echo "version=$(cat version.txt)" >> $GITHUB_ENV
 
     - name: Build Sylent-X
       shell: msys2 {0}
