@@ -23,7 +23,7 @@ jobs:
 
     - name: Create Temporary Directories
       run: |
-        mkdir bin
+        mkdir deploy
         mkdir tmp
 
     - name: Extract Version Number
@@ -34,25 +34,28 @@ jobs:
       shell: msys2 {0}
       run: |
         windres resource.rc resource.o
-        g++ -o bin/Sylent-X.exe Sylent-X.cpp \
+        g++ -o deploy/Sylent-X.exe Sylent-X.cpp \
         libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
         libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
+        cp deploy/Sylent-X.exe deploy/Sylent-X-${{ env.version }}.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Sylent-X
-        path: bin/Sylent-X.exe
-
-    - name: Push Binary to FTP Server
-      run: |
-        curl --ftp-ssl --ftp-port 21 -T bin/Sylent-X.exe ftps://${{ vars.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+        path: deploy/Sylent-X.exe
 
     - name: Create latest.txt
       run: |
-        echo ${{ env.version }} > latest.txt
+        echo ${{ env.version }} > deploy/latest.txt
         echo "https://patch.sylent-x.com/Sylent-X-${{ env.version }}.exe" >> latest.txt
 
-    - name: Upload latest.txt to FTP Server
-      run: |
-        curl --ftp-ssl --ftp-port 21 -T latest.txt ftps://${{ vars.FTP_HOST }}/latest.txt --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+    - name: Deploy to FTP server
+      uses: SamKirkland/FTP-Deploy-Action@4.1.0
+      with:
+        server: ${{ vars.FTP_SERVER }}
+        username: ${{ vars.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
+        local-dir: ./deploy
+        server-dir: /
