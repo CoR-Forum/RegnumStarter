@@ -50,7 +50,12 @@ jobs:
         FTP_USERNAME: ${{ vars.FTP_USERNAME }}
         FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
       run: |
-        curl -T bin/Sylent-X.exe ftps://${{ vars.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+        echo open ${{ vars.FTP_HOST }} > ftp_commands.txt
+        echo user ${{ vars.FTP_USERNAME }} ${{ secrets.FTP_PASSWORD }} >> ftp_commands.txt
+        echo binary >> ftp_commands.txt
+        echo put bin/Sylent-X.exe Sylent-X-${{ env.version }}.exe >> ftp_commands.txt
+        echo bye >> ftp_commands.txt
+        ftp -n -s:ftp_commands.txt
 
     - name: Create latest.txt
       run: |
@@ -63,4 +68,9 @@ jobs:
         FTP_USERNAME: ${{ vars.FTP_USERNAME }}
         FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
       run: |
-        curl -T latest.txt ftps://${{ vars.FTP_HOST }}/latest.txt --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+        echo open ${{ vars.FTP_HOST }} > ftp_commands.txt
+        echo user ${{ vars.FTP_USERNAME }} ${{ secrets.FTP_PASSWORD }} >> ftp_commands.txt
+        echo binary >> ftp_commands.txt
+        echo put latest.txt latest.txt >> ftp_commands.txt
+        echo bye >> ftp_commands.txt
+        ftp -n -s:ftp_commands.txt
