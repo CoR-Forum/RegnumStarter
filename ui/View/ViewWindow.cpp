@@ -28,13 +28,18 @@ std::string GetKeyName(int virtualKey) {
     return "Unknown";
 }
 
-void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, bool& featureFov, bool& waitingForHotkey, int& userDefinedHotkey) {
+void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, bool& featureFov, bool& featureZoom, bool& waitingForHotkey, int& userDefinedHotkey) {
     if (show_view_window) {
         static float zoomValue = 15.0f; // Default zoom value
         static bool prevZoomState = false; // Track previous state of the checkbox
 
         ImGui::BeginDisabled(!featureZoom);
         if (ImGui::Checkbox("Enable Zoom", &optionZoom)) {
+            prevZoomState = optionZoom;
+        }
+        ImGui::EndDisabled();
+
+        if (optionZoom) {
             ImGui::SameLine();
             if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
                 MemoryManipulation("zoom", zoomValue);
@@ -44,14 +49,11 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
             zoomValue = 15.0f;
             MemoryManipulation("zoom", zoomValue);
         }
-        ImGui::EndDisabled();
-        
-        if (!featureZoom){
-        ImGui::SameLine();
-        ShowLicenseMarker();
-        }
 
-        prevZoomState = optionZoom; // Update previous state
+        if (!featureZoom) {
+            ImGui::SameLine();
+            ShowLicenseMarker();
+        }
 
         // Check if the checkbox is checked
         ImGui::BeginDisabled(!featureFov);

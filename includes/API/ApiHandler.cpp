@@ -226,12 +226,12 @@ void SaveSettings() {
         std::string message = jsonResponse.value("message", "");
 
         if (status == "success") {
-            Log("Settings saved successfully: " + message + ", Payload: " + payload);
+            LogDebug("Settings saved successfully: " + message + ", Payload: " + payload);
         } else {
-            Log("Failed to save settings: " + message);
+            LogDebug("Failed to save settings: " + message);
         }
     } catch (const std::exception& e) {
-        Log("Failed to save settings with exception: " + std::string(e.what()));
+        LogDebug("Failed to save settings with exception: " + std::string(e.what()));
     }
 }
 
