@@ -51,3 +51,4 @@ jobs:
         FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
       run: |
         curl -T bin/Sylent-X.exe ftp://${{ vars.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
+ 
