@@ -28,11 +28,12 @@ jobs:
 
     - name: Extract Version Number
       id: version
+      shell: pwsh
       run: |
         echo "Version content:"
-        cat version.txt
-        version=$(cat version.txt)
-        echo "version=$version" >> $GITHUB_ENV
+        Get-Content version.txt
+        $version = Get-Content version.txt
+        echo "version=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
 
     - name: Build Sylent-X
       shell: msys2 {0}
