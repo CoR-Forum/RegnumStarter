@@ -25,14 +25,19 @@ bool IsHotkeyPressed(int hotkey) {
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    
     Log("Sylent-X " + sylentx_version + ". Made with hate in Germany.");
     HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex")); // Create a named mutexf
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK);
         return 1;
     }
-
+    
     SelfUpdate();
+    LoadLoginSettings();
+
+    std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
+    std::filesystem::create_directories(folderPath);
 
     show_login_window = true;
 
@@ -40,17 +45,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     WNDCLASSEXW wc = { sizeof(wc), CS_DBLCLKS | CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
     ::RegisterClassExW(&wc);
 
-    // Get the screen width and height based on API selection
-    int screenWidth, screenHeight;
-    if (apiSelection == 0) {
-        screenWidth = GetSystemMetrics(SM_CXSCREEN);
-        screenHeight = GetSystemMetrics(SM_CYSCREEN);
-    } else {
-        screenWidth = 1000;
-        screenHeight = 600;
-    }
-
-    HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, screenWidth, screenHeight, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 900, 500, NULL, NULL, wc.hInstance, NULL);
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
@@ -81,7 +76,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
-    initializeBossRespawns();
 
     static char username[128] = "";
     static char password[128] = "";
@@ -158,28 +152,25 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } 
 
             if (show_main_window) {
-                std::string windowTitle = sylentx_appname + " " + sylentx_version;
+                std::string windowTitle = sylentx_windowname;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
-                ImGui::SetNextWindowSize(ImVec2(770, 450), ImGuiCond_FirstUseEver);
+                ImGui::SetNextWindowSize(ImVec2(770, 400), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+                static bool captureExclusionSet = false;
+                if (!captureExclusionSet) {
+                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+                    captureExclusionSet = true;
+                }
 
                 ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                 ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
-
-                if (setting_enableRainbow) {
-                    UpdateRainbowColor(setting_rainbowSpeed);
-                }
 
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
                     SaveSettings();
                     PostQuitMessage(0);
                 }
-
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 200);
-                ImGui::Text("Status: %s", sylentx_status.c_str());
-                ImGui::SameLine();
-                ImGui::Text("Magnat: %d", magnatCurrency);
                 
                 // Create a child window for the texture
                 ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
@@ -195,10 +186,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding.y);
 
                     ImGui::Image((void*)texture_sylent_icon, imageSize);
-
-                    if (ImGui::IsItemClicked()) {
-                        OpenURL("https://sylent-x.com/");
-                    }
                 } else {
                     ImGui::Text("Texture is null");
                 }
@@ -207,7 +194,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 // Create a child window for the texture
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
-                float buttonWidth = 150.0f;
+                float buttonWidth = 130.0f;
                 float buttonHeight = 30.0f;
                 float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
 
@@ -222,66 +209,56 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(startX);
                 ImGui::SetCursorPosY(startY);
-                if (ImGui::Button(ICON_FA_EYE " View", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button("Features", ImVec2(buttonWidth, buttonHeight))) {
                     show_movement_window = false;
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_player_window = false;
-                    show_boss_respawn_window = false;
+                    show_calendar_window = false;
                     show_view_window = true;
                 }
 
                 ImGui::SameLine();
-                ImGui::SetCursorPosY(startY);
-                if (ImGui::Button(ICON_FA_WHEELCHAIR " Movement", ImVec2(buttonWidth, buttonHeight))) {
-                    show_view_window = false;
+                if (ImGui::Button("RegnumStarter", ImVec2(buttonWidth, buttonHeight))) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    show_movement_window = true;
-                }
-
-                ImGui::SameLine();
-                ImGui::SetCursorPosY(startY);
-                if (ImGui::Button(ICON_FA_USER " Player", ImVec2(buttonWidth, buttonHeight))) {
+                    show_view_window = false;
                     show_movement_window = false;
+                    show_player_window = false;
+                    show_calendar_window = false;
+                    LoadRegnumAccounts();
+                    show_RegnumStarter = true;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Calendar", ImVec2(buttonWidth, buttonHeight))) {
                     show_settings_window = false;
                     show_license_window = false;
-                    show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
-                    show_boss_respawn_window = false;
-                    show_player_window = true;
+                    show_movement_window = false;
+                    show_player_window = false;
+                    show_info_window = false;
+                    show_calendar_window = true;
+                    InitializeBossRespawns();
                 }
 
                 ImGui::EndChild();
 
-                // Calculate the size of the largest button
-                ImVec2 buttonSize = ImVec2(0, 0);
-                const char* buttonLabels[] = {
-                    "Sylent-X", "Chat", "Settings", "RegnumStarter", 
-                    "License", "Info", "Logout"
-                };
-                for (const char* label : buttonLabels) {
-                    ImVec2 size = ImGui::CalcTextSize(label);
-                    buttonSize.x = std::max(buttonSize.x, size.x + ImGui::GetStyle().FramePadding.x * 2.0f);
-                    buttonSize.y = std::max(buttonSize.y, size.y + ImGui::GetStyle().FramePadding.y * 2.0f);
-                }
+                ImVec2 buttonSize = ImVec2(120, 30);
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(120, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
 
                 // Calculate the padding to center the buttons
                 float childWidth = ImGui::GetWindowWidth();
                 float buttonPadding = (childWidth - buttonSize.x) / 2.0f;
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_HOME " Sylent-X", buttonSize)) {
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("Chat", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -289,78 +266,58 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
-                    show_boss_respawn_window = false;
+                    show_calendar_window = false;
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COMMENTS " Chat", buttonSize)) {
-                    show_chat_window = true;
-                }
-
-                ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button("RegnumStarter", buttonSize)) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    LoadRegnumAccounts();
-                    show_RegnumStarter = true;
-                }
-                ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_CIRCLE_INFO " BossSpawn", buttonSize)) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_info_window = false;
-                    show_boss_respawn_window = true;
-                }
-
-                ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_KEY " License", buttonSize)) {
-                    show_settings_window = false;
-                    show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
-                    show_boss_respawn_window = false;
-                    show_license_window = true;
-                }
-
-                ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_COG" Settings", buttonSize)) {
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("Settings", buttonSize)) {
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
-                    show_boss_respawn_window = false;
+                    show_calendar_window = false;
                     show_settings_window = true;
                 }
+                ImGui::PopStyleVar();
+
+                // ImGui::SetCursorPosX(buttonPadding);
+                // ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                // if (ImGui::Button("License", buttonSize)) {
+                //     show_settings_window = false;
+                //     show_info_window = false;
+                //     show_RegnumStarter = false;
+                //     show_view_window = false;
+                //     show_movement_window = false;
+                //     show_player_window = false;
+                //     show_calendar_window = false;
+                //     show_license_window = true;
+                // }
+                // ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_CIRCLE_INFO " Info", buttonSize)) {
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("Info", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
                     show_movement_window = false;
                     show_player_window = false;
-                    show_boss_respawn_window = false;
+                    show_calendar_window = false;
                     show_info_window = true;
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
-                if (ImGui::Button(ICON_FA_RIGHT_FROM_BRACKET " Logout", buttonSize)) {
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("Logout", buttonSize)) {
                     Logout();
                 }
+                ImGui::PopStyleVar();
 
                 ImGui::EndChild();
 
@@ -378,34 +335,35 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::SameLine();
                     ShowHelpMarker("Exclude the window from screen capture and hide from taskbar");
 
-                    ImGui::Separator();
-
                     ImGui::SeparatorText("Appearance");
 
-                    ImGui::Text("Font Color");
-                    ImGui::ShowColorWheel(textColor);
-                    ImGui::SameLine();
-                    ImGui::Text("Font Size");
-                    ImGui::SameLine();
-                    ImGui::SliderFloat("##Font Size", &setting_fontSize, 0.5f, 2.0f);
+                    static ImVec4 backupColor = textColor;
 
-                    ImGui::Text("Rainbow Color");
-                    ImGui::Checkbox("Enable Rainbow Text", &setting_enableRainbow);
-                    ImGui::SameLine();
-                    ImGui::Text("Speed");
-                    ImGui::SameLine();
-                    ImGui::SliderFloat("##Speed", &setting_rainbowSpeed, 0.01f, 1.0f, "%.2f");
-
-                    ImGui::SeparatorText("Misc");
-
-                    if (ImGui::Button("Save Settings")) {
-                        SaveSettings();
+                    if (ImGui::Button("Font Color")) {
+                        backupColor = textColor; // Backup the current color
+                        ImGui::OpenPopup("Font Color Picker");
                     }
 
-                    ImGui::SameLine();
+                    if (ImGui::BeginPopup("Font Color Picker")) {
+                        ImGui::Text("Font Color");
+                        ImGui::ColorPicker4("##picker", (float*)&textColor);
+                        if (ImGui::Button("Save")) {
+                            SaveSettings();
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Cancel")) {
+                            textColor = backupColor; // Revert to the backup color
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::EndPopup();
+                    }
+
+                    ImGui::SeparatorText("Help");
                     if (ImGui::Button("Create Ticket")) {
                         ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
                     }
+
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
 
@@ -424,8 +382,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
       
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
-            } else if (show_boss_respawn_window) {
-                ShowBossRespawnWindow(show_boss_respawn_window);
+            } else if (show_calendar_window) {
+                ShowBossRespawnWindow(show_calendar_window);
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
@@ -468,9 +426,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             MemoryManipulation("fov", newValue); // Apply the new FOV value
             // Add a small delay to prevent rapid toggling
             Sleep(200);
-        }
-        if (show_chat_window) {
-            ShowChatWindow(show_chat_window);
         }
         // Rendering
         ImGui::EndFrame();

@@ -7,20 +7,20 @@
 #include <sstream>
 #include <regex>
 #include "../md5/md5.h"
+#include <windows.h>
+#include "../streamproof/streamproof.h"
+#include <unordered_map>
 
 extern HWND hwnd;
 
 // global variables for user login and password
 std::string login;
 std::string password;
+bool saveUsername = false;
+bool showUsername = true;
+bool showPassword = false;
 
 std::string session_id;
-
-// variable to store current amount of Magnat currency for the user
-int magnatCurrency;
-
-// global variables for sylent-x
-std::string sylentx_status;
 
 // global variables for user license information
 std::string license_runtime_end;
@@ -41,7 +41,7 @@ bool featureCharacter;
 extern bool enableMusic;
 extern bool enableSoundEffects;
 extern bool showLoadingScreen;
-extern bool ShowIntro;
+extern bool showIntro;
 extern float soundVolume;
 
 // global variables for (checkbox) options
@@ -52,18 +52,15 @@ bool optionFreecam = false;
 bool optionMoonwalk = false;
 bool optionFov = false;
 bool optionFastFly = false;
-bool optionSpeedHack = false;
+bool optionSpeedhack = false;
 bool optionFakelag = false;
 bool optionCharacter = false;
 
 
 // global variables for settings (from user account via API)
-float setting_fontSize = 14.0f;
-bool setting_enableRainbow = false;
-float setting_rainbowSpeed = 0.1f;
 bool setting_excludeFromCapture = false;
 std::string setting_regnumInstallPath;
-bool setting_log_debug = true;
+bool setting_log_debug = false;
 
 // global variables for memory pointers and chat messages
 std::vector<Pointer> g_pointers;
@@ -93,14 +90,27 @@ struct ReferrerOption {
 // global variable to store the loaded regnum accounts
 std::vector<RegnumAccount> regnumAccounts;
 
+struct BossRespawn {
+    std::string name;
+    std::vector<time_t> nextRespawns;
+    time_t previousRespawn;
+};
+
+const std::unordered_map<std::string, time_t> firstRespawns;
+extern const int SERVER_RESPAWN_TIME;
+extern const int BOSS_RESPAWN_TIME;
+std::unordered_map<std::string, BossRespawn> bossRespawns;
+
 // global functions for chat
 void SendChatMessage(const std::string& message);
 void CheckChatMessages();
 
-bool Login(const std::string& login, const std::string& password);
+std::pair<bool, std::string> Login(const std::string& login, const std::string& password);
 void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
 void ActivateLicense(const std::string& licenseKey);
 void LoadRegnumAccounts();
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);
 void DeleteRegnumAccount(int id);
-std::vector<Pointer> InitializePointers();
+void SaveLoginSettings(const std::string& username, bool saveUsername);
+void LoadLoginSettings();
+void InitializeBossRespawns();

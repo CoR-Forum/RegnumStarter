@@ -18,5 +18,5 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
 bool enableMusic = true;
 bool enableSoundEffects = true;
 bool showLoadingScreen = true;
-bool ShowIntro = true;
+bool showIntro = true;
 float soundVolume = 0.5f;

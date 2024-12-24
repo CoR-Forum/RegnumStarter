@@ -54,7 +54,10 @@ This guide provides detailed instructions on how to build the application on bot
         cd /c
         ```
     2. Navigate to the project directory.
-    3. Create a `bin` folder.
+    3. Create a `bin` folder, likely with
+        ```sh
+        mkdir tmp/
+        ```
     4. Run the build command:
         ```sh
         windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && ./bin/Sylent-X.exe
@@ -67,4 +70,18 @@ To update the application, place the new file on the server and update `latest_v
 ```
 0.1.1
 https://cor-forum.de/regnum/sylent/Sylent-X-0.1.1.exe
+```
+
+## Debugging
+
+To enable debugging, you need to add ``"debug": true`` to your login-settings.json, for example:
+
+```
+{
+    "saveUsername": true,
+    "showPassword": false,
+    "showUsername": false,
+    "username": "joshua2504"
+    "debug": true
+}
 ```

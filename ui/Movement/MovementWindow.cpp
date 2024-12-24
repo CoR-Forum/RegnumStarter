@@ -6,16 +6,14 @@
 #include "../../includes/Utils.h"
 #include <thread>
 
-extern std::string sylentx_status;
 
 void ShowMovementWindow(bool& show_movement_window) {
     if (!show_movement_window) return;
         static bool prevflyState = false; // Track previous state of the checkbox
-        bool disableCheckboxes = (sylentx_status == "Detected");
 
-    ImGui::BeginDisabled(disableCheckboxes ||!featureSpeedhack);
-    if (ImGui::Checkbox("SpeedHack", &optionSpeedHack)) {
-        float newValue = optionSpeedHack ? 5.6f : 4.8f;
+    ImGui::BeginDisabled(!featureSpeedhack);
+    if (ImGui::Checkbox("SpeedHack", &optionSpeedhack)) {
+        float newValue = optionSpeedhack ? 5.6f : 4.8f;
         MemoryManipulation("speedhack", newValue);
     }
     if (featureSpeedhack) {
@@ -28,7 +26,7 @@ void ShowMovementWindow(bool& show_movement_window) {
         ShowLicenseMarker();
     }
 
-    ImGui::BeginDisabled(disableCheckboxes ||!featureGravity);
+    ImGui::BeginDisabled(!featureGravity);
     if (ImGui::Checkbox("Flyhack", &optionGravity)) {
         MemoryManipulation("gravity");
     }
@@ -40,7 +38,7 @@ void ShowMovementWindow(bool& show_movement_window) {
 
     static float moonjumpValue = 4.0f; // Default moonjump value
     static bool prevjumpState = false; // Track previous state of the checkbox
-    ImGui::BeginDisabled(disableCheckboxes ||!featureMoonjump);
+    ImGui::BeginDisabled(!featureMoonjump);
     if (ImGui::Checkbox("Moonjump", &optionMoonjump)) {
         if (optionMoonjump) {
             prevjumpState = true;
@@ -65,7 +63,7 @@ void ShowMovementWindow(bool& show_movement_window) {
         ShowLicenseMarker();
     }
 
-    ImGui::BeginDisabled(disableCheckboxes ||!featureMoonwalk);
+    ImGui::BeginDisabled(!featureMoonwalk);
     if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
         if (optionMoonwalk) {
             float newValue = 9.219422856E-41f;
@@ -80,7 +78,7 @@ void ShowMovementWindow(bool& show_movement_window) {
         ShowLicenseMarker();
     }
 
-    ImGui::BeginDisabled(disableCheckboxes ||!featureFakelag);
+    ImGui::BeginDisabled(!featureFakelag);
     if (ImGui::Checkbox("Fakelag", &optionFakelag)) {
         if (optionFakelag) {
             float newValue = 0.0f;
@@ -106,7 +104,7 @@ void ShowMovementWindow(bool& show_movement_window) {
         ImGui::Spacing();
         static float fastflyValue = 250.0f; // Default moonjump value
         static bool prevflyState = false; // Track previous state of the checkbox
-        ImGui::BeginDisabled(disableCheckboxes || !featureFastfly);
+        ImGui::BeginDisabled(!featureFastfly);
         if (ImGui::Checkbox("FastFly", &optionFastFly)) {
             if (optionFastFly) {
                 prevflyState = true;

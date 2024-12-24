@@ -1,6 +1,51 @@
 #include "ApiHandler.h"
 
-bool Login(const std::string& login, const std::string& password) {
+void SaveLoginSettings(const std::string& username, bool saveUsername) {
+    std::string configFilePath = std::string(getenv("APPDATA")) + "\\Sylent-X\\login-settings.json";
+    nlohmann::json loginSettingsJson;
+
+    // Load existing settings if the file exists
+    std::ifstream inFile(configFilePath);
+    if (inFile.is_open()) {
+        inFile >> loginSettingsJson;
+        inFile.close();
+    }
+
+    // Update only the relevant fields
+    if (saveUsername) {
+        loginSettingsJson["username"] = username;
+    } else {
+        loginSettingsJson["username"] = "";
+    }
+    loginSettingsJson["saveUsername"] = saveUsername;
+    loginSettingsJson["showUsername"] = showUsername;
+    loginSettingsJson["showPassword"] = showPassword;
+    loginSettingsJson["apiSelection"] = apiSelection;
+
+    // Save the updated settings back to the file
+    std::ofstream outFile(configFilePath);
+    outFile << loginSettingsJson.dump(4);
+    outFile.close();
+}
+
+void LoadLoginSettings() {
+    std::string configFilePath = std::string(getenv("APPDATA")) + "\\Sylent-X\\login-settings.json";
+    std::ifstream inFile(configFilePath);
+    if (inFile.is_open()) {
+        nlohmann::json loginSettingsJson;
+        inFile >> loginSettingsJson;
+        inFile.close();
+
+        login = loginSettingsJson.value("username", "");
+        saveUsername = loginSettingsJson.value("saveUsername", false);
+        showUsername = loginSettingsJson.value("showUsername", true);
+        showPassword = loginSettingsJson.value("showPassword", false);
+        setting_log_debug = loginSettingsJson.value("debug", false);
+        apiSelection = loginSettingsJson.value("apiSelection", 0);
+    }
+}
+
+std::pair<bool, std::string> Login(const std::string& login, const std::string& password) {
     try {
         std::string path = "/v1/login";
         nlohmann::json jsonPayload = {
@@ -30,7 +75,7 @@ bool Login(const std::string& login, const std::string& password) {
                     LogDebug("Session ID (JWT): " + session_id);
                 } else {
                     Log("Invalid response: missing token");
-                    return false;
+                    return {false, "Invalid response: missing token"};
                 }
 
                 if (jsonResponse.contains("user") && jsonResponse["user"].is_object()) {
@@ -40,29 +85,31 @@ bool Login(const std::string& login, const std::string& password) {
                     std::string userId = user.value("id", "");
                     std::string username = user.value("username", "");
                     std::string nickname = user.value("nickname", "");
-                    std::string settings = user.value("settings", "");
+                    std::string settings = user.value("settings", "{}"); // Default to empty JSON object if settings are empty
 
-                    LogDebug("User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings + ", Features: " + user["features"].dump());
+                    LogDebug("Loading settings: User ID: " + userId + ", Username: " + username + ", Nickname: " + nickname + ", Settings: " + settings + ", Features: " + user["features"].dump());
 
                     // Deserialize settings JSON string
                     auto settingsJson = nlohmann::json::parse(settings);
-                    setting_log_debug = settingsJson.value("logDebug", false);
                     textColor = ImVec4(
-                        settingsJson["textColor"][0],
-                        settingsJson["textColor"][1],
-                        settingsJson["textColor"][2],
-                        settingsJson["textColor"][3]
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[0],
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[1],
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[2],
+                        settingsJson.value("textColor", std::vector<float>{0.0f, 0.0f, 0.0f, 1.0f})[3]
                     );
-                    setting_fontSize = settingsJson.value("fontSize", 14.0f);
-                    setting_enableRainbow = settingsJson.value("enableRainbow", false);
-                    setting_rainbowSpeed = settingsJson.value("rainbowSpeed", 0.1f);
                     setting_excludeFromCapture = settingsJson.value("excludeFromCapture", false);
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "");
                     enableMusic = settingsJson.value("enableMusic", true);
                     enableSoundEffects = settingsJson.value("enableSoundEffects", true);
                     showLoadingScreen = settingsJson.value("showLoadingScreen", true);
-                    ShowIntro = settingsJson.value("showIntro", true);
+                    showIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
+
+                    // Run SetWindowCaptureExclusion after settings are loaded
+                    SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
+
+                    // Save username and saveUsername flag to file
+                    SaveLoginSettings(username, saveUsername);
 
                     if (user.contains("features") && user["features"].is_array()) {
                         auto features = user["features"];
@@ -117,60 +164,52 @@ bool Login(const std::string& login, const std::string& password) {
                     }
 
                     // Initialize other necessary variables and features here
-
                     std::thread chatThread(CheckChatMessages);
                     chatThread.detach();
 
-                    return true;
+                    return {true, "Login successful"};
                 } else {
                     Log("Invalid response: missing user object");
-                    return false;
+                    return {false, "Invalid response: missing user object"};
                 }
             } else {
                 Log("Login failed: " + message);
-                MessageBox(NULL, message.c_str(), "Login failed", MB_ICONERROR | MB_TOPMOST);
-                return false;
+                return {false, message};
             }
         } else if (jsonResponse.contains("status") && jsonResponse["status"] == "error" &&
                    jsonResponse.contains("message") && jsonResponse["message"].is_string()) {
             std::string message = jsonResponse["message"];
             Log("Login failed: " + message);
-            MessageBox(NULL, message.c_str(), "Login failed", MB_ICONERROR | MB_TOPMOST);
-            return false;
+            return {false, message};
         } else {
             Log("Invalid response: missing or invalid status/message");
-            return false;
+            return {false, "Invalid response: missing or invalid status/message"};
         }
     } catch (const std::exception& e) {
         Log(e.what());
-        return false;
+        return {false, "LOGIN EXCEPTION: " + std::string(e.what())};
     }
 }
 
 void SaveSettings() {
     try {
         nlohmann::json settingsJson;
-        settingsJson["logDebug"] = setting_log_debug;
         settingsJson["textColor"] = { textColor.x, textColor.y, textColor.z, textColor.w };
-        settingsJson["fontSize"] = setting_fontSize;
-        settingsJson["enableRainbow"] = setting_enableRainbow;
-        settingsJson["rainbowSpeed"] = setting_rainbowSpeed;  
         settingsJson["excludeFromCapture"] = setting_excludeFromCapture;
         settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
         settingsJson["enableMusic"] = enableMusic;
         settingsJson["enableSoundEffects"] = enableSoundEffects;
         settingsJson["showLoadingScreen"] = showLoadingScreen;
-        settingsJson["showIntro"] = ShowIntro;
+        settingsJson["showIntro"] = showIntro;
         settingsJson["SoundVolume"] = soundVolume;
 
-        // Serialize settingsJson to a string
         std::string settingsString = settingsJson.dump();
 
         nlohmann::json payloadJson;
-        payloadJson["settings"] = settingsString; // Store the serialized JSON string
+        payloadJson["settings"] = settingsString; 
 
         std::string payload = payloadJson.dump();
-        Log("Payload being sent: " + payload); // Log the payload
+        LogDebug("Payload being sent: " + payload);
  
         std::string path = "/v1/save-settings";
 
@@ -178,7 +217,7 @@ void SaveSettings() {
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPutRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
-        Log("Response received: " + response); // Log the response
+        LogDebug("Response received: " + response);
 
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -187,7 +226,7 @@ void SaveSettings() {
         std::string message = jsonResponse.value("message", "");
 
         if (status == "success") {
-            Log("Settings saved successfully: " + message);
+            Log("Settings saved successfully: " + message + ", Payload: " + payload);
         } else {
             Log("Failed to save settings: " + message);
         }
@@ -197,7 +236,7 @@ void SaveSettings() {
 }
 
 void Logout() {
-    SaveSettings(); // Save settings before logging out
+    SaveSettings();
     try {
         std::string path = "/v1/logout";
 
@@ -205,7 +244,7 @@ void Logout() {
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, "");
         std::string response = ReadResponse(hRequest);
-        Log("Response received: " + response); // Log the response
+        LogDebug("Response received: " + response);
 
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
@@ -328,11 +367,13 @@ void SendChatMessage(const std::string& message) {
             {"message", message}
         };
         std::string payload = jsonPayload.dump();
+        LogDebug("Sending chat message with payload: " + payload);
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
+        LogDebug("Response received: " + response);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
@@ -355,34 +396,48 @@ void SendChatMessage(const std::string& message) {
                     existingMessages.insert(fullMessage); // Update the set with the new message
                 }
             }
+            LogDebug("Chat message sent successfully.");
         } else {
-            Log("Failed to send chat message.");
+            LogDebug("Failed to send chat message: " + message);
         }
     } catch (const std::exception& e) {
-        Log("Exception: " + std::string(e.what()));
+        LogDebug("Exception: " + std::string(e.what()));
     }
 }
 
-// Check for new chat messages every 2 seconds and store them in g_chatMessages
+// Check for new chat messages 500ms after the last API request finished and store them in g_chatMessages
 void CheckChatMessages() {
     bool keepRunning = true;
     while (keepRunning) {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
         try {
+            LogDebug("Checking for new chat messages...");
             std::string path = "/v1/chat/receive";
 
             HINTERNET hInternet = OpenInternetConnection();
+            LogDebug("Internet connection opened.");
             HINTERNET hConnect = ConnectToAPI(hInternet);
+            LogDebug("Connected to API.");
             HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+            LogDebug("HTTP request sent.");
             std::string response = ReadResponse(hRequest);
+            LogDebug("Response received: " + response);
             CloseInternetHandles(hRequest, hConnect, hInternet);
+            LogDebug("Internet handles closed.");
 
             auto jsonResponse = nlohmann::json::parse(response);
+            LogDebug("Response parsed.");
             std::string status = jsonResponse["status"];
             if (status == "success") {
-
+                LogDebug("Status is success.");
                 // Process the messages array
                 auto messages = jsonResponse["messages"];
+                
+                // Sort messages by timestamp
+                std::sort(messages.begin(), messages.end(), [](const auto& a, const auto& b) {
+                    return a["timestamp"] < b["timestamp"];
+                });
+                LogDebug("Messages sorted by timestamp.");
+
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
                     std::string createdAt = msg["timestamp"];
@@ -395,14 +450,16 @@ void CheckChatMessages() {
                         g_chatMessages.push_back(fullMessage);
                         logMessages.push_back(fullMessage); // Add to logMessages
                         existingMessages.insert(fullMessage); // Update the set with the new message
+                        LogDebug("New chat message: " + fullMessage);
                     }
                 }
             } else {
-                LogDebug("Failed to fetch chat messages.");
+                LogDebug("Failed to fetch chat messages. Status: " + status);
             }
         } catch (const std::exception& e) {
-            Log("Exception: " + std::string(e.what()));
+            LogDebug("Exception: " + std::string(e.what()));
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
@@ -444,6 +501,11 @@ std::string GenerateMD5(const std::string& input) {
 // Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
     std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
+
+
+    std::filesystem::create_directories(folderPath);
+
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
 
@@ -540,4 +602,59 @@ void DeleteRegnumAccount(int id) {
     outFile.close();
 
     LoadRegnumAccounts();
+}
+
+// function to load boss respawns from the API
+void InitializeBossRespawns() {
+    LogDebug("Initializing boss respawns...");
+    try {
+        std::string path = "/v1/bossRespawns";
+
+        HINTERNET hInternet = OpenInternetConnection();
+        HINTERNET hConnect = ConnectToAPI(hInternet);
+        HINTERNET hRequest = SendHTTPRequest(hConnect, path);
+        std::string response = ReadResponse(hRequest);
+        LogDebug("Response received: " + response); // Log the response
+        CloseInternetHandles(hRequest, hConnect, hInternet);
+
+        auto jsonResponse = nlohmann::json::parse(response);
+        if (jsonResponse.contains("status") && jsonResponse["status"].is_string()) {
+            std::string status = jsonResponse["status"];
+            std::string message = jsonResponse.value("message", "");
+
+            if (status == "success") {
+                if (jsonResponse.contains("bosses") && jsonResponse["bosses"].is_object()) {
+                    auto bosses = jsonResponse["bosses"];
+                    for (const auto& boss : bosses.items()) {
+                        std::string bossName = boss.key();
+                        BossRespawn bossRespawn;
+                        bossRespawn.name = bossName;
+                        if (boss.value().contains("previousRespawn") && boss.value()["previousRespawn"].is_number()) {
+                            bossRespawn.previousRespawn = boss.value()["previousRespawn"];
+                        }
+                        if (boss.value().contains("nextRespawns") && boss.value()["nextRespawns"].is_array()) {
+                            for (const auto& nextRespawn : boss.value()["nextRespawns"]) {
+                                if (nextRespawn.is_number()) {
+                                    bossRespawn.nextRespawns.push_back(nextRespawn);
+                                }
+                            }
+                        }
+                        bossRespawns[bossName] = bossRespawn;
+                        LogDebug("Boss respawn loaded: " + bossName); // Log each boss respawn
+                    }
+                    LogDebug("Boss respawns initialized successfully");
+                } else {
+                    LogDebug("Failed to initialize boss respawns: 'bosses' field is missing or not an object");
+                }
+            } else {
+                LogDebug("Failed to initialize boss respawns: " + message);
+            }
+        } else {
+            LogDebug("Failed to initialize boss respawns: 'status' field is missing or not a string");
+        }
+    } catch (const nlohmann::json::exception& e) {
+        LogDebug("JSON Exception: " + std::string(e.what()));
+    } catch (const std::exception& e) {
+        LogDebug("Exception: " + std::string(e.what()));
+    }
 }

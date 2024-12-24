@@ -47,12 +47,12 @@ std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
 uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 DWORD GetProcessIdByName(const std::wstring& processName);
-extern void GetAllUsers();
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
-const std::string sylentx_version = "0.1.66";
+const std::string sylentx_version = "1.0.0";
 const std::string sylentx_appname = "Sylent-X";
+const std::string sylentx_windowname = "Sylent-X " + sylentx_version;
 
 extern ImVec4 textColor;
 

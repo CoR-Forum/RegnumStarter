@@ -3,8 +3,6 @@
 #include "../../ui/helper/Markers/LicenseMarker.h"
 #include <iostream> // For debugging
 
-extern std::string sylentx_status;
-
 // Function to get the key name from the virtual key code
 std::string GetKeyName(int virtualKey) {
     if (virtualKey < 0x08 || virtualKey > 0xFF) {
@@ -34,11 +32,9 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
     if (show_view_window) {
         static float zoomValue = 15.0f; // Default zoom value
         static bool prevZoomState = false; // Track previous state of the checkbox
-        bool disableCheckboxes = (sylentx_status == "Detected");
 
-        ImGui::BeginDisabled(disableCheckboxes);
-        ImGui::Checkbox("Enable Zoom", &optionZoom);
-        if (optionZoom) {
+        ImGui::BeginDisabled(!featureZoom);
+        if (ImGui::Checkbox("Enable Zoom", &optionZoom)) {
             ImGui::SameLine();
             if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
                 MemoryManipulation("zoom", zoomValue);
@@ -48,12 +44,17 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
             zoomValue = 15.0f;
             MemoryManipulation("zoom", zoomValue);
         }
+        ImGui::EndDisabled();
+        
+        if (!featureZoom){
+        ImGui::SameLine();
+        ShowLicenseMarker();
+        }
 
         prevZoomState = optionZoom; // Update previous state
-        ImGui::EndDisabled();
 
         // Check if the checkbox is checked
-        ImGui::BeginDisabled(disableCheckboxes || !featureFov);
+        ImGui::BeginDisabled(!featureFov);
         if (ImGui::Checkbox("Field of View", &optionFov)) {
             if (!optionFov) {
                 // If the checkbox is unchecked, reset the FOV value

@@ -1,4 +1,6 @@
 #include "streamproof.h"
+#include <string>
+#include <sstream>
 
 void SetWindowCaptureExclusion(HWND hwnd, bool exclude)
 {
@@ -7,6 +9,7 @@ void SetWindowCaptureExclusion(HWND hwnd, bool exclude)
 
     // Hide the taskbar icon if exclude is true
     LONG_PTR style = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+
     if (exclude)
     {
         style |= WS_EX_TOOLWINDOW; // Hide from taskbar

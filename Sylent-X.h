@@ -28,15 +28,12 @@
 #include "includes/streamproof/streamproof.cpp"
 #include "ui/login/pwreset/ForgotPasswordWindow.cpp"
 #include "ui/login/pwreset/PasswordResetWindow.cpp"
-#include "ui/helper/Rainbow/UpdateRainbowColor.cpp"
 #include "ui/login/LoginWindow.cpp"
 #include "ui/login/register/RegisterWindow.cpp"
 #include "ui/RegnumStarter/RegnumStarter.cpp"
 #include "ui/License/LicenseWindow.cpp"
 #include "ui/Credits/CreditsWindow.cpp"
-#include "ui/Chat/ChatWindow.cpp"
 #include "ui/WindowStates.h"
-#include "includes/Bosses/BossSpawns.cpp"
 #include "ui/Bosses/BossRespawnWindow.cpp"
 #include "includes/OpenUrl/OpenUrl.cpp"
 #include "includes/md5/md5.cpp"
@@ -47,7 +44,6 @@
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern bool show_chat_window;
 extern ImVec4 textColor;
 
 extern bool g_ShowUI;

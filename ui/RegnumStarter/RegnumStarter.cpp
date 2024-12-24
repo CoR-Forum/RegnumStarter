@@ -3,6 +3,7 @@
 #include <sstream>
 
 
+static int selectedAccount = -1;
 extern std::string setting_regnumInstallPath;
 
 void UpdateConfigValue(const std::string& key, const std::string& value) {
@@ -50,8 +51,6 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     
     std::string executablePath = regnumPath + "\\LiveServer\\ROClientGame.exe";
     std::string command = "powershell.exe -Command \"cd '" + regnumPath + "\\LiveServer'; .\\ROClientGame.exe '" + regnumLoginUser + "' '" + regnumLoginPassword + "'\"";
-
-    LogDebug("Starting Regnum Online client with command: " + command);
     
     if (!CreateProcess(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, regnumPath.c_str(), &si, &pi)) {
         Log("Failed to start the Regnum Online client");
@@ -98,7 +97,11 @@ void CheckAndUpdateConfig() {
     updateIfDifferent("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
     updateIfDifferent("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
     updateIfDifferent("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-    updateIfDifferent("show_intro", std::to_string(ShowIntro ? 1 : 0));
+    updateIfDifferent("show_intro", std::to_string(showIntro ? 1 : 0));
+    updateIfDifferent("cl_cpu_idle_time", "0");
+    updateIfDifferent("cl_update_all_resources", "0");
+    updateIfDifferent("vg_fullscreen_borderless", "1");
+    updateIfDifferent("vg_fullscreen_mode", "0");
 
     if (updated) {
         Log("Configuration file updated with saved settings.");
@@ -117,6 +120,8 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
     static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
     static bool showFileDialog = false;
+
+    ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
 
     if (ImGui::Button("Select Regnum Online Installation Path")) {
         fileDialog.Open();
@@ -152,7 +157,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         }
 
         // If files exist and the checkbox is saved as false, delete the files
-        if (filesExist && !ShowIntro) {
+        if (filesExist && !showIntro) {
             for (const auto& file : filesToCheck) {
                 std::string filePath = livePath + file;
                 if (remove(filePath.c_str()) != 0) {
@@ -164,7 +169,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         }
 
         // If files do not exist and the checkbox is saved as true, download the files
-        if (!filesExist && ShowIntro) {
+        if (!filesExist && showIntro) {
             std::vector<std::pair<std::string, std::string>> filesToDownload = {
                 {"https://patch.sylent-x.com/assets/splash_nge.png", livePath + "splash_nge.png"},
                 {"https://patch.sylent-x.com/assets/splash_nge.ogg", livePath + "splash_nge.ogg"}
@@ -181,9 +186,36 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
         filesChecked = true; // Set the flag to true after the operation is performed
     }
+    
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
 
-    ImGui::Text("Selected Path: %s", setting_regnumInstallPath.c_str());
+    if (ImGui::TreeNode("Account Selection")) {
+        if (regnumAccounts.empty()) {
+            ImGui::Text("No accounts available");
+        } else {
+            for (int i = 0; i < regnumAccounts.size(); i++) {
+                bool isSelected = (selectedAccount == i);
+                if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
+                    selectedAccount = i;
+                }
+            }
+        }
+        ImGui::TreePop();
+    }
+    
+    if (ImGui::Button("Play")) {
+        if (selectedAccount != -1) {
+            const auto& account = regnumAccounts[selectedAccount];
+            runRoClientGame(account.username, account.password);
+        }
+    }
+    if (ImGui::Button("Add Account")) {
+        ImGui::OpenPopup("Regnum Account##AddAccountPopup");
+    }
 
+    if (ImGui::BeginPopup("Regnum Account##AddAccountPopup")) {
     ImGui::Columns(4, "RegnumAccounts");
     ImGui::Separator();
     ImGui::Text("Username");
@@ -195,6 +227,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Text("Actions");
     ImGui::NextColumn();
     ImGui::Separator();
+  
 
     static char regnumId[128] = "";
     static char regnumUsername[128] = "";
@@ -202,7 +235,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     static char regnumServer[128] = "";
     static char regnumReferrer[128] = "";
 
-    ServerOption serverOptions[] = { {"val", "Valhalla"}, {"ra", "Ra"} };
+    ServerOption serverOptions[] = { {"ra", "Ra"} };
     ReferrerOption referrerOptions[] = { {"nge", "NGE"}, {"gmg", "Gamigo"}, {"boa", "Boacompra"} };
     static int currentServer = 0;
     static int currentReferrer = 0;
@@ -263,115 +296,110 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     }
 
     ImGui::Columns(1);
-    ImGui::Separator();
+        ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
+        ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
+        ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
+            *out_text = ((ServerOption*)data)[idx].name;
+            return true;
+        }, serverOptions, IM_ARRAYSIZE(serverOptions));
+        ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
+            *out_text = ((ReferrerOption*)data)[idx].name;
+            return true;
+        }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
 
-    ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
-    ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
-    ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
-        *out_text = ((ServerOption*)data)[idx].name;
-        return true;
-    }, serverOptions, IM_ARRAYSIZE(serverOptions));
-    ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
-        *out_text = ((ReferrerOption*)data)[idx].name;
-        return true;
-    }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
-
-    if (ImGui::Button("Save Account")) {
-        SaveRegnumAccount(
-            regnumUsername, 
-            regnumPassword, 
-            serverOptions[currentServer].id, 
-            referrerOptions[currentReferrer].id, 
-            regnumId[0] == '\0' ? 0 : atoi(regnumId)
-        );
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    static int selectedAccount = -1;
-    if (ImGui::BeginCombo("##Select Account", selectedAccount == -1 ? "Select an account" : regnumAccounts[selectedAccount].username.c_str())) {
-        for (int i = 0; i < regnumAccounts.size(); i++) {
-            bool isSelected = (selectedAccount == i);
-            if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
-                selectedAccount = i;
-            }
-        }
-        ImGui::EndCombo();
-    }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Play")) {
-        if (selectedAccount != -1) {
-            const auto& account = regnumAccounts[selectedAccount];
-            runRoClientGame(account.username, account.password);
-        }
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
-
-
-    ImGui::Checkbox("Enable Music", &enableMusic);
-
-
-    ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
-
-
-    ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
-
-
-    ImGui::Checkbox("Show Intro", &ShowIntro);
-
-    if (ImGui::Button("Save Settings")) {
-        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
-        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
-        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
-        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-        UpdateConfigValue("show_intro", std::to_string(ShowIntro ? 1 : 0));
-        SaveSettings();
-
-        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
-        std::vector<std::string> filesToDelete = {
-            "splash_nge.png",
-            "splash_nge.ogg"
-        };
-
-        if (ShowIntro) {
-            // Check if files exist and download if they don't
-            for (const auto& file : filesToDelete) {
-                std::string filePath = livePath + file;
-                std::ifstream infile(filePath);
-                if (!infile.good()) {
-                    Log("File does not exist: " + filePath + ". Downloading...");
-                    std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
-
-                    // Download file using URLDownloadToFile
-                    HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
-                    if (SUCCEEDED(hr)) {
-                        Log("Downloaded file: " + filePath);
-                    } else {
-                        Log("Failed to download file: " + filePath);
+        if (ImGui::Button("Save Account")) {
+            if (strlen(regnumUsername) > 0 && strlen(regnumPassword) > 0) {
+                bool accountExists = false;
+                for (const auto& account : regnumAccounts) {
+                    if (strcmp(account.username.c_str(), regnumUsername) == 0) {
+                        accountExists = true;
+                        break;
                     }
-                } else {
-                    Log("File already exists: " + filePath);
                 }
-            }
-        } else {
-            // Delete files
-            for (const auto& file : filesToDelete) {
-                std::string filePath = livePath + file;
-                if (remove(filePath.c_str()) != 0) {
-                    Log("Failed to delete file make sure to select your Game Path: " + filePath);
-                    MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK);
+
+                if (!accountExists) {
+                    SaveRegnumAccount(
+                        regnumUsername, 
+                        regnumPassword, 
+                        serverOptions[currentServer].id, 
+                        referrerOptions[currentReferrer].id, 
+                        regnumId[0] == '\0' ? 0 : atoi(regnumId)
+                    );
+                    ImGui::CloseCurrentPopup();
                 } else {
-                    Log("Deleted file: " + filePath);
+                    MessageBox(NULL, "Account already exists.", "Sylent-X", MB_OK);
+                    Log("Account already exists.");
+                }
+            } else {
+                MessageBox(NULL, "Username or password cannot be empty.", "Sylent-X", MB_OK);
+                Log("Username or password cannot be empty.");
+            }
+        }
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    if (ImGui::TreeNode("Settings")) {
+        ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
+        ImGui::Checkbox("Enable Music", &enableMusic);
+        ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
+        ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
+        ImGui::Checkbox("Show Intro", &showIntro);
+
+        if (ImGui::Button("Save Settings")) {
+            UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
+            UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+            UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+            UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+            UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
+            SaveSettings();
+
+            std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+            std::vector<std::string> filesToDelete = {
+                "splash_nge.png",
+                "splash_nge.ogg"
+            };
+
+            if (showIntro) {
+                // Check if files exist and download if they don't
+                for (const auto& file : filesToDelete) {
+                    std::string filePath = livePath + file;
+                    std::ifstream infile(filePath);
+                    if (!infile.good()) {
+                        Log("File does not exist: " + filePath + ". Downloading...");
+                        std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
+
+                        // Download file using URLDownloadToFile
+                        HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
+                        if (SUCCEEDED(hr)) {
+                            Log("Downloaded file: " + filePath);
+                        } else {
+                            Log("Failed to download file: " + filePath);
+                        }
+                    } else {
+                        Log("File already exists: " + filePath);
+                    }
+                }
+            } else {
+                // Delete files
+                for (const auto& file : filesToDelete) {
+                    std::string filePath = livePath + file;
+                    if (remove(filePath.c_str()) != 0) {
+                        Log("Failed to delete file make sure to select your Game Path: " + filePath);
+                        MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK);
+                    } else {
+                        Log("Deleted file: " + filePath);
+                    }
                 }
             }
         }
+        ImGui::TreePop();
     }
 }

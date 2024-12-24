@@ -34,7 +34,7 @@ HINTERNET ConnectToAPI(HINTERNET hInternet) {
 
 HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
     const char* acceptTypes[] = { "application/json", NULL };
-    DWORD flags = (apiSelection == 0) ? INTERNET_FLAG_SECURE : 0;
+    DWORD flags = (apiSelection == 0) ? (INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE) : INTERNET_FLAG_NO_CACHE_WRITE;
     HINTERNET hRequest = HttpOpenRequest(hConnect, "GET", path.c_str(), NULL, NULL, acceptTypes, flags, 0);
     std::string headers = "Content-Type: application/json";
     if (!session_id.empty()) {
@@ -51,7 +51,7 @@ HINTERNET SendHTTPRequest(HINTERNET hConnect, const std::string& path) {
 
 HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const std::string& payload) {
     const char* acceptTypes[] = { "application/json", NULL };
-    DWORD flags = (apiSelection == 0) ? INTERNET_FLAG_SECURE : 0;
+    DWORD flags = (apiSelection == 0) ? (INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE) : INTERNET_FLAG_NO_CACHE_WRITE;
     HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", path.c_str(), NULL, NULL, acceptTypes, flags, 0);
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
@@ -68,7 +68,7 @@ HINTERNET SendHTTPPostRequest(HINTERNET hConnect, const std::string& path, const
 
 HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const std::string& payload) {
     const char* acceptTypes[] = { "application/json", NULL };
-    DWORD flags = (apiSelection == 0) ? INTERNET_FLAG_SECURE : 0;
+    DWORD flags = (apiSelection == 0) ? (INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE) : INTERNET_FLAG_NO_CACHE_WRITE;
     HINTERNET hRequest = HttpOpenRequest(hConnect, "PUT", path.c_str(), NULL, NULL, acceptTypes, flags, 0);
     std::string headers = "Content-Type: application/json\r\n";
     if (!session_id.empty()) {
@@ -86,7 +86,7 @@ HINTERNET SendHTTPPutRequest(HINTERNET hConnect, const std::string& path, const 
 std::string FetchDataFromAPI(const std::string& url) {
     try {
         HINTERNET hInternet = OpenInternetConnection();
-        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
+        HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE, 0);
         if (!hConnect) throw std::runtime_error("Failed to open URL");
 
         std::string response = ReadResponse(hConnect);

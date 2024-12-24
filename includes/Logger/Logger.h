@@ -11,7 +11,7 @@
 #include "../Utils.h"
 
 // External variables
-extern bool setting_log_debug; ///< Flag to enable or disable debug logging
+extern bool setting_log_debug;
 
 void Log(const std::string& message);
 

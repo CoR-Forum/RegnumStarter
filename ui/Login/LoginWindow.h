@@ -5,4 +5,6 @@
 #include <thread>
 #include <chrono>
 
+extern const std::string sylentx_windowname;
+
 void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& loginSuccess, bool& show_main_window, ImVec4 textColor);
