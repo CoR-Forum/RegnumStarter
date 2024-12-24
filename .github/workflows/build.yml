@@ -26,6 +26,13 @@ jobs:
         mkdir deploy
         mkdir tmp
 
+    - name: Extract Version Number
+      id: version
+      run: |
+        echo "Version content:"
+        cat version.txt
+        echo "version=$(cat version.txt)" >> $GITHUB_ENV
+
     - name: Build Sylent-X
       shell: msys2 {0}
       run: |
@@ -47,11 +54,6 @@ jobs:
         $version = "${{ env.version }}"
         $version | Out-File -FilePath deploy/latest.txt
         "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest.txt -Append
-
-    - name: Show content of deploy directory and latest.txt
-      run: |
-        ls -la deploy
-        cat deploy/latest.txt
 
     - name: Deploy to FTP server
       uses: SamKirkland/FTP-Deploy-Action@4.1.0
