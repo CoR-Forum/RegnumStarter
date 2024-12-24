@@ -46,8 +46,8 @@ jobs:
 
     - name: Push Binary to FTP Server
       env:
-        FTP_HOST: ${{ secrets.FTP_HOST }}
-        FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+        FTP_HOST: ${{ vars.FTP_HOST }}
+        FTP_USERNAME: ${{ vars.FTP_USERNAME }}
         FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
       run: |
-        curl -T bin/Sylent-X.exe ftp://${{ env.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ env.FTP_USERNAME }}:${{ env.FTP_PASSWORD }}
+        curl -T bin/Sylent-X.exe ftp://${{ vars.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}
