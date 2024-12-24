@@ -22,9 +22,11 @@ jobs:
           mingw-w64-i686-toolchain
 
     - name: Create Temporary Directories
-      run: |
-        mkdir bin
-        mkdir tmp
+      run: mkdir bin tmp
+
+    - name: Extract Version Number
+      id: version
+      run: echo "version=$(cat version.txt)" >> $GITHUB_ENV
 
     - name: Build Sylent-X
       shell: msys2 {0}
@@ -39,3 +41,11 @@ jobs:
       with:
         name: Sylent-X
         path: bin/Sylent-X.exe
+
+    - name: Push Binary to FTP Server
+      env:
+        FTP_HOST: ${{ secrets.FTP_HOST }}
+        FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+        FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      run: |
+        curl -T bin/Sylent-X.exe ftp://${{ env.FTP_HOST }}/Sylent-X-${{ env.version }}.exe --user ${{ env.FTP_USERNAME }}:${{ env.FTP_PASSWORD }}
