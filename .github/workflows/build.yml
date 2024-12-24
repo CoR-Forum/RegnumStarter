@@ -1,38 +1,36 @@
-name: Build and Publish Sylent-X
+name: Build and Publish Sylent-X (Windows)
 
 on:
   push:
     branches:
-      - main
+      - none
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Install Wine
-      run: sudo apt-get install -y wine-stable
-
-    - name: Install Mingw-w64
-      run: sudo apt-get install -y mingw-w64
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: > 
+          mingw-w64-x86_64-toolchain 
+          mingw-w64-i686-toolchain
 
     - name: Create Temporary Directories
-      run: |
-        mkdir -p bin
-        mkdir -p tmp
+      run: mkdir bin tmp
 
     - name: Build Sylent-X
+      shell: msys2 {0}
       run: |
-        i686-w64-mingw32-windres resource.rc resource.o
-        i686-w64-mingw32-g++ -o bin/Sylent-X.exe Sylent-X.cpp \
+        windres resource.rc resource.o
+        g++ -o bin/Sylent-X.exe Sylent-X.cpp \
         libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
         libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
-
-    - name: Test with Wine
-      run: wine bin/Sylent-X.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
