@@ -31,9 +31,9 @@ jobs:
       shell: pwsh
       run: |
         echo "Version content:"
-        Get-Content version.txt
         $version = Get-Content version.txt
-        echo "version=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+        echo $version
+        echo "::set-output name=version::$version"
 
     - name: Build Sylent-X
       shell: msys2 {0}
