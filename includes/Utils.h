@@ -50,7 +50,7 @@ DWORD GetProcessIdByName(const std::wstring& processName);
 
 // Global constants
 const char* appDataPath = getenv("APPDATA");
-const std::string sylentx_version = "1.0.2";
+const std::string sylentx_version = "1.0.3";
 const std::string sylentx_appname = "Sylent-X";
 const std::string sylentx_windowname = "Sylent-X " + sylentx_version;
 

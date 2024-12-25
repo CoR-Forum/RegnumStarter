@@ -33,7 +33,7 @@ void UpdateConfigValue(const std::string& key, const std::string& value) {
         configFileWrite << configContent;
         configFileWrite.close();
     } else {
-        Log("Failed to open game.cfg for writing");
+        LogDebug("Failed to open game.cfg for writing");
     }
 }
 
@@ -53,7 +53,7 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     std::string command = "powershell.exe -Command \"cd '" + regnumPath + "\\LiveServer'; .\\ROClientGame.exe '" + regnumLoginUser + "' '" + regnumLoginPassword + "'\"";
     
     if (!CreateProcess(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, regnumPath.c_str(), &si, &pi)) {
-        Log("Failed to start the Regnum Online client");
+        LogDebug("Failed to start the Regnum Online client");
     } else {
         // Wait until child process exits.
         WaitForSingleObject(pi.hProcess, INFINITE);
@@ -104,7 +104,7 @@ void CheckAndUpdateConfig() {
     updateIfDifferent("vg_fullscreen_mode", "0");
 
     if (updated) {
-        Log("Configuration file updated with saved settings.");
+        LogDebug("Configuration file updated with saved settings.");
     }
 }
 
@@ -161,9 +161,9 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             for (const auto& file : filesToCheck) {
                 std::string filePath = livePath + file;
                 if (remove(filePath.c_str()) != 0) {
-                    Log("Failed to delete file: " + filePath);
+                    LogDebug("Failed to delete file: " + filePath);
                 } else {
-                    Log("Deleted file: " + filePath);
+                    LogDebug("Deleted file: " + filePath);
                 }
             }
         }
@@ -177,9 +177,9 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             for (const auto& file : filesToDownload) {
                 HRESULT hr = URLDownloadToFile(NULL, file.first.c_str(), file.second.c_str(), 0, NULL);
                 if (SUCCEEDED(hr)) {
-                    Log("Downloaded file: " + file.second);
+                    LogDebug("Downloaded file: " + file.second);
                 } else {
-                    Log("Failed to download file: " + file.second);
+                    LogDebug("Failed to download file: " + file.second);
                 }
             }
         }
@@ -215,6 +215,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         ImGui::OpenPopup("Regnum Account##AddAccountPopup");
     }
 
+    ImGui::SetNextWindowSize(ImVec2(500, 270)); // Set the desired size of the popup
     if (ImGui::BeginPopup("Regnum Account##AddAccountPopup")) {
     ImGui::Columns(4, "RegnumAccounts");
     ImGui::Separator();
@@ -328,11 +329,11 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                     ImGui::CloseCurrentPopup();
                 } else {
                     MessageBox(NULL, "Account already exists.", "Sylent-X", MB_OK | MB_TOPMOST);
-                    Log("Account already exists.");
+                    LogDebug("Account already exists.");
                 }
             } else {
                 MessageBox(NULL, "Username or password cannot be empty.", "Sylent-X", MB_OK | MB_TOPMOST);
-                Log("Username or password cannot be empty.");
+                LogDebug("Username or password cannot be empty.");
             }
         }
         if (ImGui::Button("Cancel")) {
