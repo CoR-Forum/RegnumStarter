@@ -373,18 +373,18 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                     std::string filePath = livePath + file;
                     std::ifstream infile(filePath);
                     if (!infile.good()) {
-                        Log("File does not exist: " + filePath + ". Downloading...");
+                        LogDebug("File does not exist: " + filePath + ". Downloading...");
                         std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
 
                         // Download file using URLDownloadToFile
                         HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
                         if (SUCCEEDED(hr)) {
-                            Log("Downloaded file: " + filePath);
+                            LogDebug("Downloaded file: " + filePath);
                         } else {
-                            Log("Failed to download file: " + filePath);
+                            LogDebug("Failed to download file: " + filePath);
                         }
                     } else {
-                        Log("File already exists: " + filePath);
+                        LogDebug("File already exists: " + filePath);
                     }
                 }
             } else {
@@ -392,10 +392,10 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                 for (const auto& file : filesToDelete) {
                     std::string filePath = livePath + file;
                     if (remove(filePath.c_str()) != 0) {
-                        Log("Failed to delete file make sure to select your Game Path: " + filePath);
-                        MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK | MB_TOPMOST);
+                        LogDebug("Failed to delete file make sure to select your Game Path: " + filePath);
+                        // MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "Sylent-X", MB_OK | MB_TOPMOST);
                     } else {
-                        Log("Deleted file: " + filePath);
+                        LogDebug("Deleted file: " + filePath);
                     }
                 }
             }
