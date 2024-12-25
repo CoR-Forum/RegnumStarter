@@ -10,8 +10,5 @@ bool show_info_window = false;
 bool show_RegnumStarter = false;
 bool show_texture_window = false;
 bool show_view_window = false;
-bool show_movement_window = false;
-bool show_player_window = false;
 bool show_calendar_window = false;
 bool show_license_window = false;
-

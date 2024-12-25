@@ -210,12 +210,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetCursorPosX(startX);
                 ImGui::SetCursorPosY(startY);
                 if (ImGui::Button("Features", ImVec2(buttonWidth, buttonHeight))) {
-                    show_movement_window = false;
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumStarter = false;
-                    show_player_window = false;
                     show_calendar_window = false;
                     show_view_window = true;
                 }
@@ -226,8 +224,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_info_window = false;
                     show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
                     show_calendar_window = false;
                     LoadRegnumAccounts();
                     show_RegnumStarter = true;
@@ -238,8 +234,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
                     show_info_window = false;
                     show_calendar_window = true;
                     InitializeBossRespawns();
@@ -264,8 +258,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
                     show_calendar_window = false;
                 }
                 ImGui::PopStyleVar();
@@ -277,8 +269,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
                     show_calendar_window = false;
                     show_settings_window = true;
                 }
@@ -305,8 +295,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
-                    show_movement_window = false;
-                    show_player_window = false;
                     show_calendar_window = false;
                     show_info_window = true;
                 }
@@ -372,14 +360,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             } else if (show_view_window) {
                 ShowViewWindow(show_view_window, optionZoom, optionFov, featureFov, featureZoom, waitingForHotkey, userDefinedHotkey);
-            } else if (show_movement_window) {
-
-                ShowMovementWindow(show_movement_window);
-                    
-            } else if (show_player_window) {
-
-                ShowPlayerWindow(show_player_window, optionCharacter);
-      
             } else if (show_RegnumStarter) {
                 ShowRegnumStarter(show_RegnumStarter);
             } else if (show_calendar_window) {
