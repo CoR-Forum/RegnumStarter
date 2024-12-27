@@ -348,9 +348,14 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::Spacing();
 
     if (ImGui::TreeNode("Settings")) {
-        ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 128.0f);
-        ImGui::Checkbox("Enable Music", &enableMusic);
-        ImGui::Checkbox("Enable Sound Effects", &enableSoundEffects);
+        ImGui::SeparatorText("Sound Settings");
+        ImGui::Text("Sound Volume");
+        ImGui::SliderFloat("##Sound Volume", &soundVolume, 0.0f, 100.0f, "%.0f%%");
+        ImGui::Checkbox("Music", &enableMusic);
+        ImGui::SameLine();
+        ImGui::Checkbox("Sound Effects", &enableSoundEffects);
+
+        ImGui::SeparatorText("Advanced");
         ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
         ImGui::Checkbox("Show Intro", &showIntro);
 

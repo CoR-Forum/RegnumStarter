@@ -2,7 +2,9 @@
 
 ## [draft] - 2024-12-27
 
-- changed: Optimized chat API functions.
+- fixed: Optimized chat API functions.
+- fixed: Regnum sound settings slider was allowing values above 100, and was also not showing the value as percent.
+- modified: Improve regnum settings window.
 
 ## [1.0.6] - 2024-12-27
 
