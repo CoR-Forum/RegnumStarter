@@ -349,7 +349,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::SeparatorText("Help");
                     if (ImGui::Button("Create Ticket")) {
-                        ShellExecute(0, 0, "https://discord.gg/6Nq8VfeWPk", 0, 0, SW_SHOW);
+                        ShellExecute(0, 0, "https://sylent-x.com/discord", 0, 0, SW_SHOW);
                     }
 
             } else if (show_license_window) {

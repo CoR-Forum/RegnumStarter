@@ -3,6 +3,7 @@
 ## [draft] - 2024-12-27
 
 - fixed: Optimized chat API functions.
+- fixed: fix: update Discord link in ticket creation button to point to the official website.
 - fixed: Regnum sound settings slider was allowing values above 100, and was also not showing the value as percent.
 - modified: Improve regnum settings window.
 
