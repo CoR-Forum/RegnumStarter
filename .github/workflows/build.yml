@@ -97,10 +97,6 @@ jobs:
         Write-Host "Generated changelog.json. Content of changelog.json:"
         Get-Content tmp/changelog.json
 
-    - name: Upload changelog.json to FTP server
-      run: |
-        curl -v --ftp-ssl --ssl-reqd -T tmp/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
-  
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -168,6 +164,10 @@ jobs:
         local-dir: ./deploy/
         server-dir: /
 
+    - name: Upload changelog.json to FTP server
+      run: |
+        curl -v --ftp-ssl --ssl-reqd -T tmp/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
+  
     - name: Cleanup Temporary Directories
       shell: pwsh
       run: |

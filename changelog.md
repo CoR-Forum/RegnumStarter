@@ -1,5 +1,9 @@
 # Changelog
 
+## [draft] - 2024-12-27
+
+- fixed: nix.
+
 ## [1.0.6] - 2024-12-27
 
 - critical bug fix.
