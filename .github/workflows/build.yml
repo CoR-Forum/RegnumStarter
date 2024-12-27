@@ -47,15 +47,22 @@ jobs:
       run: |
         $version = "${{ steps.version.outputs.version }}"
         $changelog = Get-Content changelog.md -Raw
+        Write-Host "Changelog content:"
+        Write-Host $changelog
         $versionPattern = "## \[$version\] - "
+        Write-Host "Version pattern: $versionPattern"
         $start = $changelog.IndexOf($versionPattern)
+        Write-Host "Start index: $start"
         if ($start -eq -1) { 
           Write-Error "Version $version not found in changelog.md"
           exit 1
         }
         $end = $changelog.IndexOf("## [", $start + $versionPattern.Length)
+        Write-Host "End index: $end"
         if ($end -eq -1) { $end = $changelog.Length }
         $changelog_md = $changelog.Substring($start, $end - $start).Trim()
+        Write-Host "Extracted changelog:"
+        Write-Host $changelog_md
         echo "::set-output name=changelog_md::$changelog_md"
 
     - name: Setup MSYS2
