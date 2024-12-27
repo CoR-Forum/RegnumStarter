@@ -1,6 +1,6 @@
 # Changelog
 
-## [draft] - 
+## [1.0.4] - 2024-12-27
 
 - modified: Changed login window layout for better usability.
 - modified: Save username by default. This can be changed in the login window.
