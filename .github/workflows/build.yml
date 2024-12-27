@@ -54,13 +54,12 @@ jobs:
         Write-Output $changelog
         $versionPattern = "## \[$version\]"
         Write-Output "Version pattern: '$versionPattern'"
-        $start = $changelog -match $versionPattern
-        if (-not $start) { 
+        $startIndex = $changelog.IndexOf($versionPattern)
+        if ($startIndex -eq -1) { 
           Write-Error "Version $version not found in changelog.md"
           exit 1
         }
-        $startIndex = $changelog.IndexOf($matches[0])
-        $end = $changelog.IndexOf("## [", $startIndex + $matches[0].Length)
+        $end = $changelog.IndexOf("## [", $startIndex + $versionPattern.Length)
         if ($end -eq -1) { $end = $changelog.Length }
         $changelog_md = $changelog.Substring($startIndex, $end - $startIndex).Trim()
         echo "::set-output name=changelog_md::$changelog_md"
