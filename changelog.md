@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.5] - 2024-12-27
+
+- fixed: Critical bug affecting updates.
+
 ## [1.0.4] - 2024-12-27
 
 - modified: Changed login window layout for better usability.
