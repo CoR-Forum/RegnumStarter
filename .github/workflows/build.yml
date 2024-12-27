@@ -29,10 +29,18 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
       run: |
         $version = "${{ steps.version.outputs.version }}"
-        $response = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/tags/$version" -Headers @{ Authorization = "token $env:GITHUB_TOKEN" } -ErrorAction SilentlyContinue
-        if ($response) {
-          Write-Error "Version $version already exists on GitHub"
-          exit 1
+        try {
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/tags/$version" -Headers @{ Authorization = "token $env:GITHUB_TOKEN" }
+          if ($response) {
+            Write-Error "Version $version already exists on GitHub"
+            exit 1
+          }
+        } catch {
+          if ($_.Exception.Response.StatusCode -eq 404) {
+            Write-Output "Version $version does not exist on GitHub. Continuing..."
+          } else {
+            throw $_
+          }
         }
 
     - name: Read Changelog
