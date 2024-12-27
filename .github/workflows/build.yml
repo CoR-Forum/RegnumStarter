@@ -136,14 +136,8 @@ jobs:
         "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest.txt -Append
 
     - name: Upload changelog.json to FTP server
-      uses: SamKirkland/FTP-Deploy-Action@4.1.0
-      with:
-        server: ${{ vars.FTP_HOST }}
-        username: ${{ vars.FTP_USERNAME_WEB }}
-        password: ${{ secrets.FTP_PASSWORD_WEB }}
-        protocol: ftps
-        local-dir: ./changelog/
-        server-dir: /
+      run: |
+        curl -T changelog/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
 
     - name: Create GitHub Release
       id: create_release
