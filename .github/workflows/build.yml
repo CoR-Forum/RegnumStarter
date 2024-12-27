@@ -123,12 +123,12 @@ jobs:
         name: Sylent-X
         path: deploy/Sylent-X.exe
 
-    - name: Create latest-version.txt
+    - name: Create latest_version.txt
       shell: pwsh
       run: |
         $version = "${{ steps.version.outputs.version }}"
-        $version | Out-File -FilePath deploy/latest-version.txt
-        "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest.txt -Append
+        $version | Out-File -FilePath deploy/latest_version.txt
+        "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest_version.txt -Append
 
     - name: Create GitHub Release
       id: create_release
