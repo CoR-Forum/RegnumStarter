@@ -65,6 +65,12 @@ jobs:
         Write-Host $changelog_md
         echo "::set-output name=changelog_md::$changelog_md"
 
+    - name: Create Temporary Directories
+      run: |
+        mkdir deploy
+        mkdir tmp
+        mkdir changelog
+
     - name: Generate changelog.json
       id: generate_changelog_json
       shell: pwsh
@@ -94,8 +100,9 @@ jobs:
             changes = $parsed_changes
           }
         }
-        $changelog_json | ConvertTo-Json -Depth 3 | Out-File -FilePath changelog.json
-        Write-Host "Generated changelog.json: $changelog_json"
+        $changelog_json | ConvertTo-Json -Depth 3 | Out-File -FilePath changelog/changelog.json
+        Write-Host "Generated changelog.json. Content of changelog.json:"
+        Get-Content changelog/changelog.json
 
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
@@ -104,11 +111,6 @@ jobs:
         install: > 
           mingw-w64-x86_64-toolchain 
           mingw-w64-i686-toolchain
-
-    - name: Create Temporary Directories
-      run: |
-        mkdir deploy
-        mkdir tmp
 
     - name: Build Sylent-X
       shell: msys2 {0}
@@ -133,16 +135,6 @@ jobs:
         $version | Out-File -FilePath deploy/latest.txt
         "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest.txt -Append
 
-    - name: Deploy to FTP server
-      uses: SamKirkland/FTP-Deploy-Action@4.1.0
-      with:
-        server: ${{ vars.FTP_HOST }}
-        username: ${{ vars.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        protocol: ftps
-        local-dir: ./deploy/
-        server-dir: /
-
     - name: Upload changelog.json to FTP server
       uses: SamKirkland/FTP-Deploy-Action@4.1.0
       with:
@@ -150,12 +142,8 @@ jobs:
         username: ${{ vars.FTP_USERNAME_WEB }}
         password: ${{ secrets.FTP_PASSWORD_WEB }}
         protocol: ftps
-        local-dir: ./changelog.json
+        local-dir: ./changelog/
         server-dir: /
-
-    - name: Cleanup changelog.json
-      run: |
-        rm changelog.json
 
     - name: Create GitHub Release
       id: create_release
@@ -179,7 +167,18 @@ jobs:
         asset_name: Sylent-X.exe
         asset_content_type: application/octet-stream
 
+    - name: Deploy to FTP server
+      uses: SamKirkland/FTP-Deploy-Action@4.1.0
+      with:
+        server: ${{ vars.FTP_HOST }}
+        username: ${{ vars.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
+        local-dir: ./deploy/
+        server-dir: /
+
     - name: Cleanup Temporary Directories
       run: |
         rm -rf deploy
         rm -rf tmp
+        rm -rf changelog
