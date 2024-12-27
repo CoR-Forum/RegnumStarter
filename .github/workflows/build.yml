@@ -87,3 +87,8 @@ jobs:
         asset_path: deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
         asset_name: Sylent-X.exe
         asset_content_type: application/octet-stream
+
+    - name: Cleanup Temporary Directories
+      run: |
+        rm -rf deploy
+        rm -rf tmp
