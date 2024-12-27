@@ -104,6 +104,11 @@ jobs:
         Write-Host "Generated changelog.json. Content of changelog.json:"
         Get-Content changelog/changelog.json
 
+    - name: Upload changelog.json to FTP server
+      run: |
+        curl -T changelog/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
+  
+
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -134,10 +139,6 @@ jobs:
         $version = "${{ steps.version.outputs.version }}"
         $version | Out-File -FilePath deploy/latest.txt
         "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest.txt -Append
-
-    - name: Upload changelog.json to FTP server
-      run: |
-        curl -T changelog/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
 
     - name: Create GitHub Release
       id: create_release
