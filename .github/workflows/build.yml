@@ -36,9 +36,7 @@ jobs:
             exit 1
           }
         } catch {
-          if ($_.Exception.Response.StatusCode -eq 404) {
-            Write-Output "Version $version does not exist on GitHub. Continuing..."
-          } else {
+          if ($_.Exception.Response.StatusCode -ne 404) {
             throw $_
           }
         }
@@ -48,20 +46,16 @@ jobs:
       shell: pwsh
       run: |
         $version = "${{ steps.version.outputs.version }}"
-        Write-Output "Extracted version: '$version'"
         $changelog = Get-Content changelog.md
-        Write-Output "Changelog content:"
-        Write-Output $changelog
-        $versionPattern = "## \[$version\]"
-        Write-Output "Version pattern: '$versionPattern'"
-        $startIndex = $changelog.IndexOf($versionPattern)
-        if ($startIndex -eq -1) { 
+        $versionPattern = "## \[$version\] - "
+        $start = $changelog.IndexOf($versionPattern)
+        if ($start -eq -1) { 
           Write-Error "Version $version not found in changelog.md"
           exit 1
         }
-        $end = $changelog.IndexOf("## [", $startIndex + $versionPattern.Length)
+        $end = $changelog.IndexOf("## [", $start + 1)
         if ($end -eq -1) { $end = $changelog.Length }
-        $changelog_md = $changelog.Substring($startIndex, $end - $startIndex).Trim()
+        $changelog_md = $changelog.Substring($start, $end - $start).Trim()
         echo "::set-output name=changelog_md::$changelog_md"
 
     - name: Setup MSYS2
