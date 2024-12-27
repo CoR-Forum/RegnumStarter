@@ -13,6 +13,31 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
+    - name: Extract Version Number
+      id: version
+      shell: pwsh
+      run: |
+        echo "Version content:"
+        $version = Get-Content version.txt
+        echo $version
+        echo "::set-output name=version::$version"
+
+    - name: Read Changelog
+      id: changelog
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        $changelog = Get-Content changelog.md
+        $start = $changelog.IndexOf("## [$version]")
+        if ($start -eq -1) { 
+          Write-Error "Version $version not found in changelog.md"
+          exit 1
+        }
+        $end = $changelog.IndexOf("## [", $start + 1)
+        if ($end -eq -1) { $end = $changelog.Length }
+        $changelog_md = $changelog.Substring($start, $end - $start).Trim()
+        echo "::set-output name=changelog_md::$changelog_md"
+
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -25,15 +50,6 @@ jobs:
       run: |
         mkdir deploy
         mkdir tmp
-
-    - name: Extract Version Number
-      id: version
-      shell: pwsh
-      run: |
-        echo "Version content:"
-        $version = Get-Content version.txt
-        echo $version
-        echo "::set-output name=version::$version"
 
     - name: Build Sylent-X
       shell: msys2 {0}
@@ -66,22 +82,6 @@ jobs:
         protocol: ftps
         local-dir: ./deploy/
         server-dir: /
-
-    - name: Read Changelog
-      id: changelog
-      shell: pwsh
-      run: |
-        $version = "${{ steps.version.outputs.version }}"
-        $changelog = Get-Content changelog.md
-        $start = $changelog.IndexOf("## [$version]")
-        if ($start -eq -1) { 
-          Write-Error "Version $version not found in changelog.md"
-          exit 1
-        }
-        $end = $changelog.IndexOf("## [", $start + 1)
-        if ($end -eq -1) { $end = $changelog.Length }
-        $changelog_md = $changelog.Substring($start, $end - $start).Trim()
-        echo "::set-output name=changelog_md::$changelog_md"
 
     - name: Create GitHub Release
       id: create_release
