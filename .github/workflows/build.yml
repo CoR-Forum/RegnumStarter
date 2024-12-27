@@ -48,8 +48,12 @@ jobs:
       shell: pwsh
       run: |
         $version = "${{ steps.version.outputs.version }}"
+        Write-Output "Extracted version: '$version'"
         $changelog = Get-Content changelog.md
+        Write-Output "Changelog content:"
+        Write-Output $changelog
         $versionPattern = "## \[$version\]"
+        Write-Output "Version pattern: '$versionPattern'"
         $start = $changelog.IndexOf($versionPattern)
         if ($start -eq -1) { 
           Write-Error "Version $version not found in changelog.md"
