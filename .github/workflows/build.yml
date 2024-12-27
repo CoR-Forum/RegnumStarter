@@ -22,6 +22,19 @@ jobs:
         echo $version
         echo "::set-output name=version::$version"
 
+    - name: Check if Version Exists on GitHub
+      id: check_version
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        $response = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/tags/$version" -Headers @{ Authorization = "token $env:GITHUB_TOKEN" } -ErrorAction SilentlyContinue
+        if ($response) {
+          Write-Error "Version $version already exists on GitHub"
+          exit 1
+        }
+
     - name: Read Changelog
       id: changelog
       shell: pwsh
@@ -59,6 +72,7 @@ jobs:
         libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
         libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
         cp deploy/Sylent-X.exe deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
+        rm -rf deploy/Sylent-X.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4

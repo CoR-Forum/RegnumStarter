@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.3] - 2024-12-27
 - Add new feature X
 - Improve performance of Y
 - Fix bug in Z
