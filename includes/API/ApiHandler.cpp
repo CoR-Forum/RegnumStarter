@@ -410,25 +410,17 @@ void CheckChatMessages() {
     bool keepRunning = true;
     while (keepRunning) {
         try {
-            LogDebug("Checking for new chat messages...");
             std::string path = "/v1/chat/receive";
 
             HINTERNET hInternet = OpenInternetConnection();
-            LogDebug("Internet connection opened.");
             HINTERNET hConnect = ConnectToAPI(hInternet);
-            LogDebug("Connected to API.");
             HINTERNET hRequest = SendHTTPRequest(hConnect, path);
-            LogDebug("HTTP request sent.");
             std::string response = ReadResponse(hRequest);
-            LogDebug("Response received: " + response);
             CloseInternetHandles(hRequest, hConnect, hInternet);
-            LogDebug("Internet handles closed.");
 
             auto jsonResponse = nlohmann::json::parse(response);
-            LogDebug("Response parsed.");
             std::string status = jsonResponse["status"];
             if (status == "success") {
-                LogDebug("Status is success.");
                 // Process the messages array
                 auto messages = jsonResponse["messages"];
                 
@@ -436,7 +428,6 @@ void CheckChatMessages() {
                 std::sort(messages.begin(), messages.end(), [](const auto& a, const auto& b) {
                     return a["timestamp"] < b["timestamp"];
                 });
-                LogDebug("Messages sorted by timestamp.");
 
                 std::unordered_set<std::string> existingMessages(g_chatMessages.begin(), g_chatMessages.end());
                 for (const auto& msg : messages) {
@@ -450,11 +441,8 @@ void CheckChatMessages() {
                         g_chatMessages.push_back(fullMessage);
                         logMessages.push_back(fullMessage); // Add to logMessages
                         existingMessages.insert(fullMessage); // Update the set with the new message
-                        LogDebug("New chat message: " + fullMessage);
                     }
                 }
-            } else {
-                LogDebug("Failed to fetch chat messages. Status: " + status);
             }
         } catch (const std::exception& e) {
             LogDebug("Exception: " + std::string(e.what()));

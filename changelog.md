@@ -2,7 +2,7 @@
 
 ## [draft] - 2024-12-27
 
-- fixed: nix.
+- changed: Optimized chat API functions.
 
 ## [1.0.6] - 2024-12-27
 
