@@ -77,6 +77,10 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         ImGui::Checkbox("Save Username", &saveUsername);
         ImGui::Checkbox("Show Username", &showUsername);
         ImGui::Checkbox("Show Password", &showPassword);
+        // Add a close button
+        if (ImGui::Button("Close")) {
+            ImGui::CloseCurrentPopup();
+        }
         ImGui::EndPopup();
     }
 

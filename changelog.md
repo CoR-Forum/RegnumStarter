@@ -4,6 +4,7 @@
 
 - modified: Changed login window layout for better usability.
 - modified: Save username by default. This can be changed in the login window.
+- fixed: Sylent-X was flagged by some virus defenders.
 
 ## [1.0.3] - 2024-12-27
 
