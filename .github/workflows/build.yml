@@ -108,6 +108,12 @@ jobs:
         install: > 
           mingw-w64-x86_64-toolchain 
 
+    - name: Replace Version Placeholder in Utils.h
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        (Get-Content includes/Utils.h) -replace 'VERSION_PLACEHOLDER', $version | Set-Content includes/Utils.h
+
     - name: Build Sylent-X
       shell: msys2 {0}
       run: |
