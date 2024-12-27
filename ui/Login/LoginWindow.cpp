@@ -64,30 +64,26 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     // Check if Caps Lock is enabled
     if ((GetKeyState(VK_CAPITAL) & 0x0001) != 0) {
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Caps Lock is enabled!");
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Warning: Caps Lock is enabled");
     }
 
     ImGui::BeginDisabled(isLoading);
-    if (ImGui::Button("Login", ImVec2(100, 0))) {
+    if (ImGui::Button("Login", ImVec2(240, 30))) {
         loginTriggered = true;
     }
     ImGui::EndDisabled();
-    
-    ImGui::SameLine();
-    ImGui::Checkbox("Save Username", &saveUsername);
+
+    if (ImGui::BeginPopup("OptionsPopup", ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Checkbox("Save Username", &saveUsername);
+        ImGui::Checkbox("Show Username", &showUsername);
+        ImGui::Checkbox("Show Password", &showPassword);
+        ImGui::EndPopup();
+    }
 
     // Display the status message underneath the login button if it's set
     if (!statusMessage.empty()) {
         ImGui::TextColored(ImVec4(0.75f, 0.0f, 0.75f, 1.0f), "%s", statusMessage.c_str());
     }
-
-    // Add checkboxes for showing username and password
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
-    ImGui::Checkbox("Show Username", &showUsername);
-    ImGui::SameLine();
-    ImGui::Checkbox("Show Password", &showPassword);
-    ImGui::PopStyleVar(2);
 
     // Check for Enter key press
     if (!isLoading && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
@@ -119,15 +115,20 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
 
     ImGui::Separator();
     
-    if (ImGui::Button("Register")) {
+    if (ImGui::Button("Create Account")) {
         show_login_window = false;
         show_register_window = true;
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Forgot Password")) {
+    if (ImGui::Button("Reset Password")) {
         show_login_window = false;
         show_forgot_password_window = true;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button(ICON_FA_COG)) {
+        ImGui::OpenPopup("OptionsPopup");
     }
 
     ImGui::End();

@@ -16,7 +16,7 @@ extern HWND hwnd;
 // global variables for user login and password
 std::string login;
 std::string password;
-bool saveUsername = false;
+bool saveUsername = true;
 bool showUsername = true;
 bool showPassword = false;
 
