@@ -5,8 +5,8 @@
 .vscode/
 build-and-run.sh
 
-# Other
-background.bmp
+# Regnum-related files
+game.cfg
 
 # Prerequisites
 *.d
@@ -41,12 +41,5 @@ background.bmp
 *.out
 *.app
 
-# ImGui
-imgui.ini
-
 # Build path
 bin/
-
-# Gource
-gource.log
-gource.mp4
