@@ -367,13 +367,11 @@ void SendChatMessage(const std::string& message) {
             {"message", message}
         };
         std::string payload = jsonPayload.dump();
-        LogDebug("Sending chat message with payload: " + payload);
 
         HINTERNET hInternet = OpenInternetConnection();
         HINTERNET hConnect = ConnectToAPI(hInternet);
         HINTERNET hRequest = SendHTTPPostRequest(hConnect, path, payload);
         std::string response = ReadResponse(hRequest);
-        LogDebug("Response received: " + response);
         CloseInternetHandles(hRequest, hConnect, hInternet);
 
         auto jsonResponse = nlohmann::json::parse(response);
@@ -396,12 +394,11 @@ void SendChatMessage(const std::string& message) {
                     existingMessages.insert(fullMessage); // Update the set with the new message
                 }
             }
-            LogDebug("Chat message sent successfully.");
         } else {
-            LogDebug("Failed to send chat message: " + message);
+            Log("Failed to send chat message: " + message);
         }
     } catch (const std::exception& e) {
-        LogDebug("Exception: " + std::string(e.what()));
+        Log("Exception: " + std::string(e.what()));
     }
 }
 
