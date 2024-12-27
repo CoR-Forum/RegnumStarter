@@ -8,9 +8,7 @@
 - fixed: Zoom slider was not shown.
 
 ## [1.0.1] - 2024-12-24
-### Fixed
 - fixed: Message boxes were hidden behind the main window.
 
 ## [1.0.0] - 2024-12-24
-
 We are excited to announce the initial launch of Sylent-X! Enhance your Champions of Regnum experience with our powerful tool.
