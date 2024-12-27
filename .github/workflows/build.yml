@@ -86,7 +86,7 @@ jobs:
         libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
         libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
         cp deploy/Sylent-X.exe deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
-        rm -rf deploy/Sylent-X.exe
+        rm deploy/Sylent-X.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
