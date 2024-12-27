@@ -65,6 +65,38 @@ jobs:
         Write-Host $changelog_md
         echo "::set-output name=changelog_md::$changelog_md"
 
+    - name: Generate changelog.json
+      id: generate_changelog_json
+      shell: pwsh
+      run: |
+        $changelog = Get-Content changelog.md -Raw
+        $changelog_json = @()
+        $matches = [regex]::Matches($changelog, '## \[(.*?)\] - (\d{4}-\d{2}-\d{2})\s*(.*?)\s*(?=## \[|\Z)', 'Singleline')
+        foreach ($match in $matches) {
+          $version = $match.Groups[1].Value
+          $date = $match.Groups[2].Value
+          $changes = $match.Groups[3].Value.Trim() -split "`n"
+          $parsed_changes = @()
+          $current_type = ""
+          foreach ($change in $changes) {
+            if ($change.StartsWith("### ")) {
+              $current_type = $change.Substring(4).Trim()
+            } elseif ($change.Trim() -ne "") {
+              $parsed_changes += @{
+                type = $current_type
+                change = $change.Trim()
+              }
+            }
+          }
+          $changelog_json += @{
+            version = $version
+            date = $date
+            changes = $parsed_changes
+          }
+        }
+        $changelog_json | ConvertTo-Json -Depth 3 | Out-File -FilePath changelog.json
+        Write-Host "Generated changelog.json: $changelog_json"
+
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -110,6 +142,20 @@ jobs:
         protocol: ftps
         local-dir: ./deploy/
         server-dir: /
+
+    - name: Upload changelog.json to FTP server
+      uses: SamKirkland/FTP-Deploy-Action@4.1.0
+      with:
+        server: ${{ vars.FTP_HOST }}
+        username: ${{ vars.FTP_USERNAME_WEB }}
+        password: ${{ secrets.FTP_PASSWORD_WEB }}
+        protocol: ftps
+        local-dir: ./changelog.json
+        server-dir: /
+
+    - name: Cleanup changelog.json
+      run: |
+        rm changelog.json
 
     - name: Create GitHub Release
       id: create_release
