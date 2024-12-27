@@ -172,7 +172,8 @@ jobs:
         server-dir: /
 
     - name: Cleanup Temporary Directories
+      shell: pwsh
       run: |
-        rm -rf deploy
-        rm -rf tmp
-        rm -rf changelog
+        Remove-Item -Recurse -Force deploy
+        Remove-Item -Recurse -Force tmp
+        Remove-Item -Recurse -Force changelog
