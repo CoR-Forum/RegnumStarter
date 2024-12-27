@@ -69,7 +69,6 @@ jobs:
       run: |
         mkdir deploy
         mkdir tmp
-        mkdir changelog
 
     - name: Generate changelog.json
       id: generate_changelog_json
@@ -94,13 +93,13 @@ jobs:
             changes = $parsed_changes
           }
         }
-        $changelog_json | ConvertTo-Json -Depth 3 | Out-File -FilePath changelog/changelog.json
+        $changelog_json | ConvertTo-Json -Depth 3 | Out-File -FilePath tmp/changelog.json
         Write-Host "Generated changelog.json. Content of changelog.json:"
-        Get-Content changelog/changelog.json
+        Get-Content tmp/changelog.json
 
     - name: Upload changelog.json to FTP server
       run: |
-        curl -v --ftp-ssl --ssl-reqd -T changelog/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
+        curl -v --ftp-ssl --ssl-reqd -T tmp/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
   
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
@@ -170,4 +169,3 @@ jobs:
       run: |
         Remove-Item -Recurse -Force deploy
         Remove-Item -Recurse -Force tmp
-        Remove-Item -Recurse -Force changelog
