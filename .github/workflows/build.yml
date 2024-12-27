@@ -67,6 +67,22 @@ jobs:
         local-dir: ./deploy/
         server-dir: /
 
+    - name: Read Changelog
+      id: changelog
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        $changelog = Get-Content changelog.md
+        $start = $changelog.IndexOf("## [$version]")
+        if ($start -eq -1) { 
+          Write-Error "Version $version not found in changelog.md"
+          exit 1
+        }
+        $end = $changelog.IndexOf("## [", $start + 1)
+        if ($end -eq -1) { $end = $changelog.Length }
+        $changelog_md = $changelog.Substring($start, $end - $start).Trim()
+        echo "::set-output name=changelog_md::$changelog_md"
+
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -77,6 +93,7 @@ jobs:
         release_name: Sylent-X ${{ steps.version.outputs.version }}
         draft: false
         prerelease: false
+        body: ${{ steps.changelog.outputs.changelog_md }}
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
