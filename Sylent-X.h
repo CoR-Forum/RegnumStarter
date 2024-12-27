@@ -7,8 +7,6 @@
 #include "includes/API/ApiHandler.cpp"
 #include "includes/chrono/chrono.cpp"
 #include "ui/Memory/Memory.cpp"
-#include "ui/Movement/MovementWindow.cpp"
-#include "ui/Player/PlayerWindow.cpp"
 #include "ui/View/ViewWindow.cpp"
 #include <windows.h>
 #include <string>
