@@ -46,14 +46,14 @@ jobs:
       shell: pwsh
       run: |
         $version = "${{ steps.version.outputs.version }}"
-        $changelog = Get-Content changelog.md
+        $changelog = Get-Content changelog.md -Raw
         $versionPattern = "## \[$version\] - "
         $start = $changelog.IndexOf($versionPattern)
         if ($start -eq -1) { 
           Write-Error "Version $version not found in changelog.md"
           exit 1
         }
-        $end = $changelog.IndexOf("## [", $start + 1)
+        $end = $changelog.IndexOf("## [", $start + $versionPattern.Length)
         if ($end -eq -1) { $end = $changelog.Length }
         $changelog_md = $changelog.Substring($start, $end - $start).Trim()
         echo "::set-output name=changelog_md::$changelog_md"
