@@ -1,5 +1,8 @@
 # Changelog
 
+## [draft] - 
+
+
 ## [1.0.3] - 2024-12-27
 - fixed: Various log outputs were visible without having debug mode enabled.
 

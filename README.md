@@ -65,12 +65,21 @@ This guide provides detailed instructions on how to build the application on bot
 
 ## Update Process
 
-To update the application, place the new file on the server and update `latest_version.txt` accordingly. Example `latest_version.txt`:
+1. Bump the Version in ``version.txt``. Note that right now, after 1.0.9, we are forced to use 1.1.0 because 1.0.10 would be counted lower than 1.0.9. Ask @Joshua2504 if anything is unclear, as this might break everything.
 
-```
-0.1.1
-https://cor-forum.de/regnum/sylent/Sylent-X-0.1.1.exe
-```
+2. Write a Changelog in ``changelog.md``
+3. Merge to **main** branch.
+
+The build process will start. You can follow up by clicking *Actions* in the top menu. If the build process is successfull, the new update has been released and this has happened:
+
+- Updated changelog on website.
+- Created new release on Github.
+- Uploaded new version to patch server.
+
+If the build process fails, check the Actions logs, but it's likely because:
+
+- The version number has not been increased (release already exists)
+- Changelog is missing.
 
 ## Debugging
 
