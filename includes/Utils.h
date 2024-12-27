@@ -41,7 +41,6 @@ using json = nlohmann::json;
 HINSTANCE hInstanceGlobal;
 HINSTANCE hInstance;
 
-
 std::vector<float> ReadMemoryValues(const std::vector<std::string>& options);
 
 extern void MemoryManipulation(const std::string& option, float newValue = 0.0f);
@@ -51,19 +50,8 @@ DWORD GetProcessIdByName(const std::wstring& processName);
 // Global constants
 
 const char* appDataPath = getenv("APPDATA");
-// Function to read the version from version.txt
-std::string GetVersionFromFile() {
-    std::ifstream versionFile("version.txt");
-    if (!versionFile.is_open()) {
-        std::cerr << "Error: Could not open version.txt" << std::endl;
-        return "unknown";
-    }
-    std::stringstream buffer;
-    buffer << versionFile.rdbuf();
-    return buffer.str();
-}
 
-const std::string sylentx_version = GetVersionFromFile();
+const std::string sylentx_version = "VERSION_PLACEHOLDER";
 
 const std::string sylentx_appname = "Sylent-X";
 const std::string sylentx_windowname = "Sylent-X " + sylentx_version;
