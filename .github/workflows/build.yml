@@ -51,12 +51,14 @@ jobs:
         Write-Host $changelog
         $versionPattern = "## \[$version\] - "
         Write-Host "Version pattern: $versionPattern"
-        $start = $changelog.IndexOf($versionPattern)
-        Write-Host "Start index: $start"
-        if ($start -eq -1) { 
+        $regex = [regex]::Escape($versionPattern)
+        $match = [regex]::Match($changelog, $regex)
+        if (-not $match.Success) {
           Write-Error "Version $version not found in changelog.md"
           exit 1
         }
+        $start = $match.Index
+        Write-Host "Start index: $start"
         $end = $changelog.IndexOf("## [", $start + $versionPattern.Length)
         Write-Host "End index: $end"
         if ($end -eq -1) { $end = $changelog.Length }
