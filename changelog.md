@@ -1,7 +1,8 @@
 # Changelog
 
 ## [draft] - 
-
+- modified: Changed login window layout for better usability.
+- modified: Save username by default. This can be changed in the login window.
 
 ## [1.0.3] - 2024-12-27
 - fixed: Various log outputs were visible without having debug mode enabled.
