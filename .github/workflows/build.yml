@@ -1,0 +1,171 @@
+name: Build and Publish Sylent-X (Windows)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Extract Version Number
+      id: version
+      shell: pwsh
+      run: |
+        echo "Version content:"
+        $version = Get-Content version.txt
+        echo $version
+        echo "::set-output name=version::$version"
+
+    - name: Check if Version Exists on GitHub
+      id: check_version
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        try {
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/tags/$version" -Headers @{ Authorization = "token $env:GITHUB_TOKEN" }
+          if ($response) {
+            Write-Error "Version $version already exists on GitHub"
+            exit 1
+          }
+        } catch {
+          if ($_.Exception.Response.StatusCode -ne 404) {
+            throw $_
+          }
+        }
+
+    - name: Read Changelog
+      id: changelog
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        $changelog = Get-Content changelog.md -Raw
+        Write-Host "Changelog content:"
+        Write-Host $changelog
+        $versionPattern = "## [$version] - "
+        Write-Host "Version pattern: $versionPattern"
+        $start = $changelog.IndexOf($versionPattern)
+        Write-Host "Start index: $start"
+        if ($start -eq -1) { 
+          Write-Error "Version $version not found in changelog.md"
+          exit 1
+        }
+        $end = $changelog.IndexOf("## [", $start + $versionPattern.Length)
+        Write-Host "End index: $end"
+        if ($end -eq -1) { $end = $changelog.Length }
+        $changelog_md = $changelog.Substring($start, $end - $start).Trim()
+        Write-Host "Extracted changelog:"
+        Write-Host $changelog_md
+        echo "::set-output name=changelog_md::$changelog_md"
+
+    - name: Create Temporary Directories
+      run: |
+        mkdir deploy
+        mkdir tmp
+
+    - name: Generate changelog.json
+      id: generate_changelog_json
+      shell: pwsh
+      run: |
+        $changelog = Get-Content changelog.md -Raw
+        $changelog_json = @()
+        $matches = [regex]::Matches($changelog, '## \[(.*?)\] - (\d{4}-\d{2}-\d{2})\s*(.*?)\s*(?=## \[|\Z)', 'Singleline')
+        foreach ($match in $matches) {
+          $version = $match.Groups[1].Value
+          $date = $match.Groups[2].Value
+          $changes = $match.Groups[3].Value.Trim() -split "`n"
+          $parsed_changes = @()
+          foreach ($change in $changes) {
+            if ($change.Trim() -ne "" -and -not $change.StartsWith("### ")) {
+              $parsed_changes += $change.Trim()
+            }
+          }
+          $changelog_json += @{
+            version = $version
+            date = $date
+            changes = $parsed_changes
+          }
+        }
+        $changelog_json | ConvertTo-Json -Depth 3 | Out-File -FilePath tmp/changelog.json
+        Write-Host "Generated changelog.json. Content of changelog.json:"
+        Get-Content tmp/changelog.json
+
+    - name: Upload changelog.json to FTP server
+      run: |
+        curl -v --ftp-ssl --ssl-reqd -T tmp/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
+  
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: > 
+          mingw-w64-x86_64-toolchain 
+          mingw-w64-i686-toolchain
+
+    - name: Build Sylent-X
+      shell: msys2 {0}
+      run: |
+        windres resource.rc resource.o
+        g++ -o deploy/Sylent-X.exe Sylent-X.cpp \
+        libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
+        libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
+        cp deploy/Sylent-X.exe deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
+        rm deploy/Sylent-X.exe
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Sylent-X
+        path: deploy/Sylent-X.exe
+
+    - name: Create latest.txt
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        $version | Out-File -FilePath deploy/latest.txt
+        "https://patch.sylent-x.com/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest.txt -Append
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Sylent-X ${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: false
+        body: ${{ steps.changelog.outputs.changelog_md }}
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
+        asset_name: Sylent-X.exe
+        asset_content_type: application/octet-stream
+
+    - name: Deploy to FTP server
+      uses: SamKirkland/FTP-Deploy-Action@4.1.0
+      with:
+        server: ${{ vars.FTP_HOST }}
+        username: ${{ vars.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
+        local-dir: ./deploy/
+        server-dir: /
+
+    - name: Cleanup Temporary Directories
+      shell: pwsh
+      run: |
+        Remove-Item -Recurse -Force deploy
+        Remove-Item -Recurse -Force tmp
