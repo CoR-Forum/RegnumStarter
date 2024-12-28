@@ -1,6 +1,6 @@
 # Changelog
 
-## [draft] - 2024-12-27
+## [1.0.7] - 2024-12-27
 
 - fixed: Regnum sound settings slider was allowing values above 100, and was also not showing the value as percent.
 - fixed: Updated Discord link in ticket creation button to point to the official website.
