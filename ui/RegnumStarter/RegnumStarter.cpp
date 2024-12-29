@@ -194,34 +194,10 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     
     ImGui::SeparatorText("Regnum Accounts");
 
-    ImGui::SameLine(ImGui::GetWindowWidth() - 100); // Adjust the position to the very right
     if (ImGui::Button("Add Account")) {
         ImGui::OpenPopup("Regnum Account##AddAccountPopup");
     }
 
-    if (ImGui::TreeNodeEx("Account Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
-        if (regnumAccounts.empty()) {
-            ImGui::Text("No accounts available");
-        } else {
-            for (int i = 0; i < regnumAccounts.size(); i++) {
-                bool isSelected = (selectedAccount == i);
-                if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
-                    selectedAccount = i;
-                }
-            }
-        }
-        ImGui::TreePop();
-    }
-    
-    if (ImGui::Button("Play")) {
-        if (selectedAccount != -1) {
-            const auto& account = regnumAccounts[selectedAccount];
-            runRoClientGame(account.username, account.password);
-        }
-    }
-
-    ImGui::SetNextWindowSize(ImVec2(500, 270)); // Set the desired size of the popup
-    if (ImGui::BeginPopup("Regnum Account##AddAccountPopup")) {
     ImGui::Columns(4, "RegnumAccounts");
     ImGui::Separator();
     ImGui::Text("Username");
@@ -234,7 +210,6 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     ImGui::NextColumn();
     ImGui::Separator();
   
-
     static char regnumId[128] = "";
     static char regnumUsername[128] = "";
     static char regnumPassword[128] = "";
@@ -242,7 +217,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     static char regnumReferrer[128] = "";
 
     ServerOption serverOptions[] = { {"ra", "Ra"} };
-    ReferrerOption referrerOptions[] = { {"nge", "NGE"}, {"gmg", "Gamigo"}, {"boa", "Boacompra"} };
+    ReferrerOption referrerOptions[] = { {"nge", "NGE / NGD"}, {"gmg", "Gamigo (Deutsch)"}, {"boa", "Boacompra"} };
     static int currentServer = 0;
     static int currentReferrer = 0;
 
@@ -270,29 +245,6 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         ImGui::Text("%s", referrerName);
         ImGui::NextColumn();
 
-        std::string editButtonLabel = "Edit##" + std::to_string(account.id);
-        if (ImGui::Button(editButtonLabel.c_str())) {
-            snprintf(regnumId, IM_ARRAYSIZE(regnumId), "%d", account.id);
-            snprintf(regnumUsername, IM_ARRAYSIZE(regnumUsername), "%s", account.username.c_str());
-            snprintf(regnumPassword, IM_ARRAYSIZE(regnumPassword), "%s", account.password.c_str());
-            snprintf(regnumServer, IM_ARRAYSIZE(regnumServer), "%s", account.server.c_str());
-            snprintf(regnumReferrer, IM_ARRAYSIZE(regnumReferrer), "%s", account.referrer.c_str());
-
-            for (int i = 0; i < IM_ARRAYSIZE(serverOptions); ++i) {
-                if (strcmp(serverOptions[i].id, account.server.c_str()) == 0) {
-                    currentServer = i;
-                    break;
-                }
-            }
-            for (int i = 0; i < IM_ARRAYSIZE(referrerOptions); ++i) {
-                if (strcmp(referrerOptions[i].id, account.referrer.c_str()) == 0) {
-                    currentReferrer = i;
-                    break;
-                }
-            }
-        }
-
-        ImGui::SameLine();
         std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
         if (ImGui::Button(deleteButtonLabel.c_str())) {
             DeleteRegnumAccount(account.id);
@@ -300,6 +252,32 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
         ImGui::NextColumn();
     }
+
+    ImGui::Columns(1);
+
+    if (ImGui::TreeNodeEx("Account Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (regnumAccounts.empty()) {
+            ImGui::Text("No accounts available");
+        } else {
+            for (int i = 0; i < regnumAccounts.size(); i++) {
+                bool isSelected = (selectedAccount == i);
+                if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
+                    selectedAccount = i;
+                }
+            }
+        }
+        ImGui::TreePop();
+    }
+    
+    if (ImGui::Button("Play")) {
+        if (selectedAccount != -1) {
+            const auto& account = regnumAccounts[selectedAccount];
+            runRoClientGame(account.username, account.password);
+        }
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(500, 270)); // Set the desired size of the popup
+    if (ImGui::BeginPopup("Regnum Account##AddAccountPopup")) {
 
     ImGui::Columns(1);
         ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
