@@ -28,18 +28,22 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         usernameSet = true;
     }
 
-    // Load the texture
-    static LPDIRECT3DTEXTURE9 texture_sylent_logo = nullptr;
-    if (!texture_sylent_logo) {
-        texture_sylent_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_REGNUMSTARTER_ICON); 
+    // Load the regnumstarter icon from the resources
+    static LPDIRECT3DTEXTURE9 texture_regnumstarter_logo = nullptr;
+    if (!texture_regnumstarter_logo) {
+        texture_regnumstarter_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_REGNUMSTARTER_ICON); 
     }
 
-    // Display the texture at the top
-    if (texture_sylent_logo) {
-      // center the image horizontally and vertically
-        ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 50) * 0.5f);
-        ImGui::Image((void*)texture_sylent_logo, ImVec2(50, 50));
+    // Load the cor-forum logo from the resources
+    static LPDIRECT3DTEXTURE9 texture_corforum_logo = nullptr;
+    if (!texture_corforum_logo) {
+        texture_corforum_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_CORFORUM_LOGO);
     }
+
+    // Display the regnumstarter icon and cor-forum logo side by side
+    ImGui::Image((void*)texture_regnumstarter_logo, ImVec2(40, 40));
+    ImGui::SameLine();
+    ImGui::Image((void*)texture_corforum_logo, ImVec2(174, 40));
 
     ImGui::Spacing();
 
