@@ -194,10 +194,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 // Create a child window for the texture
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
-                ImGui::Columns(2, nullptr, false); // Create two columns
+                ImGui::Columns(3, nullptr, false); // Create three columns
 
                 // Left column for account selection with scrollbar
-                ImGui::SetColumnWidth(0, 400); // Set the width of the first column
+                ImGui::SetColumnWidth(0, 240); // Adjust the width of the first column
                 ImGui::BeginChild("AccountSelection", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
                 if (regnumAccounts.empty()) {
                     ImGui::Text("No accounts available");
@@ -212,7 +212,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::EndChild();
                 ImGui::NextColumn();
 
-                // Right column for the "Play" button
+                // Middle column for the "Play" button
+                ImGui::SetColumnWidth(1, 160); // Adjust the width of the second column
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
                 if (ImGui::Button("Play", ImVec2(160, 50))) { // Make the button bigger
                     if (selectedAccount != -1) {
@@ -220,10 +221,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         runRoClientGame(account.username, account.password);
                     }
                 }
+                ImGui::NextColumn();
 
-                // Regnum Settings button and Regnum Account button next to the "Play" button, underneath each other
+                // Right column for "Game Settings" and "Regnum Accounts" buttons
+                ImGui::SetColumnWidth(2, 160); // Adjust the width of the third column
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
-                if (ImGui::Button("Settings", ImVec2(160, 30))) {
+                if (ImGui::Button("Game Settings", ImVec2(160, 20))) {
                     show_settings_window = true;
                     show_license_window = false;
                     show_info_window = false;
@@ -234,7 +237,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
-                if (ImGui::Button("Regnum Accounts", ImVec2(160, 30))) {
+                if (ImGui::Button("Regnum Accounts", ImVec2(160, 20))) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -243,7 +246,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_calendar_window = false;
                     show_RegnumAccounts = true;
                 }
-                
+
                 ImGui::EndChild();
 
                 ImVec2 buttonSize = ImVec2(120, 30);
