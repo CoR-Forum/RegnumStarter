@@ -65,6 +65,13 @@ jobs:
         Write-Host $changelog_md
         echo "::set-output name=changelog_md::$changelog_md"
 
+    - name: Read Full Changelog
+      id: full_changelog
+      shell: pwsh
+      run: |
+        $changelog = Get-Content changelog.md -Raw
+        echo "::set-output name=full_changelog::$changelog"
+
     - name: Create Temporary Directories
       run: |
         mkdir deploy
@@ -142,7 +149,11 @@ jobs:
         release_name: v${{ steps.version.outputs.version }}
         draft: false
         prerelease: false
-        body: ${{ steps.changelog.outputs.changelog_md }}
+        body: |
+          ${{ steps.changelog.outputs.changelog_md }}
+
+          Full Changelog:
+          ${{ steps.full_changelog.outputs.full_changelog }}
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
