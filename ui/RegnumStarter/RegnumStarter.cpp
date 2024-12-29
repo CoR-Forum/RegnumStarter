@@ -108,7 +108,7 @@ void CheckAndUpdateConfig() {
     }
 }
 
-void ShowRegnumStarter(bool& show_RegnumStarter) {
+void ShowRegnumSettings(bool& show_RegnumSettings) {
 
     static bool configChecked = false;
     if (!configChecked) {
@@ -116,7 +116,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         configChecked = true;
     }
 
-    if (!show_RegnumStarter) return;
+    if (!show_RegnumSettings) return;
 
     static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
     static bool showFileDialog = false;
@@ -191,122 +191,8 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
         filesChecked = true; // Set the flag to true after the operation is performed
     }
-    
-    ImGui::SeparatorText("Regnum Accounts");
 
-    if (ImGui::Button("Add Account")) {
-        ImGui::OpenPopup("Regnum Account##AddAccountPopup");
-    }
-
-    ImGui::Columns(4, "RegnumAccounts");
-    ImGui::Separator();
-    ImGui::Text("Username");
-    ImGui::NextColumn();
-    ImGui::Text("Server");
-    ImGui::NextColumn();
-    ImGui::Text("Referrer");
-    ImGui::NextColumn();
-    ImGui::Text("Actions");
-    ImGui::NextColumn();
-    ImGui::Separator();
-  
-    static char regnumId[128] = "";
-    static char regnumUsername[128] = "";
-    static char regnumPassword[128] = "";
-    static char regnumServer[128] = "";
-    static char regnumReferrer[128] = "";
-
-    ServerOption serverOptions[] = { {"ra", "Ra"} };
-    ReferrerOption referrerOptions[] = { {"nge", "NGE / NGD"}, {"gmg", "Gamigo (Deutsch)"}, {"boa", "Boacompra"} };
-    static int currentServer = 0;
-    static int currentReferrer = 0;
-
-    for (const auto& account : regnumAccounts) {
-        ImGui::Text("%s", account.username.c_str());
-        ImGui::NextColumn();
-
-        const char* serverName = account.server.c_str();
-        for (const auto& serverOption : serverOptions) {
-            if (strcmp(serverOption.id, account.server.c_str()) == 0) {
-                serverName = serverOption.name;
-                break;
-            }
-        }
-        ImGui::Text("%s", serverName);
-        ImGui::NextColumn();
-
-        const char* referrerName = account.referrer.c_str();
-        for (const auto& referrerOption : referrerOptions) {
-            if (strcmp(referrerOption.id, account.referrer.c_str()) == 0) {
-                referrerName = referrerOption.name;
-                break;
-            }
-        }
-        ImGui::Text("%s", referrerName);
-        ImGui::NextColumn();
-
-        std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
-        if (ImGui::Button(deleteButtonLabel.c_str())) {
-            DeleteRegnumAccount(account.id);
-        }
-
-        ImGui::NextColumn();
-    }
-
-    ImGui::Columns(1);
-
-    ImGui::SetNextWindowSize(ImVec2(500, 270)); // Set the desired size of the popup
-    if (ImGui::BeginPopup("Regnum Account##AddAccountPopup")) {
-        ImGui::Columns(1);
-        ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
-        ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
-        ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
-            *out_text = ((ServerOption*)data)[idx].name;
-            return true;
-        }, serverOptions, IM_ARRAYSIZE(serverOptions));
-        ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
-            *out_text = ((ReferrerOption*)data)[idx].name;
-            return true;
-        }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
-
-        if (ImGui::Button("Save Account")) {
-            if (strlen(regnumUsername) > 0 && strlen(regnumPassword) > 0) {
-                bool accountExists = false;
-                for (const auto& account : regnumAccounts) {
-                    if (strcmp(account.username.c_str(), regnumUsername) == 0) {
-                        accountExists = true;
-                        break;
-                    }
-                }
-
-                if (!accountExists) {
-                    SaveRegnumAccount(
-                        regnumUsername, 
-                        regnumPassword, 
-                        serverOptions[currentServer].id, 
-                        referrerOptions[currentReferrer].id, 
-                        regnumId[0] == '\0' ? 0 : atoi(regnumId)
-                    );
-                    ImGui::CloseCurrentPopup();
-                } else {
-                    MessageBox(NULL, "Account already exists.", "RegnumStarter", MB_OK | MB_TOPMOST);
-                    LogDebug("Account already exists.");
-                }
-            } else {
-                MessageBox(NULL, "Username or password cannot be empty.", "RegnumStarter", MB_OK | MB_TOPMOST);
-                LogDebug("Username or password cannot be empty.");
-            }
-        }
-        if (ImGui::Button("Cancel")) {
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
+    ImGui::SeparatorText("Settings");
 
     if (ImGui::TreeNode("Settings")) {
         ImGui::SeparatorText("Sound Settings");
@@ -368,5 +254,119 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             }
         }
         ImGui::TreePop();
+    }
+}
+
+void ShowRegnumAccounts(bool& show_RegnumAccounts) {
+    if (!show_RegnumAccounts) return;
+
+    ImGui::SeparatorText("Regnum Accounts");
+
+    if (ImGui::Button("Add Account")) {
+        ImGui::OpenPopup("Add Account");
+    }
+
+    ImGui::Columns(4, "RegnumAccounts");
+    ImGui::Separator();
+    ImGui::Text("Username");
+    ImGui::NextColumn();
+    ImGui::Text("Server");
+    ImGui::NextColumn();
+    ImGui::Text("Referrer");
+    ImGui::NextColumn();
+    ImGui::Text("Actions");
+    ImGui::NextColumn();
+    ImGui::Separator();
+  
+    static char regnumId[128] = "";
+    static char regnumUsername[128] = "";
+    static char regnumPassword[128] = "";
+    static char regnumServer[128] = "";
+    static char regnumReferrer[128] = "";
+
+    ServerOption serverOptions[] = { {"ra", "Ra"} };
+    ReferrerOption referrerOptions[] = { {"nge", "NGE / NGD"}, {"gmg", "Gamigo (Deutsch)"}, {"boa", "Boacompra"} };
+    static int currentServer = 0;
+    static int currentReferrer = 0;
+
+    for (const auto& account : regnumAccounts) {
+        ImGui::Text("%s", account.username.c_str());
+        ImGui::NextColumn();
+
+        const char* serverName = account.server.c_str();
+        for (const auto& serverOption : serverOptions) {
+            if (strcmp(serverOption.id, account.server.c_str()) == 0) {
+                serverName = serverOption.name;
+                break;
+            }
+        }
+        ImGui::Text("%s", serverName);
+        ImGui::NextColumn();
+
+        const char* referrerName = account.referrer.c_str();
+        for (const auto& referrerOption : referrerOptions) {
+            if (strcmp(referrerOption.id, account.referrer.c_str()) == 0) {
+                referrerName = referrerOption.name;
+                break;
+            }
+        }
+        ImGui::Text("%s", referrerName);
+        ImGui::NextColumn();
+
+        std::string deleteButtonLabel = "Delete##" + std::to_string(account.id);
+        if (ImGui::Button(deleteButtonLabel.c_str())) {
+            DeleteRegnumAccount(account.id);
+        }
+
+        ImGui::NextColumn();
+    }
+
+    ImGui::Columns(1);
+
+    if (ImGui::BeginPopup("Add Account")) {
+        ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
+        ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
+        ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
+            *out_text = ((ServerOption*)data)[idx].name;
+            return true;
+        }, serverOptions, IM_ARRAYSIZE(serverOptions));
+        ImGui::Combo("Referrer", &currentReferrer, [](void* data, int idx, const char** out_text) {
+            *out_text = ((ReferrerOption*)data)[idx].name;
+            return true;
+        }, referrerOptions, IM_ARRAYSIZE(referrerOptions));
+
+        if (ImGui::Button("Save Account")) {
+            if (strlen(regnumUsername) > 0 && strlen(regnumPassword) > 0) {
+                bool accountExists = false;
+                for (const auto& account : regnumAccounts) {
+                    if (strcmp(account.username.c_str(), regnumUsername) == 0) {
+                        accountExists = true;
+                        break;
+                    }
+                }
+
+                if (!accountExists) {
+                    SaveRegnumAccount(
+                        regnumUsername, 
+                        regnumPassword, 
+                        serverOptions[currentServer].id, 
+                        referrerOptions[currentReferrer].id, 
+                        regnumId[0] == '\0' ? 0 : atoi(regnumId)
+                    );
+                    ImGui::CloseCurrentPopup();
+                } else {
+                    MessageBox(NULL, "Account already exists.", "RegnumStarter", MB_OK | MB_TOPMOST);
+                    LogDebug("Account already exists.");
+                }
+            } else {
+                MessageBox(NULL, "Username or password cannot be empty.", "RegnumStarter", MB_OK | MB_TOPMOST);
+                LogDebug("Username or password cannot be empty.");
+            }
+        }
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
     }
 }

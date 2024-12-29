@@ -220,6 +220,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         runRoClientGame(account.username, account.password);
                     }
                 }
+
+                // Regnum Settings button and Regnum Account button next to the "Play" button, underneath each other
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
+                if (ImGui::Button("Settings", ImVec2(160, 30))) {
+                    show_settings_window = true;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumSettings = false;
+                    show_view_window = false;
+                    show_calendar_window = false;
+                    show_RegnumAccounts = false;
+                }
+
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
+                if (ImGui::Button("Regnum Accounts", ImVec2(160, 30))) {
+                    show_settings_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumSettings = false;
+                    show_view_window = false;
+                    show_calendar_window = false;
+                    show_RegnumAccounts = true;
+                }
+                
                 ImGui::EndChild();
 
                 ImVec2 buttonSize = ImVec2(120, 30);
@@ -237,7 +261,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_RegnumStarter = false;
+                    show_RegnumSettings = false;
                     show_view_window = false;
                     show_calendar_window = false;
                 }
@@ -248,7 +272,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button("Settings", buttonSize)) {
                     show_license_window = false;
                     show_info_window = false;
-                    show_RegnumStarter = false;
+                    show_RegnumSettings = false;
                     show_view_window = false;
                     show_calendar_window = false;
                     show_settings_window = true;
@@ -261,7 +285,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_RegnumStarter = false;
+                    show_RegnumSettings = false;
                     show_calendar_window = false;
                     show_view_window = true;
                 }
@@ -276,7 +300,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_view_window = false;
                     show_calendar_window = false;
                     LoadRegnumAccounts();
-                    show_RegnumStarter = true;
+                    show_RegnumSettings = true;
                 }
                 ImGui::PopStyleVar();
 
@@ -285,7 +309,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (ImGui::Button("Calendar", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
-                    show_RegnumStarter = false;
+                    show_RegnumSettings = false;
                     show_view_window = false;
                     show_info_window = false;
                     show_calendar_window = true;
@@ -348,10 +372,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
             } else if (show_view_window) {
                 ShowViewWindow(show_view_window, optionZoom, optionFov, featureFov, featureZoom, waitingForHotkey, userDefinedHotkey);
-            } else if (show_RegnumStarter) {
-                ShowRegnumStarter(show_RegnumStarter);
+            } else if (show_RegnumSettings) {
+                ShowRegnumSettings(show_RegnumSettings);
             } else if (show_calendar_window) {
                 ShowBossRespawnWindow(show_calendar_window);
+            } else if (show_RegnumAccounts) {
+                ShowRegnumAccounts(show_RegnumAccounts);
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
@@ -385,6 +411,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
                 ImGui::EndChild();
                 ImGui::End();
+            }
+
+            if (show_RegnumAccounts) {
+                ShowRegnumAccounts(show_RegnumAccounts);
             }
         }
         // PoV toggle logic

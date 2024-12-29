@@ -9,7 +9,10 @@
 #include <string>
 
 // Function to show the RegnumStarter UI
-void ShowRegnumStarter(bool& show_RegnumStarter);
+void ShowRegnumSettings(bool& show_RegnumSettings);
+
+// Function to show the Regnum Accounts window
+void ShowRegnumAccounts(bool& show_RegnumAccounts);
 
 // Function to run the Regnum Online client game
 void runRoClientGame(const std::string& regnumLoginUser, const std::string& regnumLoginPassword);
