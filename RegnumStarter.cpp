@@ -194,49 +194,32 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SameLine();
                 // Create a child window for the texture
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
-                float buttonWidth = 130.0f;
-                float buttonHeight = 30.0f;
-                float spacing = ImGui::GetStyle().ItemSpacing.x; // Get the default spacing between items
+                ImGui::Columns(2, nullptr, false); // Create two columns
 
-                // Calculate total width of all buttons and spacing
-                float totalWidth = 3 * buttonWidth + 6 * spacing;
-
-                // Calculate starting X position to center buttons horizontally
-                float startX = (615 - totalWidth) / 2.0f;
-
-                // Calculate starting Y position to center buttons vertically
-                float startY = (80 - buttonHeight) / 2.0f;
-
-                ImGui::SetCursorPosX(startX);
-                ImGui::SetCursorPosY(startY);
-                if (ImGui::Button("Tools4Regnum", ImVec2(buttonWidth, buttonHeight))) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_RegnumStarter = false;
-                    show_calendar_window = false;
-                    show_view_window = true;
+                // Left column for account selection
+                ImGui::SetColumnWidth(0, 400); // Set the width of the first column
+                if (ImGui::TreeNodeEx("Account Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (regnumAccounts.empty()) {
+                        ImGui::Text("No accounts available");
+                    } else {
+                        for (int i = 0; i < regnumAccounts.size(); i++) {
+                            bool isSelected = (selectedAccount == i);
+                            if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
+                                selectedAccount = i;
+                            }
+                        }
+                    }
+                    ImGui::TreePop();
                 }
 
-                ImGui::SameLine();
-                if (ImGui::Button("RegnumStarter", ImVec2(buttonWidth, buttonHeight))) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_view_window = false;
-                    show_calendar_window = false;
-                    LoadRegnumAccounts();
-                    show_RegnumStarter = true;
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Calendar", ImVec2(buttonWidth, buttonHeight))) {
-                    show_settings_window = false;
-                    show_license_window = false;
-                    show_RegnumStarter = false;
-                    show_view_window = false;
-                    show_info_window = false;
-                    show_calendar_window = true;
-                    InitializeBossRespawns();
+                // Right column for the "Play" button
+                ImGui::NextColumn();
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20); // Add some padding
+                if (ImGui::Button("Play", ImVec2(160, 50))) { // Make the button bigger
+                    if (selectedAccount != -1) {
+                        const auto& account = regnumAccounts[selectedAccount];
+                        runRoClientGame(account.username, account.password);
+                    }
                 }
 
                 ImGui::EndChild();
@@ -274,29 +257,41 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
                 ImGui::PopStyleVar();
 
-                // ImGui::SetCursorPosX(buttonPadding);
-                // ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                // if (ImGui::Button("License", buttonSize)) {
-                //     show_settings_window = false;
-                //     show_info_window = false;
-                //     show_RegnumStarter = false;
-                //     show_view_window = false;
-                //     show_movement_window = false;
-                //     show_player_window = false;
-                //     show_calendar_window = false;
-                //     show_license_window = true;
-                // }
-                // ImGui::PopStyleVar();
+                ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("Tools4Regnum", buttonSize)) {
+                    show_settings_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumStarter = false;
+                    show_calendar_window = false;
+                    show_view_window = true;
+                }
+                ImGui::PopStyleVar();
 
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("Info", buttonSize)) {
+                if (ImGui::Button("RegnumStarter", buttonSize)) {
+                    show_settings_window = false;
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_view_window = false;
+                    show_calendar_window = false;
+                    LoadRegnumAccounts();
+                    show_RegnumStarter = true;
+                }
+                ImGui::PopStyleVar();
+
+                ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("Calendar", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_RegnumStarter = false;
                     show_view_window = false;
-                    show_calendar_window = false;
-                    show_info_window = true;
+                    show_info_window = false;
+                    show_calendar_window = true;
+                    InitializeBossRespawns();
                 }
                 ImGui::PopStyleVar();
 

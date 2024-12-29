@@ -111,6 +111,8 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     // Save username and saveUsername flag to file
                     SaveLoginSettings(username, saveUsername);
 
+                    LoadRegnumAccounts();
+
                     if (user.contains("features") && user["features"].is_array()) {
                         auto features = user["features"];
 
