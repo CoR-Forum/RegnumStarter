@@ -365,6 +365,7 @@ void ShowRegnumAccounts(bool& show_RegnumAccounts) {
                 LogDebug("Username or password cannot be empty.");
             }
         }
+        ImGui::SameLine();
         if (ImGui::Button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }

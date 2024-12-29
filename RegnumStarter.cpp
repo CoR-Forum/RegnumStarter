@@ -160,8 +160,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     PostQuitMessage(0);
                 }
                 
-                // Create a child window for the texture
-                ImGui::BeginChild("TextureChild", ImVec2(130, 80), true);
+                // Create a child window for the texture without border
+                ImGui::BeginChild("TextureChild", ImVec2(130, 90), false);
                 if (texture_sylent_icon) {
                     // Calculate the available space
                     ImVec2 availableSpace = ImGui::GetContentRegionAvail();
@@ -181,7 +181,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SameLine();
                 // Create a child window for the texture
-                ImGui::BeginChild("Menu", ImVec2(615, 80), true);
+                ImGui::BeginChild("Menu", ImVec2(615, 90), false);
                 ImGui::Columns(3, nullptr, false); // Create three columns
 
                 // Left column for account selection with scrollbar
@@ -204,7 +204,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 // Middle column for the "Play" button
                 ImGui::SetColumnWidth(1, 180); // Adjust the width of the second column
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
-                if (ImGui::Button("Play", ImVec2(160, 50))) { // Make the button bigger
+                if (ImGui::Button("Play", ImVec2(160, 60))) { // Make the button bigger
                     if (selectedAccount != -1) {
                         const auto& account = regnumAccounts[selectedAccount];
                         runRoClientGame(account.username, account.password);
@@ -215,7 +215,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 // Right column for "Game Settings" and "Regnum Accounts" buttons
                 ImGui::SetColumnWidth(2, 160); // Adjust the width of the third column
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
-                if (ImGui::Button("Game Settings", ImVec2(160, 20))) {
+                if (ImGui::Button("Game Settings", ImVec2(160, 25))) {
                     show_settings_window = true;
                     show_license_window = false;
                     show_info_window = false;
@@ -226,7 +226,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 }
 
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
-                if (ImGui::Button("Regnum Accounts", ImVec2(160, 20))) {
+                if (ImGui::Button("Regnum Accounts", ImVec2(160, 25))) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
@@ -241,7 +241,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImVec2 buttonSize = ImVec2(120, 30);
 
                 // Create a child window for the navigation buttons
-                ImGui::BeginChild("Navigation", ImVec2(130, 0), true);
+                ImGui::BeginChild("Navigation", ImVec2(140, 0), false);
 
                 // Calculate the padding to center the buttons
                 float childWidth = ImGui::GetWindowWidth();
@@ -284,7 +284,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     InitializeBossRespawns();
                 }
                 ImGui::PopStyleVar();
-                
+
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Settings", buttonSize)) {
@@ -361,9 +361,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } else {
                     ImGui::GetStyle().Colors[ImGuiCol_Text] = textColor;
                     ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = textColor;
-
                     // Log and chat display box at the bottom
-                    ImGui::BeginChild("LogMessages", ImVec2(550, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                    ImGui::BeginChild("LogMessages", ImVec2(580, 200), false, ImGuiWindowFlags_HorizontalScrollbar);
                     for (const auto& msg : logMessages) {
                         ImGui::TextWrapped("%s", msg.c_str());
                     }
@@ -373,7 +372,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     ImGui::EndChild();
 
                     // input field and button to send chat messages using sendChatMessage function
-                    ImGui::PushItemWidth(360); // Set the width of the input field
+                    ImGui::PushItemWidth(500); // Set the width of the input field
                     if (ImGui::InputTextWithHint("##ChatInput", "Type your message...", chatInput, IM_ARRAYSIZE(chatInput), ImGuiInputTextFlags_EnterReturnsTrue)) {
                         if (strlen(chatInput) > 0) {
                             SendChatMessage(chatInput);
