@@ -37,6 +37,7 @@ bool featureFreecam;
 bool featureFastfly;
 bool featureFakelag;
 bool featureCharacter;
+
 // Declare the checkbox states as global variables
 extern bool enableMusic;
 extern bool enableSoundEffects;

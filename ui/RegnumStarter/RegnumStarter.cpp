@@ -266,6 +266,8 @@ void ShowRegnumAccounts(bool& show_RegnumAccounts) {
         ImGui::OpenPopup("Add Account");
     }
 
+    ImGui::SameLine();
+    ImGui::Text("Accounts are saved on your computer");
     ImGui::Columns(4, "RegnumAccounts");
     ImGui::Separator();
     ImGui::Text("Username");

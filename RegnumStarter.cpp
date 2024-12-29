@@ -188,7 +188,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetColumnWidth(0, 240); // Adjust the width of the first column
                 ImGui::BeginChild("AccountSelection", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
                 if (regnumAccounts.empty()) {
-                    ImGui::Text("No accounts available");
+                    ImGui::Text("No accounts available.");
+                    ImGui::Text("Please add an account.");
                 } else {
                     for (int i = 0; i < regnumAccounts.size(); i++) {
                         bool isSelected = (selectedAccount == i);
@@ -201,7 +202,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::NextColumn();
 
                 // Middle column for the "Play" button
-                ImGui::SetColumnWidth(1, 160); // Adjust the width of the second column
+                ImGui::SetColumnWidth(1, 180); // Adjust the width of the second column
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
                 if (ImGui::Button("Play", ImVec2(160, 50))) { // Make the button bigger
                     if (selectedAccount != -1) {
@@ -255,6 +256,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_RegnumSettings = false;
                     show_view_window = false;
                     show_calendar_window = false;
+                    show_RegnumAccounts = false; // Ensure Regnum Accounts window is closed
                 }
                 ImGui::PopStyleVar();
 
@@ -272,18 +274,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("Settings", buttonSize)) {
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_RegnumSettings = false;
-                    show_view_window = false;
-                    show_calendar_window = false;
-                    show_settings_window = true;
-                }
-                ImGui::PopStyleVar();
-
-                ImGui::SetCursorPosX(buttonPadding);
-                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
                 if (ImGui::Button("Calendar", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
@@ -292,6 +282,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                     show_info_window = false;
                     show_calendar_window = true;
                     InitializeBossRespawns();
+                }
+                ImGui::PopStyleVar();
+                
+                ImGui::SetCursorPosX(buttonPadding);
+                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+                if (ImGui::Button("Settings", buttonSize)) {
+                    show_license_window = false;
+                    show_info_window = false;
+                    show_RegnumSettings = false;
+                    show_view_window = false;
+                    show_calendar_window = false;
+                    show_settings_window = true;
                 }
                 ImGui::PopStyleVar();
 
