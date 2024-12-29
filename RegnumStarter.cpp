@@ -209,7 +209,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(startX);
                 ImGui::SetCursorPosY(startY);
-                if (ImGui::Button("Features", ImVec2(buttonWidth, buttonHeight))) {
+                if (ImGui::Button("Tools4Regnum", ImVec2(buttonWidth, buttonHeight))) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
