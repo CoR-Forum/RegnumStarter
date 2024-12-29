@@ -3,7 +3,7 @@ name: Test RegnumStarter Build (Windows)
 on:
   push:
     branches:
-      - none
+      - dev
 
 jobs:
   build:
