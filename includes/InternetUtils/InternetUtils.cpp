@@ -16,7 +16,7 @@ bool LogAndCloseHandles(const std::string& message, HINTERNET hRequest, HINTERNE
 }
 
 HINTERNET OpenInternetConnection() {
-    HINTERNET hInternet = InternetOpen("Sylent-X", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    HINTERNET hInternet = InternetOpen("RegnumStarter", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) throw std::runtime_error("Failed to open internet connection");
     return hInternet;
 }

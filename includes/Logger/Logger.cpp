@@ -12,7 +12,7 @@
 #include <codecvt>
 
 namespace {
-    const std::filesystem::path LOG_FILE_PATH = "Sylent-X/log.txt"; ///< Path to the log file.
+    const std::filesystem::path LOG_FILE_PATH = "RegnumStarter/log.txt"; ///< Path to the log file.
     const size_t MAX_LOG_MESSAGES = 1000; ///< Maximum number of log messages to store in memory.
     std::deque<std::string> logMessages; ///< Deque to store log messages.
     std::mutex logMutex; ///< Mutex to protect access to logMessages.

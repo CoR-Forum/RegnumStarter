@@ -51,10 +51,10 @@ DWORD GetProcessIdByName(const std::wstring& processName);
 
 const char* appDataPath = getenv("APPDATA");
 
-const std::string sylentx_version = "VERSION_PLACEHOLDER";
+const std::string regnumstarter_version = "dev";
 
-const std::string sylentx_appname = "RegnumStarter";
-const std::string sylentx_windowname = "RegnumStarter " + sylentx_version;
+const std::string regnumstarter_appname = "RegnumStarter";
+const std::string regnumstarter_windowname = "RegnumStarter " + regnumstarter_version;
 
 extern ImVec4 textColor;
 

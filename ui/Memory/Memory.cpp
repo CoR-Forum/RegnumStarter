@@ -1,5 +1,5 @@
 #include "memory.h"
-#include "../../Sylent-X.h" // Include the main header for logging functions
+#include "../../RegnumStarter.h" // Include the main header for logging functions
 
 extern std::vector<Pointer> g_pointers;
 extern HANDLE hProcess;

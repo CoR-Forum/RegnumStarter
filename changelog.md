@@ -1,5 +1,11 @@
 # Changelog
 
+## [draft] - 2024-12-29
+
+- modified: Login with cor-forum.de account. Previous accounts will no longer work.
+- modified: Buttons to account registration and password reset.
+- modified: Various design changes to match RegnumStarter.
+
 ## [1.1.0] - 2024-12-29
 
 - modified: API and patchserver URLs.

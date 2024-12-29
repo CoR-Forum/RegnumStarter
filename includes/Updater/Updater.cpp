@@ -19,16 +19,16 @@ void SelfUpdate() {
         return;
     }
 
-    if (latestVersion <= sylentx_version) {
+    if (latestVersion <= regnumstarter_version) {
         Log("No new update available.");
         return;
     }
 
-    Log("New Sylent-X version available: " + latestVersion);
+    Log("New RegnumStarter version available: " + latestVersion);
 
     // Download the latest version
     DownloadProgressCallback progressCallback;
-    HRESULT hr = URLDownloadToFile(NULL, downloadURL.c_str(), "Sylent-X_New.exe", 0, &progressCallback);
+    HRESULT hr = URLDownloadToFile(NULL, downloadURL.c_str(), "RegnumStarter_New.exe", 0, &progressCallback);
     if (SUCCEEDED(hr)) {
         Log("Update downloaded successfully");
         MessageBox(NULL, "Update downloaded! The application will now quit to complete the update. Please restart manually after 5 seconds.", "Update", MB_OK | MB_TOPMOST);
@@ -44,7 +44,7 @@ void SelfUpdate() {
             Log("Creating update batch file");
             batchFile << "@echo off\n";
             batchFile << "timeout /t 2 /nobreak\n"; // Wait for 2 seconds to ensure the application has exited
-            batchFile << "move /Y Sylent-X_New.exe " << currentExeName << "\n"; // Replace the old executable
+            batchFile << "move /Y RegnumStarter_New.exe " << currentExeName << "\n"; // Replace the old executable
             batchFile << "start " << currentExeName << "\n"; // Restart the application
             batchFile << "del %0\n"; // Delete the batch file itself
             batchFile.close();
@@ -55,7 +55,7 @@ void SelfUpdate() {
             ShellExecute(NULL, "open", "update.bat", NULL, NULL, SW_HIDE);
 
             // Exit the current application
-            Log("Exiting Sylent-X for update");
+            Log("Exiting RegnumStarter for update");
             PostQuitMessage(0);
         } else {
             Log("Failed to create update batch file");

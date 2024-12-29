@@ -1,4 +1,4 @@
-name: Test Sylent-X Build (Windows)
+name: Test RegnumStarter Build (Windows)
 
 on:
   push:
@@ -39,19 +39,19 @@ jobs:
         $version = "${{ steps.version.outputs.version }}"
         (Get-Content includes/Utils.h) -replace 'VERSION_PLACEHOLDER', $version | Set-Content includes/Utils.h
 
-    - name: Build Sylent-X
+    - name: Build RegnumStarter
       shell: msys2 {0}
       run: |
         windres resource.rc resource.o
-        g++ -o deploy/Sylent-X.exe Sylent-X.cpp \
+        g++ -o deploy/RegnumStarter.exe RegnumStarter.cpp \
         libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
         libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Sylent-X
-        path: deploy/Sylent-X.exe
+        name: RegnumStarter
+        path: deploy/RegnumStarter.exe
   
     - name: Cleanup Temporary Directories
       shell: pwsh

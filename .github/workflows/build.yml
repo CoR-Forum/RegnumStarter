@@ -1,4 +1,4 @@
-name: Build and Publish Sylent-X (Windows)
+name: Build and Publish RegnumStarter (Windows)
 
 on:
   push:
@@ -110,27 +110,27 @@ jobs:
         $version = "${{ steps.version.outputs.version }}"
         (Get-Content includes/Utils.h) -replace 'VERSION_PLACEHOLDER', $version | Set-Content includes/Utils.h
 
-    - name: Build Sylent-X
+    - name: Build RegnumStarter
       shell: msys2 {0}
       run: |
         windres resource.rc resource.o
-        g++ -o deploy/Sylent-X.exe Sylent-X.cpp \
+        g++ -o deploy/RegnumStarter.exe RegnumStarter.cpp \
         libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
         libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
-        cp deploy/Sylent-X.exe deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
+        cp deploy/RegnumStarter.exe deploy/RegnumStarter-${{ steps.version.outputs.version }}.exe
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Sylent-X
-        path: deploy/Sylent-X.exe
+        name: RegnumStarter
+        path: deploy/RegnumStarter.exe
 
     - name: Create latest_version.txt
       shell: pwsh
       run: |
         $version = "${{ steps.version.outputs.version }}"
         $version | Out-File -FilePath deploy/latest_version.txt
-        "https://patch.regnumstarter.cor-forum.de/Sylent-X-$version.exe" | Out-File -FilePath deploy/latest_version.txt -Append
+        "https://patch.regnumstarter.cor-forum.de/RegnumStarter-$version.exe" | Out-File -FilePath deploy/latest_version.txt -Append
 
     - name: Create GitHub Release
       id: create_release
@@ -150,8 +150,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: deploy/Sylent-X-${{ steps.version.outputs.version }}.exe
-        asset_name: Sylent-X.exe
+        asset_path: deploy/RegnumStarter-${{ steps.version.outputs.version }}.exe
+        asset_name: RegnumStarter.exe
         asset_content_type: application/octet-stream
 
     - name: Deploy to FTP server

@@ -1,7 +1,7 @@
 #include "ApiHandler.h"
 
 void SaveLoginSettings(const std::string& username, bool saveUsername) {
-    std::string configFilePath = std::string(getenv("APPDATA")) + "\\Sylent-X\\login-settings.json";
+    std::string configFilePath = std::string(getenv("APPDATA")) + "\\RegnumStarter\\login-settings.json";
     nlohmann::json loginSettingsJson;
 
     // Load existing settings if the file exists
@@ -29,7 +29,7 @@ void SaveLoginSettings(const std::string& username, bool saveUsername) {
 }
 
 void LoadLoginSettings() {
-    std::string configFilePath = std::string(getenv("APPDATA")) + "\\Sylent-X\\login-settings.json";
+    std::string configFilePath = std::string(getenv("APPDATA")) + "\\RegnumStarter\\login-settings.json";
     std::ifstream inFile(configFilePath);
     if (inFile.is_open()) {
         nlohmann::json loginSettingsJson;
@@ -468,7 +468,7 @@ void ActivateLicense(const std::string& licenseKey) {
 
         if (status == "success") {
             LogDebug("License activated successfully: " + message);
-            MessageBox(NULL, "Please restart Sylent-X to complete the activation.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
+            MessageBox(NULL, "Please restart RegnumStarter to complete the activation.", "Success", MB_ICONINFORMATION | MB_TOPMOST);
         } else {
             LogDebug("Failed to activate license: " + message);
             MessageBox(NULL, message.c_str(), "Error", MB_ICONERROR | MB_TOPMOST);
@@ -485,8 +485,8 @@ std::string GenerateMD5(const std::string& input) {
 
 // Function to save a Regnum account to regnum-accounts.json appdata file with ID, username, password, server, and referrer
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id = -1) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
-    std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
+    std::string configFilePath = std::string(appDataPath) + "\\RegnumStarter\\regnum-accounts.json";
+    std::string folderPath = std::string(appDataPath) + "\\RegnumStarter";
 
 
     std::filesystem::create_directories(folderPath);
@@ -542,7 +542,7 @@ void SaveRegnumAccount(const std::string& username, const std::string& password,
 
 // Function to load all Regnum accounts from regnum-accounts.json appdata file
 void LoadRegnumAccounts() {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::string configFilePath = std::string(appDataPath) + "\\RegnumStarter\\regnum-accounts.json";
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
 
@@ -566,7 +566,7 @@ void LoadRegnumAccounts() {
 
 // delete regnum account by id
 void DeleteRegnumAccount(int id) {
-    std::string configFilePath = std::string(appDataPath) + "\\Sylent-X\\regnum-accounts.json";
+    std::string configFilePath = std::string(appDataPath) + "\\RegnumStarter\\regnum-accounts.json";
     std::ifstream file(configFilePath);
     nlohmann::json accountsJson;
 

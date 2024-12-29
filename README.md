@@ -1,10 +1,10 @@
-# Sylent-X
+# RegnumStarter
 
-This tool requires the [Sylent-X-API](https://github.com/Sylent-X/Sylent-X-API).
+This tool requires the [RegnumStarter-API](https://github.com/RegnumStarter/RegnumStarter-API).
 
 ## Overview
 
-Sylent-X is an application designed to run on Windows, although development is also possible on macOS.
+RegnumStarter is an application designed to run on Windows, although development is also possible on macOS.
 
 This guide provides detailed instructions on how to build the application on both operating systems.
 
@@ -20,12 +20,12 @@ This guide provides detailed instructions on how to build the application on bot
 1. **Build the application:**
     ```sh
     i686-w64-mingw32-windres resource.rc resource.o && \
-    i686-w64-mingw32-g++ -Ilibs/imgui -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && wine bin/Sylent-X.exe
+    i686-w64-mingw32-g++ -Ilibs/imgui -o bin/RegnumStarter.exe RegnumStarter.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && wine bin/RegnumStarter.exe
     ```
 
     The first part of the command compiles the resource file, which is then included in the program file.
 
-    **Note:** You can also add `&& wine Sylent-X.exe` at the end while debugging.
+    **Note:** You can also add `&& wine RegnumStarter.exe` at the end while debugging.
 
 ### Build on Windows
 
@@ -60,7 +60,7 @@ This guide provides detailed instructions on how to build the application on bot
         ```
     4. Run the build command:
         ```sh
-        windres resource.rc resource.o && g++ -o bin/Sylent-X.exe Sylent-X.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && ./bin/Sylent-X.exe
+        windres resource.rc resource.o && g++ -o bin/RegnumStarter.exe RegnumStarter.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows && ./bin/RegnumStarter.exe
         ```
 
 ## Update Process

@@ -1,4 +1,4 @@
-#include "Sylent-X.h"
+#include "RegnumStarter.h"
 
 bool g_DeviceLost = false;
 UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
@@ -26,26 +26,26 @@ bool IsHotkeyPressed(int hotkey) {
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     
-    Log("Sylent-X " + sylentx_version + ". Made with hate in Germany.");
-    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("Sylent-X-Mutex")); // Create a named mutexf
+    Log("RegnumStarter " + regnumstarter_version + " started");
+    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("RegnumStarter-Mutex")); // Create a named mutexf
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        MessageBox(NULL, _T("Sylent-X is already running."), _T("Error"), MB_ICONERROR | MB_OK) | MB_TOPMOST;
+        MessageBox(NULL, _T("RegnumStarter is already running."), _T("Error"), MB_ICONERROR | MB_OK) | MB_TOPMOST;
         return 1;
     }
     
     SelfUpdate();
     LoadLoginSettings();
 
-    std::string folderPath = std::string(appDataPath) + "\\Sylent-X";
+    std::string folderPath = std::string(appDataPath) + "\\RegnumStarter";
     std::filesystem::create_directories(folderPath);
 
     show_login_window = true;
 
     // Register and create the main window
-    WNDCLASSEXW wc = { sizeof(wc), CS_DBLCLKS | CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"Sylent-X", nullptr };
+    WNDCLASSEXW wc = { sizeof(wc), CS_DBLCLKS | CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"RegnumStarter", nullptr };
     ::RegisterClassExW(&wc);
 
-    HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("Sylent-X"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 900, 500, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST, _T("RegnumStarter"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 900, 500, NULL, NULL, wc.hInstance, NULL);
     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 
@@ -152,7 +152,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             } 
 
             if (show_main_window) {
-                std::string windowTitle = sylentx_windowname;
+                std::string windowTitle = regnumstarter_windowname;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state
                 ImGui::SetNextWindowSize(ImVec2(770, 400), ImGuiCond_FirstUseEver);
                 ImGui::Begin(windowTitle.c_str(), &mainWindowIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
@@ -349,7 +349,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                     ImGui::SeparatorText("Help");
                     if (ImGui::Button("Create Ticket")) {
-                        ShellExecute(0, 0, "https://sylent-x.com/discord", 0, 0, SW_SHOW);
+                        ShellExecute(0, 0, "https://RegnumStarter.com/discord", 0, 0, SW_SHOW);
                     }
 
             } else if (show_license_window) {
@@ -437,7 +437,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     ::DestroyWindow(hwnd);
     ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
 
-    Log("Sylent-X exiting");
+    Log("RegnumStarter exiting");
     return 0;
 }
 
