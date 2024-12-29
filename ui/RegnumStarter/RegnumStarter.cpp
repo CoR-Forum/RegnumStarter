@@ -255,31 +255,9 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
 
     ImGui::Columns(1);
 
-    if (ImGui::TreeNodeEx("Account Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
-        if (regnumAccounts.empty()) {
-            ImGui::Text("No accounts available");
-        } else {
-            for (int i = 0; i < regnumAccounts.size(); i++) {
-                bool isSelected = (selectedAccount == i);
-                if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
-                    selectedAccount = i;
-                }
-            }
-        }
-        ImGui::TreePop();
-    }
-    
-    if (ImGui::Button("Play")) {
-        if (selectedAccount != -1) {
-            const auto& account = regnumAccounts[selectedAccount];
-            runRoClientGame(account.username, account.password);
-        }
-    }
-
     ImGui::SetNextWindowSize(ImVec2(500, 270)); // Set the desired size of the popup
     if (ImGui::BeginPopup("Regnum Account##AddAccountPopup")) {
-
-    ImGui::Columns(1);
+        ImGui::Columns(1);
         ImGui::InputText("Username", regnumUsername, IM_ARRAYSIZE(regnumUsername));
         ImGui::InputText("Password", regnumPassword, IM_ARRAYSIZE(regnumPassword), ImGuiInputTextFlags_Password);
         ImGui::Combo("Server", &currentServer, [](void* data, int idx, const char** out_text) {
