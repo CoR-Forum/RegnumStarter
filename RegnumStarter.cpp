@@ -177,7 +177,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 if (texture_sylent_icon) {
                     // Calculate the available space
                     ImVec2 availableSpace = ImGui::GetContentRegionAvail();
-                    ImVec2 imageSize = ImVec2(70, 60); // Adjust the size as needed
+                    ImVec2 imageSize = ImVec2(60, 60); // Adjust the size as needed
 
                     // Calculate the padding to center the image
                     ImVec2 padding = ImVec2((availableSpace.x - imageSize.x) * 0.5f, (availableSpace.y - imageSize.y) * 0.5f);
@@ -252,7 +252,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("Chat", buttonSize)) {
+                if (ImGui::Button("Home", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
