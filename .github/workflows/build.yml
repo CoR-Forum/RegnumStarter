@@ -175,9 +175,9 @@ jobs:
         local-dir: ./deploy/
         server-dir: /
 
-#    - name: Upload changelog.json to FTP server
-#      run: |
-#        curl -v --ftp-ssl --ssl-reqd -T tmp/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME_WEB }}:${{ secrets.FTP_PASSWORD_WEB }} ftp://${{ vars.FTP_HOST }}/changelog.json
+    - name: Upload changelog.json to FTP server
+      run: |
+        curl -v --ftp-ssl --ssl-reqd -T tmp/changelog.json --ftp-create-dirs -u ${{ vars.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }} ftp://${{ vars.FTP_HOST }}/web/static/assets/changelog.json
   
     - name: Cleanup Temporary Directories
       shell: pwsh
