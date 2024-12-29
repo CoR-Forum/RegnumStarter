@@ -53,8 +53,8 @@ const char* appDataPath = getenv("APPDATA");
 
 const std::string sylentx_version = "VERSION_PLACEHOLDER";
 
-const std::string sylentx_appname = "Sylent-X";
-const std::string sylentx_windowname = "Sylent-X " + sylentx_version;
+const std::string sylentx_appname = "RegnumStarter";
+const std::string sylentx_windowname = "RegnumStarter " + sylentx_version;
 
 extern ImVec4 textColor;
 
