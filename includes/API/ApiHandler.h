@@ -106,7 +106,6 @@ void SendChatMessage(const std::string& message);
 void CheckChatMessages();
 
 std::pair<bool, std::string> Login(const std::string& login, const std::string& password);
-void RegisterUser(const std::string& username, const std::string& nickname, const std::string& email, const std::string& password);
 void ActivateLicense(const std::string& licenseKey);
 void LoadRegnumAccounts();
 void SaveRegnumAccount(const std::string& username, const std::string& password, const std::string& server, const std::string& referrer, int id);

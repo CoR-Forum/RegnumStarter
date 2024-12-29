@@ -139,18 +139,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ShowLoginWindow(show_login_window, statusMessage, loginSuccess, show_main_window, textColor);
             }
 
-            if (show_register_window) {
-                ShowRegisterWindow(show_register_window, show_login_window, done);
-            }
-
-            if (show_forgot_password_window) {
-                ShowForgotPasswordWindow(show_forgot_password_window, show_password_reset_window, show_login_window);
-            }
-
-            if (show_password_reset_window) {
-                ShowPasswordResetWindow(show_password_reset_window, show_login_window, show_forgot_password_window);
-            } 
-
             if (show_main_window) {
                 std::string windowTitle = regnumstarter_windowname;
                 static bool mainWindowIsOpen = true; // Add a boolean to control the window's open state

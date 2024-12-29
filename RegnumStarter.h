@@ -24,10 +24,7 @@
 #include <filesystem>
 #include "includes/process/process.cpp"
 #include "includes/streamproof/streamproof.cpp"
-#include "ui/login/pwreset/ForgotPasswordWindow.cpp"
-#include "ui/login/pwreset/PasswordResetWindow.cpp"
 #include "ui/login/LoginWindow.cpp"
-#include "ui/login/register/RegisterWindow.cpp"
 #include "ui/RegnumStarter/RegnumStarter.cpp"
 #include "ui/License/LicenseWindow.cpp"
 #include "ui/Credits/CreditsWindow.cpp"
