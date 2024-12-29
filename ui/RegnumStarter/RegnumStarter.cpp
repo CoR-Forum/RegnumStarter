@@ -121,13 +121,17 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
     static bool showFileDialog = false;
 
-    ImGui::Text("Regnum Online Path: %s", setting_regnumInstallPath.c_str());
+    ImGui::SeparatorText("Regnum Installation Path");
 
-    ImGui::SameLine();
+    ImGui::Text("Path to the Regnum Online installation directory");
+
     if (ImGui::Button("Change")) {
         fileDialog.Open();
         showFileDialog = true;
     }
+
+    ImGui::SameLine();
+    ImGui::Text("%s", setting_regnumInstallPath.c_str());
 
     if (showFileDialog) {
         fileDialog.Display();
@@ -188,9 +192,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         filesChecked = true; // Set the flag to true after the operation is performed
     }
     
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
+    ImGui::SeparatorText("Regnum Accounts");
 
     if (ImGui::TreeNode("Account Selection")) {
         if (regnumAccounts.empty()) {

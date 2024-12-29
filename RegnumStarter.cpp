@@ -347,11 +347,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::EndPopup();
                     }
 
-                    ImGui::SeparatorText("Help");
-                    if (ImGui::Button("Create Ticket")) {
-                        ShellExecute(0, 0, "https://RegnumStarter.com/discord", 0, 0, SW_SHOW);
-                    }
-
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
 
