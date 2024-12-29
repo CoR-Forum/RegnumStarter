@@ -85,7 +85,7 @@ std::pair<std::string, std::string> FetchLatestVersion() {
     std::string latestVersion;
     std::string downloadURL;
     std::string randomString = generateRandomString(10); // Generate a random string of length 10
-    std::string url = "https://patch.sylent-x.com/latest_version.txt?v=" + randomString;
+    std::string url = "https://patch.regnumstarter.cor-forum.de/latest_version.txt?v=" + randomString;
     LogDebug("Fetching latest version from: " + url);
 
     HRESULT hr = URLDownloadToFile(NULL, url.c_str(), "latest_version.txt", 0, NULL);

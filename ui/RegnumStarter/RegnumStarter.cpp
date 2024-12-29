@@ -171,8 +171,8 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
         // If files do not exist and the checkbox is saved as true, download the files
         if (!filesExist && showIntro) {
             std::vector<std::pair<std::string, std::string>> filesToDownload = {
-                {"https://patch.sylent-x.com/assets/splash_nge.png", livePath + "splash_nge.png"},
-                {"https://patch.sylent-x.com/assets/splash_nge.ogg", livePath + "splash_nge.ogg"}
+                {"https://patch.regnumstarter.cor-forum.de/assets/splash_nge.png", livePath + "splash_nge.png"},
+                {"https://patch.regnumstarter.cor-forum.de/assets/splash_nge.ogg", livePath + "splash_nge.ogg"}
             };
             for (const auto& file : filesToDownload) {
                 HRESULT hr = URLDownloadToFile(NULL, file.first.c_str(), file.second.c_str(), 0, NULL);
@@ -380,7 +380,7 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
                     std::ifstream infile(filePath);
                     if (!infile.good()) {
                         LogDebug("File does not exist: " + filePath + ". Downloading...");
-                        std::string url = "https://patch.sylent-x.com/assets/" + file; // Replace with actual URL
+                        std::string url = "https://patch.regnumstarter.cor-forum.de/assets/" + file; // Replace with actual URL
 
                         // Download file using URLDownloadToFile
                         HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);

@@ -1,7 +1,7 @@
 # Changelog
 
 ## [draft]
-
+- modified: API and Patchserver URLs.
 
 ## [1.0.7] - 2024-12-28
 

@@ -24,7 +24,7 @@ HINTERNET OpenInternetConnection() {
 HINTERNET ConnectToAPI(HINTERNET hInternet) {
     HINTERNET hConnect;
     if (apiSelection == 0) {
-        hConnect = InternetConnect(hInternet, "api.sylent-x.com", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+        hConnect = InternetConnect(hInternet, "api.regnumstarter.cor-forum.de", INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     } else {
         hConnect = InternetConnect(hInternet, "localhost", 3000, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     }
