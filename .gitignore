@@ -43,3 +43,7 @@ game.cfg
 
 # Build path
 bin/
+
+# other
+game.cfg
+latest_version.txt
