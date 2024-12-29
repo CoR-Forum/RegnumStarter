@@ -194,7 +194,12 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
     
     ImGui::SeparatorText("Regnum Accounts");
 
-    if (ImGui::TreeNode("Account Selection")) {
+    ImGui::SameLine(ImGui::GetWindowWidth() - 100); // Adjust the position to the very right
+    if (ImGui::Button("Add Account")) {
+        ImGui::OpenPopup("Regnum Account##AddAccountPopup");
+    }
+
+    if (ImGui::TreeNodeEx("Account Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
         if (regnumAccounts.empty()) {
             ImGui::Text("No accounts available");
         } else {
@@ -213,9 +218,6 @@ void ShowRegnumStarter(bool& show_RegnumStarter) {
             const auto& account = regnumAccounts[selectedAccount];
             runRoClientGame(account.username, account.password);
         }
-    }
-    if (ImGui::Button("Add Account")) {
-        ImGui::OpenPopup("Regnum Account##AddAccountPopup");
     }
 
     ImGui::SetNextWindowSize(ImVec2(500, 270)); // Set the desired size of the popup
