@@ -196,32 +196,30 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::BeginChild("Menu", ImVec2(615, 80), true);
                 ImGui::Columns(2, nullptr, false); // Create two columns
 
-                // Left column for account selection
+                // Left column for account selection with scrollbar
                 ImGui::SetColumnWidth(0, 400); // Set the width of the first column
-                if (ImGui::TreeNodeEx("Account Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
-                    if (regnumAccounts.empty()) {
-                        ImGui::Text("No accounts available");
-                    } else {
-                        for (int i = 0; i < regnumAccounts.size(); i++) {
-                            bool isSelected = (selectedAccount == i);
-                            if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
-                                selectedAccount = i;
-                            }
+                ImGui::BeginChild("AccountSelection", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                if (regnumAccounts.empty()) {
+                    ImGui::Text("No accounts available");
+                } else {
+                    for (int i = 0; i < regnumAccounts.size(); i++) {
+                        bool isSelected = (selectedAccount == i);
+                        if (ImGui::Selectable(regnumAccounts[i].username.c_str(), isSelected)) {
+                            selectedAccount = i;
                         }
                     }
-                    ImGui::TreePop();
                 }
+                ImGui::EndChild();
+                ImGui::NextColumn();
 
                 // Right column for the "Play" button
-                ImGui::NextColumn();
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20); // Add some padding
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
                 if (ImGui::Button("Play", ImVec2(160, 50))) { // Make the button bigger
                     if (selectedAccount != -1) {
                         const auto& account = regnumAccounts[selectedAccount];
                         runRoClientGame(account.username, account.password);
                     }
                 }
-
                 ImGui::EndChild();
 
                 ImVec2 buttonSize = ImVec2(120, 30);
