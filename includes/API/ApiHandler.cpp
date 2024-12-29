@@ -561,7 +561,7 @@ void LoadRegnumAccounts() {
         regnumAccount.referrer = account["referrer"];
         regnumAccounts.push_back(regnumAccount);
     }
-    Log("Loaded " + std::to_string(regnumAccounts.size()) + " Regnum accounts");
+    LogDebug("Loaded " + std::to_string(regnumAccounts.size()) + " Regnum accounts");
 }
 
 // delete regnum account by id
