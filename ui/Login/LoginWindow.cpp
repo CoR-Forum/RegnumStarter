@@ -31,18 +31,17 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     // Load the texture
     static LPDIRECT3DTEXTURE9 texture_sylent_logo = nullptr;
     if (!texture_sylent_logo) {
-        texture_sylent_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_LOGO); 
+        texture_sylent_logo = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_REGNUMSTARTER_ICON); 
     }
 
     // Display the texture at the top
     if (texture_sylent_logo) {
-        ImGui::Image((void*)texture_sylent_logo, ImVec2(231, 38.5));
+      // center the image horizontally and vertically
+        ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 50) * 0.5f);
+        ImGui::Image((void*)texture_sylent_logo, ImVec2(50, 50));
     }
 
     ImGui::Spacing();
-
-    // Add title above login fields
-    ImGui::Text("Login with your Sylent-X account");
 
     if (setting_log_debug) {
         ImGui::Combo("##API", &apiSelection, apiOptions, IM_ARRAYSIZE(apiOptions));

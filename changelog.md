@@ -1,7 +1,8 @@
 # Changelog
 
 ## [draft]
-- modified: API and Patchserver URLs.
+- modified: API and patchserver URLs.
+- modified: Logo and app icon.
 
 ## [1.0.7] - 2024-12-28
 

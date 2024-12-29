@@ -56,7 +56,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     LPDIRECT3DTEXTURE9 texture_sylent_icon = nullptr;
-    texture_sylent_icon = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_SYLENT_ICON);
+    texture_sylent_icon = LoadTextureFromResource(g_pd3dDevice, IDR_PNG_REGNUMSTARTER_ICON);
 
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
