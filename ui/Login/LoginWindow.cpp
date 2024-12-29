@@ -56,6 +56,8 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
         }
         focusSet = true;
     }
+
+    ImGui::Text("Login with your cor-forum.de account");
     
     ImGui::InputTextWithHint("##Username", "Username", username, IM_ARRAYSIZE(username), showUsername ? 0 : ImGuiInputTextFlags_Password);
 
@@ -119,14 +121,12 @@ void ShowLoginWindow(bool& show_login_window, std::string& statusMessage, bool& 
     ImGui::Separator();
     
     if (ImGui::Button("Create Account")) {
-        show_login_window = false;
-        show_register_window = true;
+        ShellExecute(0, 0, "https://api.regnumstarter.cor-forum.de/v1/register", 0, 0, SW_SHOW);
     }
 
     ImGui::SameLine();
     if (ImGui::Button("Reset Password")) {
-        show_login_window = false;
-        show_forgot_password_window = true;
+        ShellExecute(0, 0, "https://api.regnumstarter.cor-forum.de/v1/reset-password", 0, 0, SW_SHOW);
     }
 
     ImGui::SameLine();
