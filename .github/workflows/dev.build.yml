@@ -1,0 +1,59 @@
+name: Test Sylent-X Build (Windows)
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Extract Version Number
+      id: version
+      shell: pwsh
+      run: |
+        echo "Version content:"
+        $version = Get-Content version.txt
+        echo $version
+        echo "::set-output name=version::$version"
+
+    - name: Create Temporary Directories
+      run: |
+        mkdir deploy
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: > 
+          mingw-w64-x86_64-toolchain 
+
+    - name: Replace Version Placeholder in Utils.h
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        (Get-Content includes/Utils.h) -replace 'VERSION_PLACEHOLDER', $version | Set-Content includes/Utils.h
+
+    - name: Build Sylent-X
+      shell: msys2 {0}
+      run: |
+        windres resource.rc resource.o
+        g++ -o deploy/Sylent-X.exe Sylent-X.cpp \
+        libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp \
+        libs/imgui/imgui_tables.cpp resource.o -lurlmon -lwininet -ld3d9 -ldwmapi -static -mwindows
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Sylent-X
+        path: deploy/Sylent-X.exe
+  
+    - name: Cleanup Temporary Directories
+      shell: pwsh
+      run: |
+        Remove-Item -Recurse -Force deploy
