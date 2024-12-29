@@ -260,25 +260,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("Home", buttonSize)) {
+                if (ImGui::Button("Chat", buttonSize)) {
                     show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
                     show_RegnumSettings = false;
                     show_view_window = false;
                     show_calendar_window = false;
-                }
-                ImGui::PopStyleVar();
-
-                ImGui::SetCursorPosX(buttonPadding);
-                ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("Settings", buttonSize)) {
-                    show_license_window = false;
-                    show_info_window = false;
-                    show_RegnumSettings = false;
-                    show_view_window = false;
-                    show_calendar_window = false;
-                    show_settings_window = true;
                 }
                 ImGui::PopStyleVar();
 
@@ -296,14 +284,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 ImGui::SetCursorPosX(buttonPadding);
                 ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
-                if (ImGui::Button("RegnumStarter", buttonSize)) {
-                    show_settings_window = false;
+                if (ImGui::Button("Settings", buttonSize)) {
                     show_license_window = false;
                     show_info_window = false;
+                    show_RegnumSettings = false;
                     show_view_window = false;
                     show_calendar_window = false;
-                    LoadRegnumAccounts();
-                    show_RegnumSettings = true;
+                    show_settings_window = true;
                 }
                 ImGui::PopStyleVar();
 
