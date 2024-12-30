@@ -21,6 +21,7 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
 bool enableMusic = true;
 bool enableSoundEffects = true;
 bool IgnoreServerTime = true;
+float serverTime = 12.014381f; // Change type to float
 bool showLoadingScreen = true;
 bool showIntro = true;
 float soundVolume = 0.5f;

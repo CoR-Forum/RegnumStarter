@@ -102,6 +102,7 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     enableMusic = settingsJson.value("enableMusic", true);
                     enableSoundEffects = settingsJson.value("enableSoundEffects", true);
                     IgnoreServerTime = settingsJson.value("IgnoreServerTime", true);
+                    serverTime = settingsJson.value("serverTime", 0.0f);
                     showLoadingScreen = settingsJson.value("showLoadingScreen", true);
                     showIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
@@ -203,6 +204,7 @@ void SaveSettings() {
         settingsJson["enableMusic"] = enableMusic;
         settingsJson["enableSoundEffects"] = enableSoundEffects;
         settingsJson["IgnoreServerTime"] = IgnoreServerTime;
+        settingsJson["serverTime"] = serverTime;
         settingsJson["showLoadingScreen"] = showLoadingScreen;
         settingsJson["showIntro"] = showIntro;
         settingsJson["SoundVolume"] = soundVolume;
