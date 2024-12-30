@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 
-
 static int selectedAccount = -1;
 extern std::string setting_regnumInstallPath;
 
@@ -104,6 +103,7 @@ void CheckAndUpdateConfig() {
     updateIfDifferent("cl_update_all_resources", "0");
     updateIfDifferent("vg_fullscreen_borderless", "1");
     updateIfDifferent("vg_fullscreen_mode", "0");
+    updateIfDifferent("env_weather", envWeather);
 
     if (updated) {
         LogDebug("Configuration file updated with saved settings.");
@@ -203,16 +203,24 @@ void ShowRegnumSettings(bool& show_RegnumSettings) {
     ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
     ImGui::Checkbox("Show Intro", &showIntro);
     ImGui::Checkbox("Ignore Server Time", &IgnoreServerTime);
-    ImGui::SliderFloat("Server Time", &serverTime, 0.0f, 24.0f, "%.2f"); // Update to handle float
+    ImGui::SliderFloat("Server Time", &serverTime, 0.0f, 24.0f, "%.2f"); 
+
+    const char* weatherOptions[] = { "clear", "rainy", "snow" };
+    static int currentWeather = 0;
+    if (envWeather == "rainy") currentWeather = 1;
+    else if (envWeather == "snow") currentWeather = 2;
+    ImGui::Combo("Weather", &currentWeather, weatherOptions, IM_ARRAYSIZE(weatherOptions));
+    envWeather = weatherOptions[currentWeather];
 
     if (ImGui::Button("Save Settings")) {
         UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
         UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
         UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
         UpdateConfigValue("dbg_ignore_server_time", std::to_string(IgnoreServerTime ? 1 : 0));
-        UpdateConfigValue("env_time_of_day", std::to_string(serverTime)); // Update to handle float
+        UpdateConfigValue("env_time_of_day", std::to_string(serverTime)); 
         UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
         UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
+        UpdateConfigValue("env_weather", envWeather);
         SaveSettings();
 
         std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";

@@ -106,6 +106,7 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     showLoadingScreen = settingsJson.value("showLoadingScreen", true);
                     showIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
+                    envWeather = settingsJson.value("envWeather", "clear");
 
                     // Run SetWindowCaptureExclusion after settings are loaded
                     SetWindowCaptureExclusion(hwnd, setting_excludeFromCapture);
@@ -208,6 +209,7 @@ void SaveSettings() {
         settingsJson["showLoadingScreen"] = showLoadingScreen;
         settingsJson["showIntro"] = showIntro;
         settingsJson["SoundVolume"] = soundVolume;
+        settingsJson["envWeather"] = envWeather;
 
         std::string settingsString = settingsJson.dump();
 

@@ -42,7 +42,7 @@ bool featureCharacter;
 extern bool enableMusic;
 extern bool enableSoundEffects;
 extern bool IgnoreServerTime;
-extern float serverTime; // Change type to float
+extern float serverTime; 
 extern bool showLoadingScreen;
 extern bool showIntro;
 extern float soundVolume;
@@ -116,3 +116,5 @@ void DeleteRegnumAccount(int id);
 void SaveLoginSettings(const std::string& username, bool saveUsername);
 void LoadLoginSettings();
 void InitializeBossRespawns();
+
+extern std::string envWeather;
