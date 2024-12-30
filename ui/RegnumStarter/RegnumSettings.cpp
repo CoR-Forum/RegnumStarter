@@ -5,6 +5,8 @@
 static int selectedAccount = -1;
 extern std::string setting_regnumInstallPath;
 
+std::vector<std::string> detectedPaths;
+
 void UpdateConfigValue(const std::string& key, const std::string& value) {
     std::string configPath = setting_regnumInstallPath + "\\game.cfg";
     std::ifstream configFileRead(configPath);
@@ -110,10 +112,39 @@ void CheckAndUpdateConfig() {
     }
 }
 
+void DetectAndSetInstallPath() {
+    std::vector<std::string> possiblePaths = {
+        "C:\\Games\\NGD Studios\\Champions of Regnum",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\regnum"
+    };
+
+    for (const auto& path : possiblePaths) {
+        if (std::filesystem::exists(path)) {
+            detectedPaths.push_back(path);
+        }
+    }
+
+    if (!detectedPaths.empty()) {
+        setting_regnumInstallPath = detectedPaths[0];
+        LogDebug("Detected and set installation path: " + detectedPaths[0]);
+    }
+
+    if (detectedPaths.size() > 1) {
+        LogDebug("Multiple installation paths detected.");
+    } else if (detectedPaths.empty()) {
+        LogDebug("No predefined installation path detected.");
+    }
+}
+
 void ShowRegnumSettings(bool& show_RegnumSettings) {
 
     static bool configChecked = false;
+    static bool pathDetected = false;
+    static int selectedPathIndex = 0;
+
     if (!configChecked) {
+        DetectAndSetInstallPath();
+        pathDetected = !detectedPaths.empty();
         CheckAndUpdateConfig();
         configChecked = true;
     }
@@ -131,7 +162,29 @@ void ShowRegnumSettings(bool& show_RegnumSettings) {
     }
 
     ImGui::SameLine();
-    ImGui::Text("%s", setting_regnumInstallPath.c_str());
+    if (pathDetected) {
+        if (detectedPaths.size() > 1) {
+            ImGui::Text("Path Detected: ");
+            ImGui::SameLine();
+            if (ImGui::BeginCombo("##DetectedPaths", detectedPaths[selectedPathIndex].c_str())) {
+                for (int i = 0; i < detectedPaths.size(); ++i) {
+                    bool isSelected = (selectedPathIndex == i);
+                    if (ImGui::Selectable(detectedPaths[i].c_str(), isSelected)) {
+                        selectedPathIndex = i;
+                        setting_regnumInstallPath = detectedPaths[i];
+                    }
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+        } else {
+            ImGui::Text("Path Detected: %s", setting_regnumInstallPath.c_str());
+        }
+    } else {
+        ImGui::Text("%s", setting_regnumInstallPath.c_str());
+    }
 
     if (showFileDialog) {
         fileDialog.Display();
@@ -139,6 +192,7 @@ void ShowRegnumSettings(bool& show_RegnumSettings) {
             setting_regnumInstallPath = fileDialog.GetSelected().string();
             fileDialog.ClearSelected();
             showFileDialog = false;
+            pathDetected = false; // Reset path detected flag if user changes path manually
         }
     }
 
