@@ -25,7 +25,7 @@
 #include "includes/process/process.cpp"
 #include "includes/streamproof/streamproof.cpp"
 #include "ui/login/LoginWindow.cpp"
-#include "ui/RegnumStarter/RegnumStarter.cpp"
+#include "ui/RegnumStarter/RegnumSettings.cpp"
 #include "ui/License/LicenseWindow.cpp"
 #include "ui/Credits/CreditsWindow.cpp"
 #include "ui/WindowStates.h"

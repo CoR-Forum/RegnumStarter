@@ -1,4 +1,4 @@
-#include "RegnumStarter.h"
+#include "RegnumSettings.h"
 #include <fstream>
 #include <sstream>
 
@@ -123,8 +123,6 @@ void ShowRegnumSettings(bool& show_RegnumSettings) {
 
     ImGui::SeparatorText("Regnum Installation Path");
 
-    ImGui::Text("Path to the Regnum Online installation directory");
-
     if (ImGui::Button("Change")) {
         fileDialog.Open();
         showFileDialog = true;
@@ -192,68 +190,63 @@ void ShowRegnumSettings(bool& show_RegnumSettings) {
         filesChecked = true; // Set the flag to true after the operation is performed
     }
 
-    ImGui::SeparatorText("Settings");
+    ImGui::SeparatorText("Sound Settings");
+    ImGui::Text("Sound Volume");
+    ImGui::SliderFloat("##Sound Volume", &soundVolume, 0.0f, 100.0f, "%.0f%%");
+    ImGui::Checkbox("Music", &enableMusic);
+    ImGui::SameLine();
+    ImGui::Checkbox("Sound Effects", &enableSoundEffects);
 
-    if (ImGui::TreeNode("Settings")) {
-        ImGui::SeparatorText("Sound Settings");
-        ImGui::Text("Sound Volume");
-        ImGui::SliderFloat("##Sound Volume", &soundVolume, 0.0f, 100.0f, "%.0f%%");
-        ImGui::Checkbox("Music", &enableMusic);
-        ImGui::SameLine();
-        ImGui::Checkbox("Sound Effects", &enableSoundEffects);
+    ImGui::SeparatorText("Advanced");
+    ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
+    ImGui::Checkbox("Show Intro", &showIntro);
 
-        ImGui::SeparatorText("Advanced");
-        ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
-        ImGui::Checkbox("Show Intro", &showIntro);
+    if (ImGui::Button("Save Settings")) {
+        UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
+        UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
+        UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+        UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
+        UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
+        SaveSettings();
 
-        if (ImGui::Button("Save Settings")) {
-            UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
-            UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
-            UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
-            UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
-            UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
-            SaveSettings();
+        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+        std::vector<std::string> filesToDelete = {
+            "splash_nge.png",
+            "splash_nge.ogg"
+        };
 
-            std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
-            std::vector<std::string> filesToDelete = {
-                "splash_nge.png",
-                "splash_nge.ogg"
-            };
+        if (showIntro) {
+            // Check if files exist and download if they don't
+            for (const auto& file : filesToDelete) {
+                std::string filePath = livePath + file;
+                std::ifstream infile(filePath);
+                if (!infile.good()) {
+                    LogDebug("File does not exist: " + filePath + ". Downloading...");
+                    std::string url = "https://patch.regnumstarter.cor-forum.de/assets/" + file; // Replace with actual URL
 
-            if (showIntro) {
-                // Check if files exist and download if they don't
-                for (const auto& file : filesToDelete) {
-                    std::string filePath = livePath + file;
-                    std::ifstream infile(filePath);
-                    if (!infile.good()) {
-                        LogDebug("File does not exist: " + filePath + ". Downloading...");
-                        std::string url = "https://patch.regnumstarter.cor-forum.de/assets/" + file; // Replace with actual URL
-
-                        // Download file using URLDownloadToFile
-                        HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
-                        if (SUCCEEDED(hr)) {
-                            LogDebug("Downloaded file: " + filePath);
-                        } else {
-                            LogDebug("Failed to download file: " + filePath);
-                        }
+                    // Download file using URLDownloadToFile
+                    HRESULT hr = URLDownloadToFile(NULL, url.c_str(), filePath.c_str(), 0, NULL);
+                    if (SUCCEEDED(hr)) {
+                        LogDebug("Downloaded file: " + filePath);
                     } else {
-                        LogDebug("File already exists: " + filePath);
+                        LogDebug("Failed to download file: " + filePath);
                     }
+                } else {
+                    LogDebug("File already exists: " + filePath);
                 }
-            } else {
-                // Delete files
-                for (const auto& file : filesToDelete) {
-                    std::string filePath = livePath + file;
-                    if (remove(filePath.c_str()) != 0) {
-                        LogDebug("Failed to delete file make sure to select your Game Path: " + filePath);
-                        // MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "RegnumStarter", MB_OK | MB_TOPMOST);
-                    } else {
-                        LogDebug("Deleted file: " + filePath);
-                    }
+            }
+        } else {
+            // Delete files
+            for (const auto& file : filesToDelete) {
+                std::string filePath = livePath + file;
+                if (remove(filePath.c_str()) != 0) {
+                    LogDebug("Failed to delete file make sure to select your Game Path: " + filePath);
+                    // MessageBox(NULL, "Failed to delete file make sure to select your Game Path", "RegnumStarter", MB_OK | MB_TOPMOST);
+                } else {
+                    LogDebug("Deleted file: " + filePath);
                 }
             }
         }
-        ImGui::TreePop();
     }
 }
 
