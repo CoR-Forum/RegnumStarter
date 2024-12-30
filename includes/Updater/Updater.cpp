@@ -31,7 +31,10 @@ void SelfUpdate() {
     HRESULT hr = URLDownloadToFile(NULL, downloadURL.c_str(), "RegnumStarter_New.exe", 0, &progressCallback);
     if (SUCCEEDED(hr)) {
         Log("Update downloaded successfully");
-        MessageBox(NULL, "Update downloaded! The application will now quit to complete the update. Please restart manually after 5 seconds.", "Update", MB_OK | MB_TOPMOST);
+        MessageBox(NULL, "Update downloaded! The application will now quit to complete the update. It will restart automatically after 5 seconds.", "Update", MB_OK | MB_TOPMOST);
+
+        // Ensure the message box is closed before proceeding
+        Sleep(2000); // Wait for 2 seconds to ensure the message box is closed
 
         // Get the name of the currently running executable
         char currentExePath[MAX_PATH];
