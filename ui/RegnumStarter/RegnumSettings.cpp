@@ -96,6 +96,7 @@ void CheckAndUpdateConfig() {
     updateIfDifferent("snd_sound_volume", std::to_string(soundVolume));
     updateIfDifferent("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
     updateIfDifferent("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+    updateIfDifferent("dbg_ignore_server_time", std::to_string(IgnoreServerTime ? 1 : 0));
     updateIfDifferent("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
     updateIfDifferent("show_intro", std::to_string(showIntro ? 1 : 0));
     updateIfDifferent("cl_cpu_idle_time", "0");
@@ -200,11 +201,13 @@ void ShowRegnumSettings(bool& show_RegnumSettings) {
     ImGui::SeparatorText("Advanced");
     ImGui::Checkbox("Show Loading Screen", &showLoadingScreen);
     ImGui::Checkbox("Show Intro", &showIntro);
+    ImGui::Checkbox("Ignore Server Time", &IgnoreServerTime);
 
     if (ImGui::Button("Save Settings")) {
         UpdateConfigValue("snd_sound_volume", std::to_string(soundVolume));
         UpdateConfigValue("snd_music_volume", std::to_string(enableMusic ? 1 : 0));
         UpdateConfigValue("enable_sound_effects", std::to_string(enableSoundEffects ? 1 : 0));
+        UpdateConfigValue("dbg_ignore_server_time", std::to_string(IgnoreServerTime ? 1 : 0));
         UpdateConfigValue("cl_show_loading_screen", std::to_string(showLoadingScreen ? 1 : 0));
         UpdateConfigValue("show_intro", std::to_string(showIntro ? 1 : 0));
         SaveSettings();

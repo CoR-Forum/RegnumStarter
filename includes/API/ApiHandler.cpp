@@ -101,6 +101,7 @@ std::pair<bool, std::string> Login(const std::string& login, const std::string& 
                     setting_regnumInstallPath = settingsJson.value("regnumInstallPath", "");
                     enableMusic = settingsJson.value("enableMusic", true);
                     enableSoundEffects = settingsJson.value("enableSoundEffects", true);
+                    IgnoreServerTime = settingsJson.value("IgnoreServerTime", true);
                     showLoadingScreen = settingsJson.value("showLoadingScreen", true);
                     showIntro = settingsJson.value("showIntro", true);
                     soundVolume = settingsJson.value("SoundVolume", 0.5f);
@@ -201,6 +202,7 @@ void SaveSettings() {
         settingsJson["regnumInstallPath"] = setting_regnumInstallPath;
         settingsJson["enableMusic"] = enableMusic;
         settingsJson["enableSoundEffects"] = enableSoundEffects;
+        settingsJson["IgnoreServerTime"] = IgnoreServerTime;
         settingsJson["showLoadingScreen"] = showLoadingScreen;
         settingsJson["showIntro"] = showIntro;
         settingsJson["SoundVolume"] = soundVolume;

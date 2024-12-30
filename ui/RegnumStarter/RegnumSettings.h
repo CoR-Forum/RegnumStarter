@@ -20,6 +20,7 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
 // Define the checkbox states
 bool enableMusic = true;
 bool enableSoundEffects = true;
+bool IgnoreServerTime = true;
 bool showLoadingScreen = true;
 bool showIntro = true;
 float soundVolume = 0.5f;

@@ -41,6 +41,7 @@ bool featureCharacter;
 // Declare the checkbox states as global variables
 extern bool enableMusic;
 extern bool enableSoundEffects;
+extern bool IgnoreServerTime;
 extern bool showLoadingScreen;
 extern bool showIntro;
 extern float soundVolume;
