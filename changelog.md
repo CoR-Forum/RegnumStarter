@@ -1,6 +1,6 @@
 # Changelog
 
-## [6.0.0] - 2024-12-30
+## [5.9.9] - 2024-12-30
 
 Initial release of RegnumStarter v6
 
