@@ -216,10 +216,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 ImGui::SetColumnWidth(2, 160); // Adjust the width of the third column
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // Add some padding
                 if (ImGui::Button("Game Settings", ImVec2(160, 25))) {
-                    show_settings_window = true;
+                    show_settings_window = false;
                     show_license_window = false;
                     show_info_window = false;
-                    show_RegnumSettings = false;
+                    show_RegnumSettings = true;
                     show_view_window = false;
                     show_calendar_window = false;
                     show_RegnumAccounts = false;
