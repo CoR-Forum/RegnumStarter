@@ -59,15 +59,15 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
         ImGui::BeginDisabled(!featureFov);
         if (ImGui::Checkbox("Field of View", &optionFov)) {
             if (!optionFov) {
-                // If the checkbox is unchecked, reset the FOV value
                 MemoryManipulation("fov", 0.01745329238f);
             }
         }
         ImGui::EndDisabled();
-        ImGui::SameLine();
+        
 
         // Only allow users to set the hotkey if the checkbox is checked
         if (optionFov) {
+            ImGui::SameLine();
             std::string buttonLabel;
             if (waitingForHotkey) {
                 buttonLabel = "Press any key...";
@@ -98,6 +98,21 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
         }
 
         if (!featureFov) {
+            ImGui::SameLine();
+            ShowLicenseMarker();
+        }
+
+     
+        ImGui::BeginDisabled(!featureMoonwalk);
+        if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
+                MemoryManipulation("moonwalk", 9.219422856E-41f);
+                std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+                !optionMoonwalk;
+        }
+        ImGui::EndDisabled();
+        ImGui::SameLine();
+
+        if (!featureMoonwalk) {
             ImGui::SameLine();
             ShowLicenseMarker();
         }
