@@ -37,7 +37,6 @@ bool featureFreecam;
 bool featureFastfly;
 bool featureFakelag;
 bool featureCharacter;
-bool featureCast; // Add this line
 
 // Declare the checkbox states as global variables
 extern bool enableMusic;
@@ -59,7 +58,6 @@ bool optionFastFly = false;
 bool optionSpeedhack = false;
 bool optionFakelag = false;
 bool optionCharacter = false;
-bool optionCast = false; // Add this line
 
 
 // global variables for settings (from user account via API)

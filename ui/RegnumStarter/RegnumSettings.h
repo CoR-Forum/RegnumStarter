@@ -26,5 +26,3 @@ bool showLoadingScreen = true;
 bool showIntro = true;
 float soundVolume = 0.5f;
 std::string envWeather = "clear";
-
-extern std::vector<std::string> detectedPaths;
