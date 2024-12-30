@@ -1,17 +1,12 @@
 # Changelog
 
-## [1.0.1] - 2024-12-30
+## [6.0.0] - 2024-12-30
 
-- Added Weather Options
-- Added Server Time Slider
-- Added Ignore Server Time option
-
-## [1.0.0] - 2024-12-30
-
-Initial Release.
+Initial release of RegnumStarter v6
 
 - Login with cor-forum.de Account
 - Store multiple Regnum accounts (saved locally) for quick login
 - Modify regnum settings
-- Special features like extended zoom and field of view
+- Special features like extended zoom, field of view and moonwalk (more to come)
 - Global chat
+- Rewritten in C++, brand-new design
