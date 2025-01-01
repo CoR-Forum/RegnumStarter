@@ -41,7 +41,7 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
 
         if (optionZoom) {
             ImGui::SameLine();
-            if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+            if (ImGui::SliderFloat("##Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
                 MemoryManipulation("zoom", zoomValue);
             }
         } else if (prevZoomState) {
