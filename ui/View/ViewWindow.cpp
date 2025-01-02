@@ -1,6 +1,7 @@
 #include "ViewWindow.h"
 #include "../../includes/Utils.h" // Assuming MemoryManipulation is declared here
 #include "../../ui/helper/Markers/LicenseMarker.h"
+#include "../../includes/API/ApiHandler.h"
 #include <iostream> // For debugging
 
 // Function to get the key name from the virtual key code
