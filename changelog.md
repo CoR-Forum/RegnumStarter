@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.0.2] - 2025-1-2
+
+- Fixed Missing include which was only noticeable with the build from the Website
+
 ## [6.0.1] - 2025-1-2
 
 - Hotfix for Moonwalk
