@@ -41,7 +41,7 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
 
         if (optionZoom) {
             ImGui::SameLine();
-            if (ImGui::SliderFloat("Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
+            if (ImGui::SliderFloat("##Zoom", &zoomValue, 15.0f, 60.0f)) { // Adjust the range as needed
                 MemoryManipulation("zoom", zoomValue);
             }
         } else if (prevZoomState) {
@@ -106,7 +106,6 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
         ImGui::BeginDisabled(!featureMoonwalk);
         if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
             MemoryManipulation("moonwalk", 9.219422856E-41f);
-            std::this_thread::sleep_for(std::chrono::milliseconds(3000));
             optionMoonwalk = false;
         }
         ImGui::EndDisabled();

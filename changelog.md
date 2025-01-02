@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.0.1] - 2025-1-2
+
+- Hotfix for Moonwalk
+
 ## [6.0.0] - 2024-12-30
 
 Initial release of RegnumStarter v6

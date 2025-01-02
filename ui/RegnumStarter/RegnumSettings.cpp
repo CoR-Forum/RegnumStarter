@@ -118,39 +118,44 @@ void ShowRegnumSettings(bool& show_RegnumSettings) {
         configChecked = true;
     }
 
-    if (!show_RegnumSettings) return;
+            if (!show_RegnumSettings) return;
 
-    static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
-    static bool showFileDialog = false;
+        static ImGui::FileBrowser fileDialog(ImGuiFileBrowserFlags_SelectDirectory);
+        static bool showFileDialog = false;
 
-    ImGui::SeparatorText("Regnum Installation Path");
-
-    if (ImGui::Button("Change")) {
-        fileDialog.Open();
-        showFileDialog = true;
-    }
-
-    ImGui::SameLine();
-    ImGui::Text("%s", setting_regnumInstallPath.c_str());
-
-    if (showFileDialog) {
-        fileDialog.Display();
-        if (fileDialog.HasSelected()) {
-            setting_regnumInstallPath = fileDialog.GetSelected().string();
-            fileDialog.ClearSelected();
-            showFileDialog = false;
+        // Set default path if not already set
+        if (setting_regnumInstallPath.empty()) {
+            setting_regnumInstallPath = "C:\\Games\\NGD Studios\\Champions of Regnum";
         }
-    }
 
-    static bool filesChecked = false; // Static flag to ensure the code runs only once
+        ImGui::SeparatorText("Regnum Installation Path");
 
-    if (!filesChecked) {
-        // Check if splash_nge.ogg and splash_nge.png exist
-        std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
-        std::vector<std::string> filesToCheck = {
-            "splash_nge.png",
-            "splash_nge.ogg"
-        };
+        if (ImGui::Button("Change")) {
+            fileDialog.Open();
+            showFileDialog = true;
+        }
+
+        ImGui::SameLine();
+        ImGui::Text("%s", setting_regnumInstallPath.c_str());
+
+        if (showFileDialog) {
+            fileDialog.Display();
+            if (fileDialog.HasSelected()) {
+                setting_regnumInstallPath = fileDialog.GetSelected().string();
+                fileDialog.ClearSelected();
+                showFileDialog = false;
+            }
+        }
+
+        static bool filesChecked = false; // Static flag to ensure the code runs only once
+
+        if (!filesChecked) {
+            // Check if splash_nge.ogg and splash_nge.png exist
+            std::string livePath = setting_regnumInstallPath + "\\LiveServer\\";
+            std::vector<std::string> filesToCheck = {
+                "splash_nge.png",
+                "splash_nge.ogg"
+            };
         bool filesExist = true;
         for (const auto& file : filesToCheck) {
             std::string filePath = livePath + file;
