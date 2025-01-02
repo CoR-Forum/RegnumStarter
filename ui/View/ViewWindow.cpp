@@ -106,7 +106,6 @@ void ShowViewWindow(bool& show_view_window, bool& optionZoom, bool& optionFov, b
         ImGui::BeginDisabled(!featureMoonwalk);
         if (ImGui::Checkbox("Moonwalk", &optionMoonwalk)) {
             MemoryManipulation("moonwalk", 9.219422856E-41f);
-            std::this_thread::sleep_for(std::chrono::milliseconds(3000));
             optionMoonwalk = false;
         }
         ImGui::EndDisabled();
