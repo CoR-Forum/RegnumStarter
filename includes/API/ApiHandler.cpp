@@ -244,7 +244,6 @@ void SaveSettings() {
 }
 
 void Logout() {
-    SaveSettings();
     try {
         std::string path = "/v1/logout";
 
