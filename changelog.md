@@ -1,5 +1,10 @@
 # Changelog
 
+## [6.0.3] - 2025-1-10
+
+- Fixed: Closing RegnumStarter hangs when API is unreachable.
+- Added: Save Settings button in settings window.
+
 ## [6.0.2] - 2025-1-2
 
 - Fixed Missing include which was only noticeable with the build from the Website
