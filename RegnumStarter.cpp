@@ -385,6 +385,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         if (strlen(chatInput) > 0) {
                             SendChatMessage(chatInput);
                             chatInput[0] = '\0'; // Clear input field
+                                                        ImGui::SetKeyboardFocusHere(-1); // Keep focus on the input field
+
                         }
                     }
                     ImGui::PopItemWidth(); // Reset the item width to default
@@ -393,6 +395,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         if (strlen(chatInput) > 0) {
                             SendChatMessage(chatInput);
                             chatInput[0] = '\0'; // Clear input field
+                                                        ImGui::SetKeyboardFocusHere(-1); // Keep focus on the input field
+
                         }
                     }
                 }
