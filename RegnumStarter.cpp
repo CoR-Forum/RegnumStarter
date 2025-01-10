@@ -343,7 +343,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::EndPopup();
                     }
 
-                    ImGui::Seperator();
+                    ImGui::Separator();
 
                     if (ImGui::Button("Save Settings")) {
                         SaveSettings();
