@@ -3,6 +3,7 @@
 ## draft 
 
 - Proper handling of existing RegnumStarter instance on startup.
+- Fixed #34: Chat input focus was lost after sending a chat message.
 
 ## [6.0.3] - 2025-1-10
 
