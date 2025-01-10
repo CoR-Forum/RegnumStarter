@@ -1,5 +1,9 @@
 # Changelog
 
+## draft 
+
+- Proper handling of existing RegnumStarter instance on startup.
+
 ## [6.0.3] - 2025-1-10
 
 - Fixed: Closing RegnumStarter hangs when API is unreachable.
