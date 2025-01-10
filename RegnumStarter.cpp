@@ -344,6 +344,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                         ImGui::EndPopup();
                     }
 
+                    ImGui::Seperator();
+
+                    if (ImGui::Button("Save Settings")) {
+                        SaveSettings();
+                    }
+
             } else if (show_license_window) {
                 ShowLicenseWindow(show_license_window);
 
