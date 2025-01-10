@@ -156,7 +156,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
                 // close the window if the user clicks the close button
                 if (!mainWindowIsOpen) {
-                    SaveSettings();
                     PostQuitMessage(0);
                 }
                 
