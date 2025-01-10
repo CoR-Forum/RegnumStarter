@@ -27,10 +27,13 @@ bool IsHotkeyPressed(int hotkey) {
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     
     Log("RegnumStarter " + regnumstarter_version + " started");
-    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("RegnumStarter-Mutex")); // Create a named mutexf
+    HANDLE hMutex = CreateMutex(NULL, TRUE, _T("RegnumStarter-Mutex")); // Create a named mutex
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        MessageBox(NULL, _T("RegnumStarter is already running."), _T("Error"), MB_ICONERROR | MB_OK) | MB_TOPMOST;
-        return 1;
+        HWND hwndExisting = FindWindow(NULL, _T("RegnumStarter"));
+        if (hwndExisting) {
+            PostMessage(hwndExisting, WM_CLOSE, 0, 0); // Send a close message to the existing instance
+            Sleep(2000); // Wait for the existing instance to close
+        }
     }
     
     SelfUpdate();
