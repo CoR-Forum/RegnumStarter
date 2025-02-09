@@ -47,21 +47,46 @@ void runRoClientGame(const std::string& regnumLoginUser, const std::string& regn
     ZeroMemory(&pi, sizeof(pi));
 
     std::string regnumPath = setting_regnumInstallPath;
+
+    // Step 1: Start ROLauncher.exe silently
+    std::string launcherPath = regnumPath + "\\ROLauncher.exe";
     
+    STARTUPINFO siLauncher;
+    PROCESS_INFORMATION piLauncher;
+    ZeroMemory(&siLauncher, sizeof(siLauncher));
+    siLauncher.cb = sizeof(siLauncher);
+    siLauncher.dwFlags = STARTF_USESHOWWINDOW;
+    siLauncher.wShowWindow = SW_HIDE; // Hides the launcher window
+
+    if (!CreateProcess(launcherPath.c_str(), NULL, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, regnumPath.c_str(), &siLauncher, &piLauncher)) {
+        LogDebug("Failed to start ROLauncher.exe silently");
+    } else {
+        LogDebug("ROLauncher.exe started silently.");
+        // Optional: Wait a few seconds to ensure ROLauncher initializes
+        Sleep(3000); 
+        CloseHandle(piLauncher.hProcess);
+        CloseHandle(piLauncher.hThread);
+    }
+
+    // Step 2: Start ROClientGame.exe
     std::string executablePath = regnumPath + "\\LiveServer\\ROClientGame.exe";
     std::string command = "powershell.exe -Command \"cd '" + regnumPath + "\\LiveServer'; .\\ROClientGame.exe '" + regnumLoginUser + "' '" + regnumLoginPassword + "'\"";
-    
+
     if (!CreateProcess(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, regnumPath.c_str(), &si, &pi)) {
         LogDebug("Failed to start the Regnum Online client");
     } else {
-        // Wait until child process exits.
+        LogDebug("ROClientGame.exe started successfully.");
+
+        // Wait until the game exits
         WaitForSingleObject(pi.hProcess, INFINITE);
 
-        // Close process and thread handles.
+        // Close process and thread handles
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     }
 }
+
+
 
 void CheckAndUpdateConfig() {
     std::string configPath = setting_regnumInstallPath + "\\game.cfg";
